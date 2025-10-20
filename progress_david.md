@@ -22,7 +22,7 @@
 - find some basic information about backend
 - finished intro php tutorial from work
 
-## ====== Day 3 == 20.10 ====== (4h) => 13h
+## ====== Day 3 == 20.10 ====== (6h) => 15h
 - did some research on build php framework
 	- https://www.youtube.com/watch?v=u3hN_r1DwSQ (41:19)
 	- https://www.youtube.com/watch?v=nfIURhvknac&list=PLFbnPuoQkKseimWeA4UFo1BPFTeXnv_1S&index=4 (6:19)
@@ -30,4 +30,6 @@
 - thought about container setup for nginx and php/sqlite
 - Router and Dispatcher in pure php
 	- https://vivasart.com/en/blog/how-to-create-a-basic-router-in-pure-php
-
+- 45min of structuring project
+- sqlite video
+	- https://www.youtube.com/watch?v=8Xyn8R9eKB8 

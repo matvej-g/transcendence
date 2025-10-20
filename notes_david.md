@@ -223,6 +223,81 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 - SQLite Documentation
 	- https://www.sqlite.org/docs.html
 
+- is serverless
+
+- sqlite3 <filename>
+- .shell clear
+	- clear shell
+- .databases
+	- shows path to databases main: /Users/david/projects/trans/intro.db r/w
+- .help
+
+- Creating a table always a key value
+	- CREATE TABLE <name>(
+		- id INTEGER PRIMARY KEY,
+			- INTEGER => int
+			- PRIMARY KEY => always need a primary key
+			- always separate columns with ","
+		- name TEXT NOT NULL,
+			- TEXT => string
+			- NOT NULL => required
+		- UNIQUE
+			- musst be individual
+		- created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+			- if you don't pass a value it will default to the creation time of the user
+			- no comma on last one
+		- finish with )
+	- .tables
+		- can view tables
+	
+- alter tables
+	- ALTER TABLE users ADD COLUMN status TEXT;
+
+- delete tables
+	- DROP TABLE users;
+
+- add values to tables
+	- INSERT INTO users(name, username)
+	- VALUES ('David Huss', 'dhuss42');
+
+- add multiple values at once
+	- INSERT INTO users(name, username)
+	- VALUES ('John Smith', 'Js'), ('Sal Smith', 'ss'), ('Cole Conner', 'cc');
+
+- read data from table
+	- SELECT * FROM users;
+
+- read specific data from table
+	- SELECT * FROM users;
+	- WHERE username='js';
+
+- possible to work inside file
+	- intro.sql
+	- .read intro.sql
+
+- updateing Data
+	- UPDATE users SET email = 'newemail@gmail.com' WHERE  id = 1;
+		- WHERE is important so that not everything us update put something specific like the id =1 here
+
+- deleting Data
+	- DELETE FROM users WHERE id = 2;
+
+- create foreign key for relationable data
+	- CREATE TABLE post (
+	id INTEGER PRIMARY KEY,
+	user_id INTEGER REFERENCES users(id),
+	title TEXT,
+	body
+	);
+		- now post table and users table are linked to each other
+
+- JOIN the tables
+	- SELECT * FROM post 
+	- JOIN users ON post.user_id = users.id;
+
+- See the headers of a column
+	- .headers on
+
 ### 
 
 ### gdpr (General Data Protection Regulation)
