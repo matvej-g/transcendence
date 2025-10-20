@@ -4,7 +4,7 @@
 - Everyone is k.o.
 
 ## Next Person
-- On Thursday we will know
+- On Thursday we will know if another person is joining
 
 ## Module Decision
 - Milena
@@ -18,7 +18,7 @@
 	- Usermanagement authentication (major)
 	- Chat (major)
 - Matthias
-	- gameplay
+	- gameplay (mandatory)
 	- remote players gameplay user expierence (major)
 	- game custimazation (minor)
 	- live chat (major)
@@ -30,5 +30,9 @@
 	- Usermanagement (major)
 	- gdpr (minor)
 
-6 majors
+5 majors
 8 minors
+
+## Strucutre
+- thinking about strucuting more along the lines of expertise instead of everyone trying to know everything
+
