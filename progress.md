@@ -54,3 +54,40 @@
 - how do we organise pushing to main without conflicts?
 - git
 
+# parts I said that I am interested in
+Modules:
+[x] Use a framework to build the backend (major) -> David will do backend
+- Use a framework or toolkit to build the front-end (minor)
+[x] Use a database for the backend -and more (minor) -> will do David
+- User management: Implement remote authentication (major)
+- Introduce an AI opponent (major)
+- Designing the Backend as Microservices (major)
+- Multiple language support (minor)
+- Add accessibility for Visually Impaired Users (minor)
+
+General:
+- Docker (Microservices module modifies it)
+- git test for pushing
+
+I would prefer to do
+- Frontend of the website (mandatory part)
+- Use a framework or toolkit to build the front-end (minor)
+
+if needed I could do:
+- Add accessibility for Visually Impaired Users (minor)
+- Multiple language support (minor)
+- Support on all devices (minor)
+- Introduce an AI opponent (major)
+- Docker
+
+# Questions for meeting 20.10.
+- should I do another call on slack for a 5th person?
+- who will do graphic of the game? -> find out later (?)
+- Docker: nginx + each person has their own container and then we do docker compose to start all together? -> david
+
+# next steps
+- look into click-up workspace
+- try to understand how all parts depend on each other
+- find a source to learn typescript and tailwind css
+- do a mini piscine to get into syntax
+
