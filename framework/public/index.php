@@ -12,8 +12,6 @@ require dirname(__DIR__) . "/framework/http/Kernel.php";
 $request = Request::createFromGlobals();
 // print_r($request->getParams);
 // print_r($request->postParams);
-
-
 // print_r($request->server);
 
 

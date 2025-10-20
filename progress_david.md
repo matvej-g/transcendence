@@ -28,4 +28,6 @@
 	- https://www.youtube.com/watch?v=nfIURhvknac&list=PLFbnPuoQkKseimWeA4UFo1BPFTeXnv_1S&index=4 (6:19)
 - made first structure of framework
 - thought about container setup for nginx and php/sqlite
+- Router and Dispatcher in pure php
+	- https://vivasart.com/en/blog/how-to-create-a-basic-router-in-pure-php
 
