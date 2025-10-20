@@ -21,3 +21,11 @@
 - reread subject guidlines
 - find some basic information about backend
 - finished intro php tutorial from work
+
+## ====== Day 3 == 20.10 ====== (4h) => 13h
+- did some research on build php framework
+	- https://www.youtube.com/watch?v=u3hN_r1DwSQ (41:19)
+	- https://www.youtube.com/watch?v=nfIURhvknac&list=PLFbnPuoQkKseimWeA4UFo1BPFTeXnv_1S&index=4 (6:19)
+- made first structure of framework
+- thought about container setup for nginx and php/sqlite
+
