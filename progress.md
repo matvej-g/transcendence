@@ -81,7 +81,7 @@ if needed I could do:
 - Docker
 
 # Questions for meeting 20.10.
-- should I do another call on slack for a 5th person?
+- should I do another call on slack for a 5th person? -> wait for person that will decide thursday
 - who will do graphic of the game? -> find out later (?)
 - Docker: nginx + each person has their own container and then we do docker compose to start all together? -> david
 
@@ -90,4 +90,6 @@ if needed I could do:
 - try to understand how all parts depend on each other
 - find a source to learn typescript and tailwind css
 - do a mini piscine to get into syntax
+- find out how to implement tests for git push
+
 
