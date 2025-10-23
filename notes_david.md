@@ -10,6 +10,15 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 ### password hashing
 
 ### SQL injections
+- untrusted user input is placed directly into an SQL query string
+	- /?id=1; drop table users;
+		- will delete all users if not handled properly if you have something like the following
+		- $id = $_GET['id'];
+		- $query = "select * from posts where id = {$id}";
+		- SOLUTION: never inline data into a query string but use a place holder "?"
+			- then pass the query and the data (id) separately to sqlite
+				- prepare($query)
+				- statement->execute([$id])
 
 ### XSS attacks
 
@@ -298,7 +307,17 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 - See the headers of a column
 	- .headers on
 
-### 
+### pdo (php data objects)
+- $pdo = new PDDO($dsn)
+	- $(dsn) is a connection string to connects to the database, Port, host
+	- $dsn = "database:host=nbr;port=nbr;dbname=name;charset=utf8mb4";
+	- for sqlite it is only the path
+- $statement = $pdo->prepare("select from posts");
+	- prepare a query to send to sqlite
+- $statement->execute();
+	- sqlite executes the query
+- $post = $statement->fetchAll(PDO::FETCH_ASSOC);
+	- fetch data as an associative array
 
 ### gdpr (General Data Protection Regulation)
 - regulation that aims to protect the personal data and privacy of individuals within the European Union and European Economic Area (Source: subject)
