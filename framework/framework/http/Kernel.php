@@ -1,5 +1,10 @@
 <?php
 
+require '../../vendor/autoload.php';
+
+use function Symfony\Component\VarDumper\dd;
+
+
 class Kernel
 {
 
@@ -9,22 +14,43 @@ class Kernel
 		echo "\n";
 		$uri = $request->getUri();
 
+		// extract the value without query string from url under key path
+		parse_url($request->getUri())['path'];
 		$routes = [
-			'/' => "call controller",
-			'/home.php' => "call controller2",
+			'/' => '../controllers/home.php',
+			'/about.php' => '../controllers/about.php',
+			'/contact.php' => '../controllers/contact.php',
 		];
 
-		if (!isset($routes[$uri]))
-		{
-			$content = '<h1>404 Not found</h1>';
-			$status = 404;
+
+
+		// dump($uri);
+		// dump($routes['/']);
+		// dump(parse_url($request->getUri())['path']);
+		// die(1);
+		// dump($routes[$uri]);
+		// die(1);
+
+		if (array_key_exists($uri, $routes)) {
+			require $routes[$uri]; 
 		}
-		else
-		{
-			$controller = $routes[$uri];
-			$content = "<p>Dispatching to controller: {$controller}</p>";
-			$status = 200;
+		else {
+			http_response_code(404);
+			echo "Sorry, Not found.";
+			die(0);
 		}
+
+		// if (!isset($routes[$uri]))
+		// {
+		// 	$content = '<h1>404 Not found</h1>';
+		// 	$status = 404;
+		// }
+		// else
+		// {
+		// 	$controller = $routes[$uri];
+		// 	$content = "<p>Dispatching to controller: {$controller}</p>";
+		// 	$status = 200;
+		// }
 
 		// router
 		// 	match the path to a page
