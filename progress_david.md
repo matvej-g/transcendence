@@ -41,9 +41,18 @@
 - found good video on php should watch the whole thing
  - https://www.youtube.com/watch?v=fw5ObX8P6as
 
-## ====== Day 5 == 23.10 ====== (4h) => 21h 
+## ====== Day 5 == 23.10 ====== (6h) => 23h 
 - worked on Router class
 	- https://www.youtube.com/watch?v=fw5ObX8P6as (6:00:00)
 - worked on PDO and sqlite
 	- basics of how php connects to sqlite
 	- sql injections protection
+- 3:40:00 on video
+- setup minimal working docker environemnt for nginx and php-fpm
+- can switch between different pages in view
+	- front controller creates request
+	- request is instance of superglobals
+	- creates kernel
+	- routes uri to the correct controller (should be separated later)
+	- controller opens page in view
+	- when clicking to a different page in router the requests are sent to the front controller

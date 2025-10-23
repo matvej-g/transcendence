@@ -1,10 +1,5 @@
 <?php
 
-require '../../vendor/autoload.php';
-
-use function Symfony\Component\VarDumper\dd;
-
-
 class Kernel
 {
 
@@ -17,9 +12,9 @@ class Kernel
 		// extract the value without query string from url under key path
 		parse_url($request->getUri())['path'];
 		$routes = [
-			'/' => '../controllers/home.php',
-			'/about.php' => '../controllers/about.php',
-			'/contact.php' => '../controllers/contact.php',
+			'/' => '../src/controllers/home.php',
+			'/about' => '../src/controllers/about.php',
+			'/contact' => '../src/controllers/contact.php',
 		];
 
 

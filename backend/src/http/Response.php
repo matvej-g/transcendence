@@ -2,6 +2,7 @@
 
 class Response 
 {
+	// look up ?string
 	public function __construct(
 		private ?string $content = '',
 		private int $status = 200,
