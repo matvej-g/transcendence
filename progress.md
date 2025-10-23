@@ -92,4 +92,39 @@ if needed I could do:
 - do a mini piscine to get into syntax
 - find out how to implement tests for git push
 
+### --- Day 1: 22.10.2025 --- ###
+- whatching videos about webdevelopment
+	- https://www.youtube.com/watch?v=N5DBkIBd-PM
+	- https://www.youtube.com/watch?v=rs5Z3uc0RMU
+	- https://www.youtube.com/watch?v=8PMLZ3hkKXM - video about connecting frontend to backend
 
+- To connect TypeScript frontend with a pure PHP backend without a framework, we'll use HTTP requests to communicate between the two systems.
+
+### --- Day 2: 23.10.2025 --- ###
+- getting familiar with clickup https://app.clickup.com/90151763983/v/wb/2kyqdg0f-575
+- how does it make sense to start learning frontend development?
+	- learn html
+	- learn css
+	- learn typescript
+	- structured learning: code cademy (javascript), ztm (fullstack)
+- small project ideas for learning
+	- very small: page with a button that changes text when i click it
+	- little bigger: notes app with create, edit, delete
+
+- try out debug flow:
+	- reproduce the error
+	- isolate the smallest part of code that is breaking
+	- read the error message out loud
+	- print values, add logs
+	- google exact error message
+	- skim documentation
+	- still stuck after 20+ min -> Ask, share, use AI -> understand and rewrite the solution instead of just copy pasting
+
+- about typescript and javascript:
+	- TypeScript is JavaScript plus additional features
+	- All JavaScript code is valid TypeScript code
+	- TypeScript compiles down to regular JavaScript
+
+- registered for odins project https://www.theodinproject.com/
+- finished introduction to html
+- started with basics of CSS
