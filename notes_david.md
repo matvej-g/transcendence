@@ -217,6 +217,36 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 - save contents to a file
 	- int file_put_contents(string $filename, mixed $data)
 
+### autoloading
+- declase a base path that points to the root of the project
+	- const BASE_PATH = __DIR__ . '/../';
+- function base_path($path)
+	return BASE_PATH . $path;
+
+- function view($path)
+	return (base_path('views/' . $path));
+
+spl_autoload_register(function ($class) {
+	require base_path('src/' . $class . '.php');
+});
+
+- extract()
+	- accepts an array and turns that array into a set of variables
+		- name of variable is the key
+		- value of variable is the value associated 
+
+### namespacing
+- defines the "namespace" that all code in the file belongs to
+- namespace 'Structure'
+- in paths were the data is required use: use Namespace\classname
+
+- when using classes that are not within the defined namespace but are used in the file
+	- use '\' before it, tells it to look from the global namespace
+		- \PDO::
+	- or at the top of the file
+		- use PDO;
+- use Framework\Http\Response as HttpResponse;
+	- rename to avoid conflicts
 
 ### docker
 - Docker Documentation

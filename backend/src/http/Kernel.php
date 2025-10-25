@@ -1,5 +1,7 @@
 <?php
 
+namespace src\http;
+
 class Kernel
 {
 
@@ -10,24 +12,19 @@ class Kernel
 		$uri = $request->getUri();
 
 		// extract the value without query string from url under key path
-		parse_url($request->getUri())['path'];
+		$path = parse_url($request->getUri())['path'];
 		$routes = [
-			'/' => '../src/controllers/home.php',
-			'/about' => '../src/controllers/about.php',
-			'/contact' => '../src/controllers/contact.php',
+			'/' => BASE_PATH . 'src/controllers/home.php',
+			'/about' => BASE_PATH . 'src/controllers/about.php',
+			'/contact' => BASE_PATH . 'src/controllers/contact.php',
 		];
+		
+		// extract query string 
+		// $query = parse_url($request->getUri())['query'];
 
 
-
-		// dump($uri);
-		// dump($routes['/']);
-		// dump(parse_url($request->getUri())['path']);
-		// die(1);
-		// dump($routes[$uri]);
-		// die(1);
-
-		if (array_key_exists($uri, $routes)) {
-			require $routes[$uri]; 
+		if (array_key_exists($path, $routes)) {
+			require $routes[$path]; 
 		}
 		else {
 			http_response_code(404);

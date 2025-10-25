@@ -56,3 +56,11 @@
 	- routes uri to the correct controller (should be separated later)
 	- controller opens page in view
 	- when clicking to a different page in router the requests are sent to the front controller
+
+## ====== Day 6 == 25.10 ====== (3h) => 26h
+- looked into autoloading
+	- video 5:21:00
+	- integrated small autoloading to get better overview of directory strcutre and complexity
+- looked into namespacing and use
+	- integrated namespacing together with autoloading -> better overview
+- added helper functions dir and file

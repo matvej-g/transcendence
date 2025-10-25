@@ -1,5 +1,7 @@
 <?php
 
+namespace src\http;
+
 class Request
 {
 	// making sure that the variables reflect the current stage of the request and cannot be changed anymore
