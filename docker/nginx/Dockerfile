@@ -1,8 +1,8 @@
 FROM nginx:alpine
 
-WORKDIR /var/www/test
+WORKDIR /var/www/public
 
-COPY ./app/test /var/www/test
+COPY ./app/public /var/www/public
 
 COPY ./docker/nginx/conf/default /etc/nginx/conf.d/default.conf
 

@@ -4,11 +4,11 @@ all: build run
 
 build:
 	@echo "🛠️  Building Docker images without cache..."
-	docker compose build --no-cache --pull
+	docker compose build --no-cache
 
 run:
 	@echo "🚀 Starting containers..."
-	docker compose up -d --force-recreate
+	docker compose up -d
 
 stop:
 	@echo "🧩 Stopping and removing containers..."
