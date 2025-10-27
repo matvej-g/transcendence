@@ -8,44 +8,24 @@ class Kernel
 	public function handle(Request $request): Response
 	{
 		$content = '<h1>Hello World</h1>';
-		echo "\n";
-		$uri = $request->getUri();
+		// echo "\n";
+		
+		$router = new Router();
 
 		// extract the value without query string from url under key path
-		$path = parse_url($request->getUri())['path'];
-		$routes = [
-			'/' => BASE_PATH . 'src/controllers/home.php',
-			'/about' => BASE_PATH . 'src/controllers/about.php',
-			'/contact' => BASE_PATH . 'src/controllers/contact.php',
-		];
+		$uri = parse_url($request->getUri())['path'];		
 		
+		$method = $request->getMethod();
+
+		$router->get('/', 'src/controllers/home.php');
+		$router->get('/about', 'src/controllers/about.php');
+		$router->get('/contact', 'src/controllers/contact.php');
+
+		$router->route($uri, $method);
+
 		// extract query string 
 		// $query = parse_url($request->getUri())['query'];
 
-
-		if (array_key_exists($path, $routes)) {
-			require $routes[$path]; 
-		}
-		else {
-			http_response_code(404);
-			echo "Sorry, Not found.";
-			die(0);
-		}
-
-		// if (!isset($routes[$uri]))
-		// {
-		// 	$content = '<h1>404 Not found</h1>';
-		// 	$status = 404;
-		// }
-		// else
-		// {
-		// 	$controller = $routes[$uri];
-		// 	$content = "<p>Dispatching to controller: {$controller}</p>";
-		// 	$status = 200;
-		// }
-
-		// router
-		// 	match the path to a page
 		// dispatcher
 
 		return (new Response($content));

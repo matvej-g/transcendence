@@ -12,7 +12,6 @@ class Request
 		public readonly array $files,
 		public readonly array $server)
 	{
-
 	}
 
 
@@ -24,6 +23,12 @@ class Request
 	// return the left side if it exists otherwise return right side
 	public function getUri(): string
 	{
-		return ($this->server['REQUEST_URI'] ?? '/');
+		return $this->server['REQUEST_URI'] ?? '/';
+	}
+
+	// returns the request method
+	public function getMethod(): string
+	{
+		return $postParams['_method'] ?? $this->server['REQUEST_METHOD'];
 	}
 }

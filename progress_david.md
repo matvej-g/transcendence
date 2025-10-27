@@ -65,6 +65,9 @@
 	- integrated namespacing together with autoloading -> better overview
 - added helper functions dir and file
 
-## ====== Day 7 == 27.10 ====== () => 
-- meeting
+## ====== Day 7 == 27.10 ====== (2h) => 28h
+- online meeting
+- added Readme for starting everything
+- integrated router class
+	- still needs better handling with regex for dynamic situations but handles some incoming things
 
