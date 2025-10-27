@@ -1,0 +1,22 @@
+# Protocol, 20th October
+
+## update on 5th person
+- waiting for update
+
+## New Blackhole maybe
+- blackhole moves back end of Febuary
+- Ivan may be able to get salvation
+
+## Progress
+- Ivan working on code and structure
+- milena working on frontend and css
+- Matthias got basic game layout working
+- David nginx container with basic backend
+
+## to dos
+- David will send Matthias typescript videos
+- Milena will ask andy regarding local/domain question
+- Matthias will 
+
+## next Meeting
+- Monday 3rd November
