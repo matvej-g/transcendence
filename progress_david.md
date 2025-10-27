@@ -64,3 +64,7 @@
 - looked into namespacing and use
 	- integrated namespacing together with autoloading -> better overview
 - added helper functions dir and file
+
+## ====== Day 7 == 27.10 ====== () => 
+- meeting
+
