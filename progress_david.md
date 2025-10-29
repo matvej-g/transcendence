@@ -71,3 +71,12 @@
 - integrated router class
 	- still needs better handling with regex for dynamic situations but handles some incoming things
 
+## ====== Day 8 == 29.10 ====== (4h) => 32h
+- added Class Controller that can handle functionality instead of only displaying static pages
+- Implemented basic database query structure
+	- Model/Repository class that has query functions
+		- reusable query functiosns
+	- Controller calls the query functions
+		- maintains readability of code	
+- now possible to search for users in database based on query string
+- finished basic request/response cycle 

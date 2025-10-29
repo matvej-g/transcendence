@@ -41,11 +41,24 @@ class Router {
 	}
 
 
-	public function route($uri, $method)
+	public function route($uri, $method, $request, $db)
 	{
 		foreach ($this->routes as $route) {
 			if ($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
+				
+			// static page controllers
+			if (is_string($route['controller']))
 				return require base_path($route['controller']);
+			
+			// dynamic controller classes
+			if (is_array($route['controller'])) {
+				[$class, $methodName] = $route['controller'];
+				
+				// creating a Controller because $class holds name of controller
+				$controllerInstance = new $class($db);
+				// calling the method because $methodName holds the name of the method
+				return ($controllerInstance->$methodName($request));
+			}
 			}
 		}
 		$this->abort();

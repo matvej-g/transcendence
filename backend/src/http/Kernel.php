@@ -2,38 +2,29 @@
 
 namespace src\http;
 
+use src\Database;
+
 class Kernel
 {
 
-	public function handle(Request $request): Response
-	{
-		$content = '<h1>Hello World</h1>';
-		// echo "\n";
-		
-		$router = new Router();
+	private Router $router;
+	private Database $db;
 
+	public function __construct()
+	{
+		// not sure about constducting them every time
+		$this->db = new Database('sqlite:' . base_path('database/intro.db'));
+		$this->router = new Router();
+	}
+
+	public function handle(Request $request): Response
+	{		
 		// extract the value without query string from url under key path
 		$uri = parse_url($request->getUri())['path'];		
 		
 		$method = $request->getMethod();
 
-		$router->get('/', 'src/controllers/home.php');
-		$router->get('/about', 'src/controllers/about.php');
-		$router->get('/contact', 'src/controllers/contact.php');
-
-		$router->route($uri, $method);
-
-		// extract query string 
-		// $query = parse_url($request->getUri())['query'];
-
-		// dispatcher
-
-		return (new Response($content));
+		require base_path('src/http/routes.php');
+		return ($this->router->route($uri, $method, $request, $this->db));
 	}
 }
-
-// dispatcher is responsible for
-// figuring out which controller or function should handle a given request
-// invoking that controller with the right arguments
-// returning the result (reponse object) back to the kernel
-// 
