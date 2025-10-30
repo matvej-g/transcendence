@@ -14,10 +14,10 @@ class UserModels {
 	{
 	}
 
-	public function createUser($name, $userName, $email, $age) {
+	public function createUser($userName, $email, $password_hash) {
 		$this->db->query(
-				"INSERT INTO users (name, username, email, age) VALUES (?, ?, ?, ?)", 
-				[$name, $userName, $email, $age]
+				"INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)", 
+				[$userName, $email, $password_hash]
 		);
 	}
 		

@@ -81,7 +81,12 @@
 - now possible to search for users in database based on query string
 - finished basic request/response cycle 
 
-## ====== Day 9 == 30.10 ====== (1h) => 33h
+## ====== Day 9 == 30.10 ====== (4h) => 36h
 - watched video on Services and Service Containers
 - created enum for http Status codes
 	- needs to be extended
+- added basic DB setup on volume setup
+	- Creates a users table and adds a user
+	- users table can be queryed using controller
+- made database writeable
+	- changed ownership to www-data for db folder and db file

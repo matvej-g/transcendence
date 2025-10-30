@@ -21,16 +21,20 @@ class UserController {
 	public function showUsers(Request $request): Response
 	{
 		$id = $request->getParams['id'] ?? null;
+		$name = $request->getParams['name'] ?? null;
+		$email = $request->getParams['email'] ?? null;
 		dump($id);
+		dump($name);
+		dump($email);
 		if (!$id)
 			return new Response(
 				HttpStatusCode::BadRequest,
 				json_encode(['error' => 'Missing parameter id']),
 		);
 
+		dump($this->users->createUser($name, $name, ''));
 		dump($request->getParams);
 		
-		// dump($this->users->createUser('John', 'johnny', 'john@john.de', 6));
 		dump($this->users->findUserById($id));
 		dump($this->users->showAllUsers());
 		// dump(json_encode($this->users->showAllUsers()));
@@ -38,7 +42,6 @@ class UserController {
 		return new Response(
 			HttpStatusCode::Ok,
 			json_encode($this->users->showAllUsers()),
-			['' => ''],
 		);
 	}
 }
