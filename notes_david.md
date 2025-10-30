@@ -248,6 +248,13 @@ spl_autoload_register(function ($class) {
 - use Framework\Http\Response as HttpResponse;
 	- rename to avoid conflicts
 
+### Service
+- A plain php class that does work
+	- logger, mailer, database connection, controller
+- instiated by Service Container
+	- creates the Service just once and returns same object same time
+	
+
 ### docker
 - Docker Documentation
 	- https://docs.docker.com/manuals/

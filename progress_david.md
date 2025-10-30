@@ -80,3 +80,8 @@
 		- maintains readability of code	
 - now possible to search for users in database based on query string
 - finished basic request/response cycle 
+
+## ====== Day 9 == 30.10 ====== (1h) => 33h
+- watched video on Services and Service Containers
+- created enum for http Status codes
+	- needs to be extended

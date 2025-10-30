@@ -41,7 +41,7 @@ class Router {
 	}
 
 
-	public function route($uri, $method, $request, $db)
+	public function route($uri, $method, $request, $db): Response
 	{
 		foreach ($this->routes as $route) {
 			if ($route['uri'] === $uri && $route['method'] === strtoupper($method)) {

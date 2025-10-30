@@ -3,6 +3,7 @@
 namespace src\controllers;
 
 use src\Database; // alias full namespace: makes it possible to use class name alone
+use src\http\HttpStatusCode;
 use src\http\Request;
 use src\http\Response;
 use src\Models\UserModels;
@@ -19,8 +20,14 @@ class UserController {
 
 	public function showUsers(Request $request): Response
 	{
-		$id = $request->getParams['id'];
+		$id = $request->getParams['id'] ?? null;
 		dump($id);
+		if (!$id)
+			return new Response(
+				HttpStatusCode::BadRequest,
+				json_encode(['error' => 'Missing parameter id']),
+		);
+
 		dump($request->getParams);
 		
 		// dump($this->users->createUser('John', 'johnny', 'john@john.de', 6));
@@ -29,9 +36,9 @@ class UserController {
 		// dump(json_encode($this->users->showAllUsers()));
 		
 		return new Response(
-			content: json_encode($this->users->showAllUsers()),
-			status: 200,
-			headers: ['' => ''],
+			HttpStatusCode::Ok,
+			json_encode($this->users->showAllUsers()),
+			['' => ''],
 		);
 	}
 }
