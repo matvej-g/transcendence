@@ -90,3 +90,9 @@
 	- users table can be queryed using controller
 - made database writeable
 	- changed ownership to www-data for db folder and db file
+
+## ====== Day 10 == 31.10 ====== (3h) => 39h
+- watched video on XSS attacks
+- watched video on forms
+- watched video on how to deal with xss attacks
+- implemented a basic validator class

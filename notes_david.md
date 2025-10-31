@@ -8,6 +8,25 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 (Source: https://en.wikipedia.org/wiki/Single-page_application)
 
 ### password hashing
+- the process of using a cryptographic function to convert a user's plain-text password into a fixed-length, seemingly random string of characters called a hash
+
+- string password_hash(string $password, mixed $algo, [array $options])
+	- creates a new password hash of the string using one of the available hashing algorithm
+		- returns the hash as 60 chars
+		- however allocate 255 just in case increase
+	- Algorithms
+		- PASSWORD_DEFAULT
+			- bycript -> balanced security and performance
+		- PASSWORD_BCRYPT
+		- PASSWORD_ARGON2I
+			- stronger security
+		- PASSWORD_ARGON2ID
+
+- bool password_verify(string $password, string $hash)
+	- once the password is hased you cannot retrieve the original
+	- need this function, verifies inf passed string matches the hashed password
+
+(Source: https://www.geeksforgeeks.org/php/how-to-encrypt-and-decrypt-passwords-using-php/)
 
 ### SQL injections
 - untrusted user input is placed directly into an SQL query string
@@ -20,11 +39,48 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 				- prepare($query)
 				- statement->execute([$id])
 
+(Source: 03:05:54 https://www.youtube.com/watch?v=fw5ObX8P6as)
+
 ### XSS attacks
+- Cross Site Scripting
+	- Reflected (non-persistent)
+		- input was reflected back in the response and idenfiied as script and is executed
+	- Stored
+		- input is not just reflected back but also persisted (stored in a database), injects everyone who views the page
+	- DOM
+		- 
+	- Mutation
+		- user input is changed in some way by the browser before inserting in the DOM
+	- java script injection technique
+- SOP (Same Origin Policy)
+	- Policy that stops one website from reading or writing data to another
+	- Checks for three things
+		- Protocol
+		- Host
+		- port
+		- if all three are same for different origins then the browser allows cross origin read/write
+		
 
 ### HTTPS connection
 
 ### validation mechanisms for forms and user input
+- Forms
+	- when submitting a form, the data is passed in the query string
+		- form inputs have to include a corresponding name
+		- a form will submit using a GET request
+		- can be changed with <form method="POST">
+			- also transfers the data but as part of the message data not inside the query string 
+
+- Escape untrusted Input
+	- inside front-end
+		- htmlspecialchars(<body of form>)
+			html input passed in form is treated as string
+- Form validations
+	- handle empty data
+		- require attribute for Form data (browser layer of validation)
+			- can be circumvented with curl -X POST localhost:Port/uri -d 'body='
+	- handle long input 
+- simple validator class
 
 ### API route protection
 
