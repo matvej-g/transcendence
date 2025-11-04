@@ -10,4 +10,4 @@ $this->router->get('/contact', 'src/controllers/contact.php');
 // Database
 // $this->router->post('/register', [UserController::class, 'register']);
 $this->router->get('/users/show', [UserController::class, 'showUsers']);
-$this->router->get('/users/add', [UserController::class, 'addUser']);
+$this->router->post('/users/add', [UserController::class, 'addUser']);

@@ -8,3 +8,4 @@ CREATE TABLE IF NOT EXISTS users (
 
 INSERT INTO users(username, email, password_hash)
 VALUES ('David Huss', 'dhuss42@heilbron.de', 123);
+

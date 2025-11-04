@@ -79,7 +79,11 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 	- handle empty data
 		- require attribute for Form data (browser layer of validation)
 			- can be circumvented with curl -X POST localhost:Port/uri -d 'body='
-	- handle long input 
+	- handle input length
+		- password 
+			- min / max
+		- form submition
+			- min
 - simple validator class
 
 ### API route protection
@@ -111,7 +115,9 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 		- GET -> retrive data
 		- POST -> create existing data
 		- PUT -> replace existing data
-		- PATCH -> update part of existing data
+		- PATCH -> update part of existing data (selectively)
+			- should be idempotent
+				- if you execute something multiple times the end result should be the same
 		- DELETE -> remove data
 	- Headers
 		- provide metadata like authentication tokens, content type
@@ -147,8 +153,63 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 	- response body
 		- JSON
 
+### Body
+- return an array
+	- not considered best pratice
+- return an object
+- return data as nested object
+
+### Status Codes
+- Most important ones
+	- 200 -> Everything ok
+	- 201 -> created
+	- 204 -> no content
+	- 301 -> move permanently
+	- 302 -> 
+	- 400 -> bad request
+	- 403 -> Fobbiden (unauthorized)
+	- 404 -> not found
+	- 500 -> internal server error
+
+- Common use cases and Responses
+- GET many
+	- 200, 
+		returns some data or an [ ] (empty array)
+- GET single
+	- 200, 
+		returns an object
+	- 404 if object does not exist
+- POST
+	- 200, 201 for creating new data, 
+		returns id of the newly created thing or new object entirelt
+	- 400 if you give bad data to request
+	- 500 if not working properly
+- PUT/PATCH
+	- 200
+		- updated object back
+	- 204
+		- does not return object
+	- 404
+		- if resource we are trying to update does not exist
+	- 400 for bad data
+	- 500 for issue on server
+- DELETE
+	- 204
+	- 200
+		- response is number of effected rows
+	- 404
+		- if resource does not exist
+	- 500
+
+- Client flow
+	- how the client reacts to what is happening on the server
+
+- middle ware
+	- things that can happen before or after the request/response that can modify it
+
+
 ### API (Apllication Programming Interface)
--set of rules and protocols that allows one piece of software (the client) to cummunicate with another (the server)
+- set of rules and protocols that allows one piece of software (the client) to cummunicate with another (the server)
 - Application
 	- any software that has a specific purpose or functionallity
 - Interface
@@ -157,9 +218,31 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 - Statelessness:
 	- each API request is indepent (server does not remember previous interactions)
 - JSON is the most common format for exchanging data
-
 - (Source: https://www.youtube.com/watch?v=bxuYDT-BWaI)
 
+- Types
+	- REST
+		- uses http and works with JSON
+	- SOAP
+		- alternative to REST
+		- legacy/Enterprise systems 
+		- uses XML (more complex than JSON)
+	- GraphQl
+		- interacts with a backend
+			- backend has one graphql endpoint that the front end/app can connect too 
+			- frontend provides query
+			- backend provides appropriate response
+	- gRPC
+		- google Remote Procedure Call protocol
+		- uses protocol buffers
+			- reduces size of data to allow for fast transfer between apps
+	- WebSocket
+		- bidirectional channel to communicate
+		- Frontend opens connection
+		- as long as connection is maintained communication can happen from either direction
+		- for Real time application
+			- chat
+			- notification
 
 ### REST (Representational State Transfer)
 - most common naming convention and architectural style for APIs
@@ -178,6 +261,17 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 	- the two parites don't store information about each other
 	- every request and response are independent of each other
 - (Source: https://www.youtube.com/watch?v=-mN3VyJuCjM) 
+
+- http methods
+	- like GET
+- resource
+	- Entity, Item, db record
+- endpoints
+	- combination of method + path
+		- path is a url describing what resource you are trying to interact with
+- http responses
+- JSON
+	- to communicate back and forth
 
 ### JSON
 - JavaScript Object Notation

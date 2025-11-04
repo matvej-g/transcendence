@@ -96,3 +96,11 @@
 - watched video on forms
 - watched video on how to deal with xss attacks
 - implemented a basic validator class
+
+## ====== Day 11 == 03.11 ====== (2h) => 41h
+- watched video on API
+	- https://www.youtube.com/watch?v=XvFmUE-36Kc&list=PL_c9BZzLwBRIHUNeoywVJXViXGEsk6PDr 
+- watched video on Status codes
+	- https://www.youtube.com/watch?v=doR604EaOhM&list=PL_c9BZzLwBRIHUNeoywVJXViXGEsk6PDr&index=2
+- thought about table structure for database
+	- noted in clickup

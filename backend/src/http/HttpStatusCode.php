@@ -6,8 +6,10 @@ enum HttpStatusCode: int
 {
 	case Ok = 200;
 	case Created = 201;
+	case NoContent = 204;
 	case BadRequest = 400;
 	case Forbidden = 403;
+	case NotFound = 404;
 	case LargeHeaders = 431;
 	case InternalServerError = 500;
 
