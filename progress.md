@@ -30,3 +30,7 @@
 - reading about block and inline
 - todo:
 	- block and inline exercises
+
+### --- Day 6: 05.11.2025 --- ###
+- short introduction to tailwind css
+- thought about structure of website
