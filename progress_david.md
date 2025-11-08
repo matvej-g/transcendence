@@ -104,3 +104,21 @@
 	- https://www.youtube.com/watch?v=doR604EaOhM&list=PL_c9BZzLwBRIHUNeoywVJXViXGEsk6PDr&index=2
 - thought about table structure for database
 	- noted in clickup
+
+## ====== Day 12 == 04.11 ====== (2h) => 43h
+- meeting
+- added Database Table Creation to init script
+- though about api endpoints and regex
+	- need to understand variable regex logic
+
+## ====== Day 13 == 05.11 ====== (1h) => 44h
+- looked for information on more advanced router using regex
+	- https://www.youtube.com/watch?v=0vqSdP0dEDk (7:21)
+	- middleware (30:00)
+	- regex (1:00:00)
+
+## ====== Day 14 == 08.11 ====== (2h) => 46h
+- watched video on regex
+- implemented simple regex pattern matching for correct controller selection
+- now the matches extracted from the regex are passed to the controllers and can be accessed inside them
+- possible to extract user specific data from the database

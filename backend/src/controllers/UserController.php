@@ -19,7 +19,7 @@ class UserController {
 		$this->users = new UserModels($db);
 	}
 
-	public function addUser(Request $request): Response
+	public function registerUser(Request $request,): Response
 	{
 		dump($request->getParams);
 		$name = $request->getParams['name'] ?? null;
@@ -53,7 +53,7 @@ class UserController {
 		);
 	}
 
-	public function showUsers(Request $request): Response
+	public function getUsers(Request $request): Response
 	{
 		$id = $request->getParams['id'] ?? null;
 
@@ -66,5 +66,19 @@ class UserController {
 			HttpStatusCode::Ok,
 			json_encode($body),
 		);
+	}
+
+	public function getUser(Request $request, $parameters): Response
+	{
+		$id = $parameters['id'] ?? null;
+		dump($id);
+		if (!$id)
+			return new Response(HttpStatusCode::BadRequest, json_encode(''));
+		else 
+			$body = $this->users->findUserById($id);
+		dump($body);
+		if (!$body)
+			return new Response(HttpStatusCode::NotFound, json_encode($body));	
+		return new Response(HttpStatusCode::Ok, json_encode($body));
 	}
 }

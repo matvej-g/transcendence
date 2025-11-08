@@ -514,4 +514,71 @@ spl_autoload_register(function ($class) {
 
 ### data privacy rights
 
-### 
+### regex
+- +
+	- one ore more
+- ?
+	- 0 ore one
+- *
+	- match zero ore more
+- .
+	- match anything except fore a newline
+- \
+	- cancel out anything that follows it \. for example
+- \w
+	- match any word (letters)
+	- negative version \W
+	- \w{4,5}
+		- get any character sequence with 4 to 5 characters
+- \s
+	- match any form of white space
+	- negative version \S
+- [fc]at
+	- matchy any character inside the square brackets so f or c
+		- fat, cat
+- [a-z]at
+	- match ranges of characters inside brackets
+	- [a-zA-Z]at
+	- [0-9]
+- ()
+	- capture groupings group things together
+	- syntax following the capture group affects the entire group
+	- (t|T)he
+		- match lower or uppercase t and he
+	- access the groups with $1 for group 1 etc.
+	- name groups (?<name>\d{3})
+		- access $name
+	- (?:)
+		- non capturing group
+- ^
+	- match the beginning of the line
+		- the very beginning of the statement
+- $
+	- match the end of the statement
+- (?<=)
+	- positive look behind
+	- look at the thing after you want to capture
+		- (?<=[tT]he).
+			-> the[ ]fat cat
+				-> s
+- (?<!)
+	- negative look behind
+		- inverted postive look behind
+- (?=)
+	- positive look ahead
+- (?!at)
+	- negative look ahead
+- \d
+	- any form of digit
+
+
+- preg_match(regex pattern, str to search inside of, optional $array);
+	- searches a given string if the regex pattern matches
+	- returns bool on first match
+	- optional array stores information inside
+
+- preg_match_all()
+	- takes all the matches it found inside the string an inserts them in the array
+
+- preg_replace(regex, "what will be replaced with", str in which will be replaced)
+	- returns string with replaced sequence
