@@ -9,5 +9,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["site/src/**/*.ts", "user/**/*.ts"]
+  "include": ["user/**/*.ts", "utils/**/*.ts"]
 }
