@@ -107,7 +107,12 @@
     </section>
   </div>
 
-  <!-- Optional: tiny helpers you can keep or replace in TS -->
+
+  <script type="module" src="/js/user/landing/play1v1Button.js"></script>
+  <script type="module" src="/js/user/landing/play1vPcButton.js"></script>
+  <script type="module" src="/js/user/landing/openChatsButton.js"></script>
+
+  <!-- delete script bellow when all buttons are done-->
   <script type="module">
     // Placeholder helpers for later TS integration:
     // export function appendLog(msg: string) { ... } in TS and replace this.
@@ -121,7 +126,7 @@
     }
 
     // No real handlers yet; just visual feedback if someone clicks:
-    const ids = ['btn1v1','btn1vPC','btnTournament','btnProfile','btnMessages','btnClearLog'];
+    const ids = ['btnProfile','btnClearLog'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
