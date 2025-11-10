@@ -1,0 +1,23 @@
+{
+  "name": "trans",
+  "version": "1.0.0",
+  "description": "In order to run you need to comment out line 13 in public/index.php",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matvej-g/transcendence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matvej-g/transcendence/issues"
+  },
+  "homepage": "https://github.com/matvej-g/transcendence#readme",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

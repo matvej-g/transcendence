@@ -1,0 +1,32 @@
+networks:
+  transcendence:
+    name: transcendence
+
+volumes:
+  sqlite_data:
+    name: database
+  # volume_frontend:
+  #   name: frontend
+
+services:
+  php-backend:
+    container_name: php-backend
+    build: ./backend
+    restart: always
+    volumes: 
+      - ./backend:/var/www/html
+      - sqlite_data:/var/www/html/database
+    networks: 
+      - transcendence
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    ports:
+      - "8080:80"
+      - "443:443"
+    volumes:
+      - ./backend/public:/var/www/html/public
+    depends_on:
+      - php-backend
+    networks:
+      - transcendence
