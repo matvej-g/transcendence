@@ -9,7 +9,7 @@ use src\http\Request;
 const BASE_PATH = __DIR__ . '/../';
 require BASE_PATH . 'src/helpers/functions.php';
 // for dump()
-require base_path("vendor/autoload.php");
+//require base_path("vendor/autoload.php");
 
 // runs only when PHP tries to instantiate a class that hasn’t been loaded yet
 // converts class name (like Database) into a file path
