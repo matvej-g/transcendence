@@ -131,8 +131,41 @@
         paddleRightY = Math.max(0, Math.min(canvas.height - paddleHeight, paddleRightY));
     }
 
+    // Countdown before game starts
+    async function startCountdown() {
+        const seq = ['3', '2', '1', 'GO!'];
+        for (let i = 0; i < seq.length; i++) {
+            // larger text for numbers, slightly smaller for GO!
+            const size = (seq[i] === 'GO!') ? 72 : 140;
+            drawGame();               // draw current frame behind text
+            drawCenteredText(seq[i], size);
+            // wait for the GO!
+            await new Promise(r => setTimeout(r, (seq[i] === 'GO!') ? 600 : 1000));
+        }
+        // redraw game to clear text
+        drawGame();
+    }
+
+    // Draw centered text for Countdown
+    function drawCenteredText(text, size = 120, color = '#ffffff') {
+        ctx.save();
+        // dim background
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // text
+        ctx.fillStyle = color;
+        ctx.font = `bold ${size}px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 10;
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+        ctx.restore();
+    }
+
     // Open game
-    playButton.addEventListener('click', (e) => {
+    playButton.addEventListener('click', async(e) => {
         e.preventDefault();
         if (running) return;
         gameWindow.classList.remove('hidden');
@@ -141,6 +174,8 @@
         resetBall();
         drawGame();
         canvas.focus();
+
+        await startCountdown();
         running = true;
         gameLoop();
     });
