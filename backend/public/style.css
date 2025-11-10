@@ -50,3 +50,24 @@ main {
   padding: 3rem 2rem;
   text-align: center;
 }
+
+.play-button {
+  display: inline-block;
+  margin-top: 1rem;
+  background: #10b981; /* green */
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.play-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(16,185,129,0.16);
+}
+
+.play-button:active {
+  transform: translateY(0);
+}
