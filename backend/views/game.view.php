@@ -41,27 +41,118 @@
       </div>
     </div>
   <script>
-    document.getElementById('play-button').addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('game-window').classList.remove('hidden');
+    const playButton = document.getElementById('play-button');
+    const closeButton = document.getElementById('close-game');
+    const gameWindow = document.getElementById('game-window');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const ballSize = 18;
+    const paddleHeight = 80;
+    const speed = 5;
 
-      // 🎮 draw the game when window opens
-      const canvas = document.getElementById('gameCanvas');
-      const ctx = canvas.getContext('2d');
+    let paddleLeftY = (canvas.height - paddleHeight) / 2;
+    let paddleRightY = (canvas.height - paddleHeight) / 2;
+    let ballX = (canvas.width / ballSize) / 2;
+    let ballY = (canvas.height / ballSize) / 2;
+    // game state helpers
+    let running = false;
+    let animationFrameId = null;
+    let ballSpeedX = 4;
+    let ballSpeedY = 4;
 
-      // adjust canvas size to match container
-      canvas.width = 800;
-      canvas.height = 400;
+    function resetBall() {
+        // center Ball
+        ballX = (canvas.width - ballSize) / 2;
+        ballY = (canvas.height - ballSize) / 2;
+        // center Paddles
+        paddleLeftY = (canvas.height - paddleHeight) / 2;
+        paddleRightY = (canvas.height - paddleHeight) / 2;
+        // optional: set initial velocity/direction
+    }
 
-      ctx.fillStyle = 'white';
-      ctx.fillRect(20, 160, 10, 80); // left paddle
-      ctx.fillRect(770, 160, 10, 80); // right paddle
-      ctx.fillRect(394, 194, 12, 12); // ball
+    function drawGame() {
+        ctx.fillStyle = '#111827';
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // clear canvas
+        ctx.fillStyle = '#ffffffff';
+
+        // center dashed line
+        const dashH = 12;
+        for (let y = 10; y < canvas.height - 10; y += dashH * 2) {
+            ctx.fillRect(canvas.width/2 - 2, y, 4, dashH);
+        }
+        // paddle color
+        ctx.fillStyle = '#10b981';
+        // left paddle
+        ctx.fillRect(20, paddleLeftY, 10, paddleHeight);
+        // right paddle
+        ctx.fillRect(770, paddleRightY, 10, paddleHeight);
+        // ball
+        ctx.fillStyle = '#c2c521ff';
+        ctx.fillRect(ballX, ballY, ballSize, ballSize);
+        ctx.lineWidth = 2; // set outline
+        ctx.strokeStyle = '#00000088';
+        ctx.strokeRect(ballX + ctx.lineWidth/2, ballY + ctx.lineWidth/2, ballSize - ctx.lineWidth, ballSize - ctx.lineWidth);
+    }
+
+    function gameLoop() {
+        if (!running) return;
+        update();
+        drawGame();
+        animationFrameId = requestAnimationFrame(gameLoop); // run 60 times per second
+    }
+
+    // Handle key presses
+    const keys = {};
+    window.addEventListener('keydown', (e) =>{
+        keys[e.key] = true;
+        if (['ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault(); // prevent scrolling
+    });
+    window.addEventListener('keyup', (e) =>{
+        keys[e.key] = false;
+    });
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && running) {
+            closeGame();
+        }
     });
 
-    document.getElementById('close-game').addEventListener('click', () => {
-      document.getElementById('game-window').classList.add('hidden');
+    function update() {
+        // left paddle
+        if (keys['w'] || keys['W']) paddleLeftY -= speed;
+        if (keys['s'] || keys['S']) paddleLeftY += speed;
+
+        // right paddle
+        if (keys['ArrowUp']) paddleRightY -= speed;
+        if (keys['ArrowDown']) paddleRightY += speed;
+
+        // clamp positions to canvas size
+        paddleLeftY = Math.max(0, Math.min(canvas.height - paddleHeight, paddleLeftY));
+        paddleRightY = Math.max(0, Math.min(canvas.height - paddleHeight, paddleRightY));
+    }
+
+    // Open game
+    playButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (running) return;
+        gameWindow.classList.remove('hidden');
+        canvas.width = 800;
+        canvas.height = 400;
+        resetBall();
+        drawGame();
+        canvas.focus();
+        running = true;
+        gameLoop();
     });
+
+    // Close game
+    function closeGame() {
+        gameWindow.classList.add('hidden');
+        running = false;
+        if (animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+    }
+    closeButton.addEventListener('click', () => closeGame());
+
   </script>
 </body>
 </html>
