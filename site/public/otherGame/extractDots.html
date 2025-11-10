@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Dot Extraction</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+  <div class="mx-auto max-w-5xl p-4">
+    <h1 class="text-2xl font-semibold mb-3">Dot Extraction</h1>
+
+    <div class="flex gap-6">
+      <canvas id="game" width="960" height="540"
+              class="rounded-xl border border-gray-300 bg-white shadow"></canvas>
+
+      <div class="w-64">
+        <h2 class="text-lg font-medium mb-2">HUD</h2>
+        <div class="space-y-2 text-sm">
+          <div><b>WASD</b> move, <b>Mouse</b> aim, <b>Click</b> shoot</div>
+          <div id="hudStats" class="p-2 rounded border border-gray-200 bg-white"></div>
+          <div id="devLog" class="h-40 overflow-auto rounded border border-gray-200 bg-white p-2 font-mono text-xs text-gray-700">
+            <div class="text-gray-500">[log] Ready.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/otherGame/extractDots.js"></script>
+</body>
+</html>
