@@ -1,6 +1,8 @@
 <?php
 // prevents silent type conversions
 declare(strict_types=1);
+
+session_start();
 use src\http\Kernel;
 use src\http\Request;
 
@@ -8,6 +10,7 @@ use src\http\Request;
 // one dir above public
 const BASE_PATH = __DIR__ . '/../';
 require BASE_PATH . 'src/helpers/functions.php';
+require BASE_PATH . 'src/helpers/2faHelpers.php';
 // for dump()
 require base_path("vendor/autoload.php");
 
