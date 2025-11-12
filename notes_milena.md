@@ -235,6 +235,30 @@ if needed I could do:
 	- Tailwind Components is a site where you can find lots of different parts made with Tailwind CSS
 	- Each part has a live preview and the code you can copy to use in your own projects.
 	- You can look for specific parts or browse categories to find what you need.
+- introduction: https://albudi.medium.com/a-comprehensive-introduction-to-tailwind-css-36bc9cb81a1c
+- tutorial: https://www.geeksforgeeks.org/css/tailwind-css/
+
+## php
+- PHP processes data from databases or APIs before generating HTML, allowing for dynamic content
+- can create html content based on real-time data
+- Updates automatically when data changes
+- PHP runs on the server before HTML is delivered
+
+### Use direct HTML when:
+	Creating simple, static websites
+	pixelperfecthtml.com
+	Building landing pages
+	Making portfolio sites
+	Creating documentation
+
+### Use PHP generation when:
+	Building dynamic web applications
+	Creating content management systems
+	Developing e-commerce platforms
+	Managing user-specific content
+
+### Generally:
+- Each page should habe a static base with dynamic blocks (such as friends list) in php (or typescript that calls backend/database for updated infos)
 
 ## meeting 27.10.2025
 - blackhole days
@@ -397,6 +421,11 @@ if needed I could do:
 - Absence notice
 	- 6.10. - 7.11.
 
+## docker continer frontend
+- install dependencies:
+	- npm install tailwindcss
+	- (things Ivan protocolled)
+
 ## to talk about in team meeting 12.11. (or write on slack)
 - Ask if 3 weeks blackhole salvation is possible for Ivan
 - Ask if new eval date 24.01. would be fine for everyone
@@ -410,3 +439,5 @@ if needed I could do:
 - how does frontend and backend connect to each other?
 - in example of user management -> who will write the typescript? Me or Ivan?
 
+## general questions:
+- will all data come in json format from the backend?
