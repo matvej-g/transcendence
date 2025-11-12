@@ -397,14 +397,14 @@ if needed I could do:
 - Absence notice
 	- 6.10. - 7.11.
 
-## to talk about in next team meeting (or write on slack)
+## to talk about in team meeting 12.11. (or write on slack)
 - Ask if 3 weeks blackhole salvation is possible for Ivan
 - Ask if new eval date 24.01. would be fine for everyone
 - Ivan did parts of me -> talk about how to devide those things
 	- he did html with some tailwind css and typescript
 	- I could do more detailed css
 	- would be useful to advise each other what we are working on to avoid double work
-- 
+- Add name headers to the files so we know who wrote the code
 
 ## questions for Nico
 - how does frontend and backend connect to each other?
