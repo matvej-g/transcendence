@@ -11,6 +11,7 @@ use src\http\Request;
 const BASE_PATH = __DIR__ . '/../';
 require BASE_PATH . 'src/helpers/functions.php';
 require BASE_PATH . 'src/helpers/2faHelpers.php';
+require BASE_PATH . 'src/helpers/jwtHelpers.php';
 // for dump()
 require base_path("vendor/autoload.php");
 
