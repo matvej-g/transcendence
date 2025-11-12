@@ -43,13 +43,13 @@ class UserModels {
 		);
 	}
 		
-	public function findUserById($id) {
+	public function getUserById($id) {
 		return $this->db->query(
 			"SELECT * FROM users WHERE id = ?",
 			[$id])->fetch(PDO::FETCH_ASSOC);
 	}
 
-	public function showAllUsers() {
+	public function getAllUsers() {
 		return $this->db->query(
 			"SELECT * FROM users"
 		)->fetchAll(PDO::FETCH_ASSOC);

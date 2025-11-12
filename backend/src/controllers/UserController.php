@@ -53,32 +53,21 @@ class UserController {
 		);
 	}
 
-	public function getUsers(Request $request): Response
+	public function getUsers(Request $request, $parameters): Response
 	{
-		$id = $request->getParams['id'] ?? null;
-
-		if (!$id)
-			$body = $this->users->showAllUsers();
-		else
-			$body = $this->users->findUserById($id);
-		
-		return new Response(
-			HttpStatusCode::Ok,
-			json_encode($body),
-		);
+		$allUsers = $this->users->getAllUsers();
+		return new Response(HttpStatusCode::Ok, $allUsers, ['contentType' => 'json']);
 	}
 
 	public function getUser(Request $request, $parameters): Response
 	{
 		$id = $parameters['id'] ?? null;
-		dump($id);
-		if (!$id)
-			return new Response(HttpStatusCode::BadRequest, json_encode(''));
-		else 
-			$body = $this->users->findUserById($id);
-		dump($body);
+		if (!ctype_digit($id))
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['contentType' => 'json']);
+		$id = (int) $id; 
+		$body = $this->users->getUserById($id);
 		if (!$body)
-			return new Response(HttpStatusCode::NotFound, json_encode($body));	
-		return new Response(HttpStatusCode::Ok, json_encode($body));
+			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['contentType' => 'json']);
+		return new Response(HttpStatusCode::Ok, $body, ['contentType' => 'json']);
 	}
 }

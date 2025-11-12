@@ -9,7 +9,7 @@ class Response
 	// look up ?string
 	public function __construct(
 		private HttpStatusCode $status,
-		private string $content = '',
+		private mixed $content = '',
 		private array $headers = []
 	)
 	{
@@ -24,6 +24,10 @@ class Response
 	{
 		http_response_code($this->status->value);
 
-		echo $this->content;
+		// handle encoding here like json encode base on header type
+		if (($this->headers['contentType'] ?? '') === 'json')
+			echo json_encode($this->content);
+		else
+			echo $this->content;
 	}
 }
