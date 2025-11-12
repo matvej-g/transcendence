@@ -11,3 +11,6 @@ CREATE TABLE IF NOT EXISTS users (
 
 INSERT INTO users(username, email, password_hash)
 VALUES ('David Huss', 'dhuss42@heilbron.de', 123);
+
+-- INSERT INTO users(username, email, password_hash)
+-- VALUES ('mert-test', 'mertkinggs@gmail.com', 123);
