@@ -400,7 +400,10 @@ if needed I could do:
 ## to talk about in next team meeting (or write on slack)
 - Ask if 3 weeks blackhole salvation is possible for Ivan
 - Ask if new eval date 24.01. would be fine for everyone
-- Ivan did parts of me ->
+- Ivan did parts of me -> talk about how to devide those things
+	- he did html with some tailwind css and typescript
+	- I could do more detailed css
+	- would be useful to advise each other what we are working on to avoid double work
 - 
 
 ## questions for Nico
