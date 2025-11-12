@@ -59,5 +59,3 @@
 	- get overview tailwind css
 
 - to access localhost in wsl: python3 -m http.server 8080 --bind 172.25.37.144 --directory site/public
-
-
