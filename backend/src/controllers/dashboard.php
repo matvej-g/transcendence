@@ -3,8 +3,18 @@
 use src\http\Response;
 use src\http\HttpStatusCode;
 
-// Check if 2FA was verified
-if (!isset($_SESSION['2fa_verified']) || !$_SESSION['2fa_verified']) {
+// Require JWT and ensure 2FA verified
+$token = getJWTFromRequest();
+if (!$token) {
+    header('Location: /issue-jwt');
+    exit;
+}
+$payload = verifyJWT($token);
+if (!$payload) {
+    header('Location: /issue-jwt');
+    exit;
+}
+if (empty($payload['two_factor_verified']) || $payload['two_factor_verified'] !== true) {
     header('Location: /verify-2fa');
     exit;
 }
@@ -21,10 +31,11 @@ $content = "
     <body>
         <div class='container'>
             <h1>✅ Dashboard</h1>
-            <p>Welcome! You've successfully verified with 2FA.</p>
-            <p><strong>User ID:</strong> {$_SESSION['user_id']}</p>
+            <p>Welcome! You've successfully verified with 2FA + JWT.</p>
+            <p><strong>User ID:</strong> {$payload['user_id']}</p>
             <p><strong>2FA Status:</strong> Verified ✓</p>
-            <p><a href='/send-2fa'>Test 2FA Again</a></p>
+            <p><strong>JWT Expires:</strong> " . date('Y-m-d H:i:s', $payload['exp']) . "</p>
+            <p><a href='/send-2fa'>Send 2FA again</a></p>
         </div>
     </body>
     </html>

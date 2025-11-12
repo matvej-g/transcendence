@@ -17,4 +17,5 @@ $this->router->post('/users/add', [UserController::class, 'addUser']);
 //2FA routes
 $this->router->get('/send-2fa', [AuthController::class, 'sendTwoFactorCode']);
 $this->router->get('/verify-2fa', [AuthController::class, 'verifyTwoFactorCode']);
+$this->router->get('/issueJWT', 'src/controllers/issueJWT.php'); //----------
 $this->router->post('/verify-2fa', [AuthController::class, 'verifyTwoFactorCode']);
