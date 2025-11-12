@@ -53,4 +53,10 @@
 - to-do:
 	- look at code on master
 	- -> checkout what Ivan did
-	- 
+	- think about next steps
+	- think about what do talk about in meeting today
+	- container for frontend?
+
+- to access localhost in wsl: python3 -m http.server 8080 --bind 172.25.37.144 --directory site/public
+
+

@@ -400,7 +400,10 @@ if needed I could do:
 ## to talk about in next team meeting (or write on slack)
 - Ask if 3 weeks blackhole salvation is possible for Ivan
 - Ask if new eval date 24.01. would be fine for everyone
+- Ivan did parts of me ->
+- 
 
 ## questions for Nico
 - how does frontend and backend connect to each other?
 - in example of user management -> who will write the typescript? Me or Ivan?
+
