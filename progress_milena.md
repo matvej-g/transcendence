@@ -34,3 +34,23 @@
 ### --- Day 6: 05.11.2025 --- ###
 - short introduction to tailwind css
 - thought about structure of website
+
+### --- Day 6: 06.11.2025 --- ###
+- do exercises about block and inline
+- add CSS to my recepies
+- read lessons about flex-box
+
+- to-do:
+	- create time-management-plan for transcendence (having in mind to do exam05)
+	- ask for doctors note
+
+### --- Day 7: 07.11.2025 --- ###
+- think about time management
+- ask for doctor's note
+- continue lessons about flex-box
+
+### --- Day 8: 12.11.2025 --- ###
+- to-do:
+	- look at code on master
+	- -> checkout what Ivan did
+	- 

@@ -121,43 +121,106 @@ if needed I could do:
 
 
 ## CSS
-- Selectors:
-	-Selectors refer to the HTML elements to which CSS rules apply; they’re what is actually being “selected” for each rule (for example p, div, .class, #ID).
 
-- the cascade:
-	- A CSS declaration that is more specific will take precedence over less specific ones.
-	- inline styles > ID selectors (most specific selector) > Class selectors > Type selectors
-	- https://2019.wattenberger.com/blog/css-cascade#level_3_1
+### Selectors:
+-Selectors refer to the HTML elements to which CSS rules apply; they’re what is actually being “selected” for each rule (for example p, div, .class, #ID).
 
-- inspector
-	- call with F12 or right klick -> inspect
+### the cascade:
+- A CSS declaration that is more specific will take precedence over less specific ones.
+- inline styles > ID selectors (most specific selector) > Class selectors > Type selectors
+- https://2019.wattenberger.com/blog/css-cascade#level_3_1
 
-- boxes:
-	- Everything in CSS has a box around it
-	- content (for example text)
-	- padding (space between border and content)
-	- border (thickness of border)
-	- margin (space to next elements (highest number counts))
-	-  margin: <margin-top> || <margin-right> || <margin-bottom> || <margin-left>
-	- box-sizing: border-box; (so hieght and width are effected on the whole box)
-	- https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Box_model
-		(read again if needed about inline / block)
+### inspector
+- call with F12 or right klick -> inspect
 
-- block and inline:
-	- display: block -> each new element will start in new line
-	- display: inline -> elements appear in new line with elements they are placed beside
-	- In general, you do not want to try to put extra padding or margin on inline elements.
-	- description and a list of all the default block and inline elements:
-		https://www.w3schools.com/html/html_blocks.asp
+### boxes:
+- Everything in CSS has a box around it
+- content (for example text)
+- padding (space between border and content)
+- border (thickness of border)
+- margin (space to next elements (highest number counts))
+-  margin: <margin-top> || <margin-right> || <margin-bottom> || <margin-left>
+- box-sizing: border-box; (so height and width are effected on the whole box)
+- https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Box_model
+	(read again if needed about inline / block)
 
-- div and span:
-	- They are just generic boxes that can contain anything.
-	- Div is a block-level element by default. It is commonly used as a container element to group other elements. Divs allow us to divide the page into different blocks and apply styling to those blocks.
-	- Span is an inline-level element by default. It can be used to group text content and inline HTML elements for styling and should only be used when no other semantic HTML element is appropriate.
+### block and inline:
+- display: block -> each new element will start in new line
+- display: inline -> elements appear in new line with elements they are placed beside
+- In general, you do not want to try to put extra padding or margin on inline elements.
+- description and a list of all the default block and inline elements:
+	https://www.w3schools.com/html/html_blocks.asp
 
-- normal layout flow
-	- Elements on a webpage lay out in normal flow if you haven't applied any CSS to change the way they behave.
-	- Starting with a solid, well-structured document that's readable in normal flow is the best way to begin any webpage.
+### div and span:
+- They are just generic boxes that can contain anything.
+- Div is a block-level element by default. It is commonly used as a container element to group other elements. Divs allow us to divide the page into different blocks and apply styling to those blocks.
+- Span is an inline-level element by default. It can be used to group text content and inline HTML elements for styling and should only be used when no other semantic HTML element is appropriate.
+
+### normal layout flow
+- Elements on a webpage lay out in normal flow if you haven't applied any CSS to change the way they behave.
+- Starting with a solid, well-structured document that's readable in normal flow is the best way to begin any webpage.
+
+### flex-box
+- nice understandable resource:
+	https://www.joshwcomeau.com/css/interactive-guide-to-flexbox/
+- cheat-sheet:
+	https://flexbox.malven.co/
+
+- A flex container is any element that has display: flex on it. A flex item is any element that lives directly inside of a flex container.
+- you can also put "display: flex" on a flex item and then use flexbox to arrange its children.
+- The flex declaration is actually a shorthand for 3 properties that you can set on a flex item.
+	- In this case, flex is actually a shorthand for flex-grow, flex-shrink and flex-basis.
+	- flex: 1; => equates to: flex-grow: 1, flex-shrink: 1, flex-basis: 0.
+	- flex-grow expects a single number as its value, and that number is used as the flex-item’s “growth factor” -> controls how the extra space is distributed when the items are smaller than their container.
+	- flex-shrink is similar to flex-grow, but sets the “shrink factor” of a flex item. flex-shrink only ends up being applied if the size of all flex items is larger than their parent container. It controls how space is removed when the items are bigger than their container.
+		-  If you do not want an item to shrink then you can specify flex-shrink: 0;
+		- when the parent is too small, the default behavior is for them to shrink to fit.
+	- flex-basis sets the initial size of a flex item, so any sort of flex-growing or flex-shrinking starts from that baseline size
+		- In a Flex row, flex-basis does the same thing as width.
+		- In a Flex column, flex-basis does the same thing as height.
+		- when you specify "flex: 1" on an element, it interprets that as "flex: 1 1 0"
+		- If you want to only adjust an item’s flex-grow you can do so directly, without the shorthand
+		. or: "flex: 1 1 auto", which is also equivalent to using "flex: auto".
+	- Generally, you’re most likely to use declarations like flex: 1; to make divs grow evenly and flex-shrink: 0 to keep certain divs from shrinking.
+- https://www.w3.org/TR/css-flexbox-1/#flex-common
+
+- Axes:
+	- "flex-direction: row;" -> horizontal
+		- block-level elements default to the full width of their parent
+	- "flex-direction: column;" -> vertical
+		- block-level elements default to the height of their content
+		- with a div as flex item and "flex: 1" it would not work
+			- div doesnt have a height as default
+			- flex-basis = 0, which means that all flex-growing and flex-shrinking would begin their calculations from 0
+			- fix: flex: 1 1 auto
+			- or: set height of flex container
+		- when the flex-direction is column, flex-basis refers to height instead of width.
+
+- Alignment
+	- justify-content: (i.e. center or space-between) -> aligns items on primary/main axis (default: horizontally, unless flex-direction: column -> vertically)
+	- align-items (i.e. center) -> aligns items on cross axis (default: vertically)
+	- gap: 8px; -> Setting gap on a flex container adds a specified space between flex items, similar to adding a margin to the items themselves.
+	- use margin: auto -> uses the leftover space like a gap
+	- In Flexbox, everything is based on the primary axis.
+	- The children will be positioned by default according to the following 2 rules:
+		1. Primary axis: Children will be bunched up at the start of the container.
+		2. Cross axis: Children will stretch out to fill the entire container.
+	- align-self is applied to the child element, not the container. It allows us to change the alignment of a specific child along the cross axis.
+	- difference between the primary/cross axis:
+		- When we're talking about alignment in the cross axis, each item can do whatever it wants.
+		- In the primary axis, though, we can only think about how to distribute the group.
+	- justify — to position something along the primary axis.
+	- align — to position something along the cross axis.
+	- content — a group of “stuff” that can be distributed.
+	- items — single items that can be positioned individually.
+
+- minimum size
+	- Text inputs have a default minimum size of 170px-200px (it varies between browsers).
+	- The Flexbox algorithm refuses to shrink a child below its minimum size. The content will overflow rather than shrink further, no matter how high we crank flex-shrink!
+	- We can redefine the minimum size with the min-width property.
+
+- wrap
+	- flex-wrap: wrap -> items won't shrink below their hypothetical size. At least, not when wrapping onto the next row/column is an option!
 
 ## typescript
 - about typescript and javascript:
@@ -183,6 +246,8 @@ if needed I could do:
 ## structure of website
 - draw with pen and paper
 - then use Figma
+- or any other tool that I like https://cpoclub.com/tools/best-free-prototyping-tools/
+- maybe try out https://miro.com/de/signup/
 
 ### User management
 - Users can securely subscribe to the website.
@@ -258,7 +323,7 @@ if needed I could do:
 		- relevant details
 	- Statistics:
 		- display stats, such as wins and losses
-	- list of friends
+	-( list of friends)
 
 - Game
 	- play against another player online
@@ -290,3 +355,52 @@ if needed I could do:
 
 - Logout
 	- goes back to home (login page)
+
+
+## time management
+- my next dates for trying exam05:
+	- 11.12.
+	- 18.12.
+	- 23.12. (???)
+- trip to Germany:
+	- 10.12. (wednesday) or 17.12.
+	- -> week before: preparing
+	- -> means I should finish rough project until end november (impossible)
+	- 12.-17.12. -> Schwarzwald??
+	- stay there until christmas
+- TÜV?
+	- maybe also 12.12.?
+	- or in january?
+- take off at work
+	- 22./23.12.
+	- 29./30.12.
+	- 5.1.
+- planned evaluationd date:
+	- 3.1.
+	- what if we get 3 more weeks?
+		- -> 24.1.
+		- I could try exam on
+			- 8.1.
+			- 15.1.
+			- 22.1.
+
+- if we evaulate on 24.1.
+	- try exam on 18.12. (and 23.12.)
+	- maybe try exam also 11.12. and ask Sybille for Schwarzwald
+	- do another trip on 14.01.
+	- do TÜV
+	- Bettina 17.01.
+	- exam 15.01.
+	- exam 22.01.
+	- take off at work 19./20.01.
+
+- Absence notice
+	- 6.10. - 7.11.
+
+## to talk about in next team meeting (or write on slack)
+- Ask if 3 weeks blackhole salvation is possible for Ivan
+- Ask if new eval date 24.01. would be fine for everyone
+
+## questions for Nico
+- how does frontend and backend connect to each other?
+- in example of user management -> who will write the typescript? Me or Ivan?
