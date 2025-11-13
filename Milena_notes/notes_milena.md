@@ -421,10 +421,33 @@ if needed I could do:
 - Absence notice
 	- 6.10. - 7.11.
 
-## docker continer frontend
-- install dependencies:
-	- npm install tailwindcss
+## docker container frontend
+- structure:
+	- Browser/Game
+		--> Nginx Container
+			--> Frontend Container
+			--> Backend Container --> Database
+	- Static Content: Directly served by Nginx from the Frontend container
+	- Dynamic Content Path: Routed through Backend container which communicates with the Database
+
+├── docker-compose.yml
+├── frontend/
+│   ├── Dockerfile
+│   ├── src/
+│   └── nginx.conf
+|── backend ...
+
+- Dockerfile:
+	- install dependencies:
+		- npm install tailwindcss
 	- (things Ivan protocolled)
+
+## single-page application (SPA)
+- The browser's default behavior is to reload the entire page
+- SPA is a web application that loads a single HTML page and dynamically updates content as users interact with it, without requiring full page reloads
+- There are two main ways to handle browser history in an SPA:
+	1. The History API approach uses pushState and popstate events to manage navigation.
+	2. The hash-based approach uses URL fragments (#home, #profile) to manage navigation.
 
 ## to talk about in team meeting 12.11. (or write on slack)
 - Ask if 3 weeks blackhole salvation is possible for Ivan
