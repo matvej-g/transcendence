@@ -23,6 +23,8 @@ RUN npx tsc
 # Production stage
 FROM nginx:alpine
 COPY --from=builder /app/site/public/ /usr/share/nginx/html/
+# copy comiled files from dist into html directory
+# in tsconfig.json it is specified that they should go to dist
 COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
