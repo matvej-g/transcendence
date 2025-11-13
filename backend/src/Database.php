@@ -12,6 +12,7 @@ class Database {
 	public function __construct($dsn)
 	{
 		$this->connection = new PDO($dsn);
+		// $this->connection->exec("PRAGMA foreign_keys = ON;");
 	}
 
 	// reconsider accessability

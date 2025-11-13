@@ -14,10 +14,26 @@ class Request
 	{
 	}
 
-
+	// creates from globals and checks if incoming request contains json
 	public static function createFromGlobals(): static
 	{
-		return new static($_GET, $_POST, $_COOKIE, $_FILES, $_SERVER);
+		$server = $_SERVER;
+		$get = $_GET;
+		$cookies = $_COOKIE;
+		$files = $_FILES;
+		$post = $_POST;
+
+		$contentType = $server['CONTENT_TYPE'] ?? '';
+		if (stripos($contentType, 'application/json') !== false) {
+			$contents = file_get_contents('php://input');
+			$decoded = json_decode($contents, associative: true);
+			if (json_last_error() != JSON_ERROR_NONE) {
+				json_last_error_msg();
+			}
+			$post = $decoded;
+		}
+
+		return new static($get, $post, $cookies, $files, $server);
 	}
 
 	// return the left side if it exists otherwise return right side

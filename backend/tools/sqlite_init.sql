@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
 INSERT INTO users(username, email, password_hash)
 VALUES ('David Huss', 'dhuss42@heilbron.de', 123);
 
+INSERT INTO users(username, email, password_hash)
+VALUES ('test', 'test42@test.de', 234);
+
 -- Pong match Data
 CREATE TABLE IF NOT EXISTS matches (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,

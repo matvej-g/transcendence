@@ -297,7 +297,34 @@ The following chapters deal with unknown concepts mentioned in the subject. This
 	- Arrays
 
 - (Source: https://www.youtube.com/watch?v=cj3h3Fb10QY)
-	
+
+### Json to php
+- use file_get_contents('jsonfile')
+	- loads json into a varialbe
+	- contains a string that contains the json
+
+- json_decode($contents)
+	- decodes the json
+
+- validate json
+	- if json is invalid -> json_decode returns null 
+	- if json is simply null -> json_decode returns null
+	- to differentiate between the two
+		- json_last_error() !== JSON_ERROR_NONE
+			- returns int if error occured during decode/encode
+			- can pass variables for more specific
+		- json_last_error_msg()
+			- returns string discription of last error
+			- for invalid json -> syntax error
+			- for null -> no syntax error
+	- json_decode($contents, flags: JSON_THROW_ON_ERROR);
+		- throws exception on error
+		- try catch block
+
+- json objects as php-arrays
+	- $data = json_decode($contents, associative:true)
+	- $data = json_decode($contents, flags: JSON_OBJECT_AS_ARRAY)
+
 ### Microservices
 - Split Service into conceptual backend Parts
 	- example: Orders Backend, Email Backend, Payments Backend

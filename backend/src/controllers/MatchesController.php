@@ -19,7 +19,7 @@ class MatchesController{
 
 	// gets information concerning all Matches in Database
 	// if empty still returns 200 and empty array
-	public function getAllMatches(Request $request, $parameters): Response {
+	public function getMatches(Request $request, $parameters): Response {
 		$allMatches = $this->matches->getAllMatches();
 		return new Response(HttpStatusCode::Ok, $allMatches, ['contentType' => 'json']);
 	}
@@ -39,16 +39,16 @@ class MatchesController{
 		return new Response(HttpStatusCode::Ok, $body, ['contentType' => 'json']);
 	}
 
-	// need to look into post
 	public function newMatch(Request $request, $parameters): Response {
-		// extract player id from parameters
-		if (!ctype_digit('1') || !ctype_digit('a'))
+		// array keys could be different later
+		$playerOneId = $request->postParams['player_one_id'] ?? null;
+		$playerTwoId = $request->postParams['player_two_id'] ?? null;
+		
+		if (!is_int($playerOneId) || !is_int($playerTwoId))
 			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['contentType' => 'json']);	
-		// check if integers
 		// check if inside users table
 			// if bad data return 400
-		// change parameters to extracted ids
-		$id = $this->matches->createMatch('1', '2');
+		$id = $this->matches->createMatch($playerOneId, $playerTwoId);
 		return new Response(HttpStatusCode::Ok, $id, ['contentType' => 'json']);
 	}
 

@@ -19,46 +19,36 @@ class UserController {
 		$this->users = new UserModels($db);
 	}
 
-	public function registerUser(Request $request,): Response
+	// need to update conflicting fields response
+	// needs to be added in httpStatusCodes
+	public function newUser(Request $request, $parameters): Response
 	{
-		dump($request->getParams);
-		$name = $request->getParams['name'] ?? null;
-		$email = $request->getParams['email'] ?? null;
-		$password = $request->getParams['password'] ?? null;
-		dump($name);
-		dump($email);
-		if (Validator::validateString($name, 1, 15))
-			dump("valid username");
-		else
-			dump("invalid username");
-		if (Validator::validateEmail($email))
-			dump("valid email");
-		else
-			dump("invalid email");
-		if (Validator::validateString($password, 3, 15))
-		{
-			$hash = password_hash($password, PASSWORD_DEFAULT);
-			dump($hash);
-			if (password_verify($password, $hash))
-				dump("password was hashed");
-			else
-				dump("password was not hashed");
-			$body = $this->users->createUser($name, $email, $hash);
-		}
-		else
-			dump("invalid password");
-		return new Response(
-			HttpStatusCode::Ok,
-			json_encode($body),
-		);
+		$userName = $request->postParams['userName'] ?? null;
+		$email = $request->postParams['email'] ?? null;
+		$password = $request->postParams['password'] ?? null;
+
+		$errors = Validator::validateNewUserData($userName, $email, $password);
+		if ($errors)
+			return new Response(HttpStatusCode::BadRequest, ['errors' => $errors], ['contentType' => 'json']);	
+
+		$hash = password_hash($password, PASSWORD_DEFAULT);	
+		$body = $this->users->createUser($userName, $email, $hash);
+		if (!$body)
+			return new Response(HttpStatusCode::BadRequest, ["error" => "conflicting unique user info"], ['contentType' => 'json']);	
+		return new Response(HttpStatusCode::Created, $body, ['contentType' => 'json']);
+		
+			// get appropriate status code: Conflict
 	}
 
+	// returns all users or empty array
 	public function getUsers(Request $request, $parameters): Response
 	{
 		$allUsers = $this->users->getAllUsers();
 		return new Response(HttpStatusCode::Ok, $allUsers, ['contentType' => 'json']);
 	}
 
+	// gets individual user by id
+	// if user is not in database $body is empty and 404 is sent
 	public function getUser(Request $request, $parameters): Response
 	{
 		$id = $parameters['id'] ?? null;

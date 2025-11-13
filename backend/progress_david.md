@@ -138,3 +138,25 @@
 - fixed UserController
 	- can show all users
 	- can get a user by id
+
+## ====== Day 17 == 13.11 ====== (3h) => 55h
+- backend can now receive json formatted data for post requests
+- data can be sent to controllers
+	- for example creating a new match
+- currently write permission issues with databases
+	- added sudo to docker file
+	- ran database init as www-data user
+	- fixed
+- newUser method in UserController
+	- validation of input
+	- handling query errors also
+- also need to activate foreign keys
+	- https://sqlite.org/foreignkeys.html
+- found error when passing a letter to newMatch
+	curl -X POST http://localhost:8080/api/match/new \
+  -H "Content-Type: application/json" \
+  -d '{"player_one_id": 10, "player_two_id": 2}'
+- for testing newUser
+	curl -X POST http://localhost:8080/api/user/new \ 
+  -H "Content-Type: application/json" \
+  -d '{"userName": "jjasa", "email": "ajjasjjjj@jj.de", "password": "123"}'
