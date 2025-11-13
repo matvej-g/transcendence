@@ -1,13 +1,28 @@
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy application source
+COPY . .
+
+# Install TypeScript
+RUN npm install -D typescript
+
+# Build TypeScript and verify dist directory
+RUN npx tsc
+ # Verify dist directory exists
+# RUN  mkdir /app/dist
+
+# Production stage
 FROM nginx:alpine
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy static files to nginx's html directory
-COPY src/ /usr/share/nginx/html/
-
-# Expose port 80
+COPY --from=builder /app/site/public/ /usr/share/nginx/html/
+COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 80
-
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

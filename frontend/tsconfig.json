@@ -1,13 +1,23 @@
 
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "rootDir": ".",
-    "outDir": "./site/public/js",
-    "strict": true,
-    "skipLibCheck": true
-  },
-  "include": ["site/src/**/*.ts", "user/**/*.ts"]
+    "outDir": "./dist",
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true
+  }
 }
+
+
+// {
+//   "compilerOptions": {
+//     "target": "ES2020",
+//     "module": "ESNext",
+//     "moduleResolution": "Bundler",
+//     "rootDir": ".",
+//     "outDir": "./site/public/js",
+//     "strict": true,
+//     "skipLibCheck": true
+//   },
+//   "include": ["site/src/**/*.ts", "user/**/*.ts"]
+// }
