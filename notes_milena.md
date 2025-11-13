@@ -440,4 +440,4 @@ if needed I could do:
 - in example of user management -> who will write the typescript? Me or Ivan?
 
 ## general questions:
-- will all data come in json format from the backend?
+- will all data come in json format from the backend? -> yes

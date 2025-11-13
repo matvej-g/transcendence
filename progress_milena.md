@@ -50,12 +50,17 @@
 - continue lessons about flex-box
 
 ### --- Day 8: 12.11.2025 --- ###
-- to-do:
-	- look at code on master
+- look at code on master
 	- -> checkout what Ivan did
-	- think about next steps
-	- think about what do talk about in meeting today
-	- container for frontend?
-	- get overview tailwind css
+	- to access localhost in wsl: python3 -m http.server 8080 --bind 172.25.37.144 --directory site/public
+- think about next steps
+- think about what do talk about in meeting today
+- get overview tailwind css
+- read something about php
+- call david
+- meeting
 
-- to access localhost in wsl: python3 -m http.server 8080 --bind 172.25.37.144 --directory site/public
+- to-do:
+	- container for frontend
+
+### --- Day 9: 13.11.2025 --- ###
