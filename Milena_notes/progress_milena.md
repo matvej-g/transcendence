@@ -64,3 +64,6 @@
 	- container for frontend
 
 ### --- Day 9: 13.11.2025 --- ###
+- try out some container versions to run frontend separated
+
+### --- Day 10: 14.11.2025 --- ###
