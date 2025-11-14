@@ -1,30 +1,27 @@
+# Stage 1: Build
 FROM node:18-alpine AS builder
-
 WORKDIR /app
 
-
-# Copy package files
+# Copy package files first for better caching
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy application source
+# Copy source code
 COPY . .
 
-# Install TypeScript
-RUN npm install -D typescript
+# Install TypeScript and build
+RUN npm install -D typescript @types/node
+RUN npx tsc --build
 
-# Build TypeScript and verify dist directory
-RUN npx tsc
- # Verify dist directory exists
-# RUN  mkdir /app/dist
-
-# Production stage
+# Stage 2: Production
 FROM nginx:alpine
-COPY --from=builder /app/site/public/ /usr/share/nginx/html/
-# copy comiled files from dist into html directory
-# in tsconfig.json it is specified that they should go to dist
-COPY --from=builder /app/dist /usr/share/nginx/html
+WORKDIR /usr/share/nginx/html
+
+# Copy static files
+COPY --from=builder /app/public/ .
+
+# Copy compiled TypeScript files
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
