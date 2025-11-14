@@ -67,3 +67,6 @@
 - try out some container versions to run frontend separated
 
 ### --- Day 10: 14.11.2025 --- ###
+- added recent versions of Ivans frontend and made it run in single container
+- call with david:
+- connected frontend container with backend and nginx

@@ -442,6 +442,11 @@ if needed I could do:
 		- npm install tailwindcss
 	- (things Ivan protocolled)
 
+- Connection:
+	- frontend has its own nginx
+	- separat nginx works as proxy
+	
+
 ## single-page application (SPA)
 - The browser's default behavior is to reload the entire page
 - SPA is a web application that loads a single HTML page and dynamically updates content as users interact with it, without requiring full page reloads
