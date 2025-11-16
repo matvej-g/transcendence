@@ -21,7 +21,7 @@ class MatchesController{
 	// if empty still returns 200 and empty array
 	public function getMatches(Request $request, $parameters): Response {
 		$allMatches = $this->matches->getAllMatches();
-		return new Response(HttpStatusCode::Ok, $allMatches, ['contentType' => 'json']);
+		return new Response(HttpStatusCode::Ok, $allMatches, ['Content-Type' => 'application/json']);
 	}
 
 	// extracts id
@@ -31,12 +31,12 @@ class MatchesController{
 	public function getMatch(Request $request, $parameters): Response {
 		$id = $parameters['id'] ?? null;
 		if (!ctype_digit($id))
-			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['contentType' => 'json']);
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
 		$id = (int) $id;
 		$body = $this->matches->getMatchById($id);
 		if (!$body)
-			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['contentType' => 'json']);
-		return new Response(HttpStatusCode::Ok, $body, ['contentType' => 'json']);
+			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
+		return new Response(HttpStatusCode::Ok, $body, ['Content-Type' => 'application/json']);
 	}
 
 	public function newMatch(Request $request, $parameters): Response {
@@ -45,11 +45,14 @@ class MatchesController{
 		$playerTwoId = $request->postParams['player_two_id'] ?? null;
 		
 		if (!is_int($playerOneId) || !is_int($playerTwoId))
-			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['contentType' => 'json']);	
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);	
 		// check if inside users table
 			// if bad data return 400
 		$id = $this->matches->createMatch($playerOneId, $playerTwoId);
-		return new Response(HttpStatusCode::Ok, $id, ['contentType' => 'json']);
+		if (!$id)
+			return new Response(HttpStatusCode::BadRequest, ["error" => "user id not found"], ['Content-Type' => 'application/json']);	
+		// handle error here
+		return new Response(HttpStatusCode::Ok, $id, ['Content-Type' => 'application/json']);
 	}
 
 	public function endMatch() {

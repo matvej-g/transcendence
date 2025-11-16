@@ -26,11 +26,15 @@ class MatchesModel {
 	}
 
 	public function createMatch($playerOneId, $playerTwoId) {
-		$this->db->query(
-			"INSERT INTO matches(player_one_id, player_two_id) VALUES (?, ?)",
-			[$playerOneId, $playerTwoId]
-		);
+		try {
+			$this->db->query(
+				"INSERT INTO matches(player_one_id, player_two_id) VALUES (?, ?)",
+				[$playerOneId, $playerTwoId]
+			);
+		}
+		catch (\PDOException $e) {
+			return null;	
+		}
 		return $this->db->connection->lastInsertId();
 	}
-	// all Matches query logic here
 }

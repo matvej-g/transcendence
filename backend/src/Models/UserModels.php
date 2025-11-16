@@ -14,6 +14,13 @@ class UserModels {
 	{
 	}
 
+
+	public function getUserByUsernameOrEmail($usernameOrEmail) {
+		return $this->db->query(
+			"SELECT * FROM users WHERE username = ? OR email = ?",
+			[$usernameOrEmail])->fetch(PDO::FETCH_ASSOC);
+	}
+
 	// adds a new user
 	// catches error for unique fields etc.
 	public function createUser($userName, $email, $password_hash): ?int {

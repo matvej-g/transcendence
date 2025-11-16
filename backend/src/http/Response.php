@@ -25,7 +25,7 @@ class Response
 		http_response_code($this->status->value);
 
 		// handle encoding here like json encode base on header type
-		if (($this->headers['contentType'] ?? '') === 'json')
+		if (($this->headers['Content-Type'] ?? '') === 'application/json')
 			echo json_encode($this->content);
 		else
 			echo $this->content;
