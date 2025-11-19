@@ -28,9 +28,12 @@ class Request
 			$contents = file_get_contents('php://input');
 			$decoded = json_decode($contents, associative: true);
 			if (json_last_error() != JSON_ERROR_NONE) {
+				// if an input should be null still pass an empty array for $post
+				$post = [];
 				json_last_error_msg();
 			}
-			$post = $decoded;
+			else
+				$post = $decoded;
 		}
 
 		return new static($get, $post, $cookies, $files, $server);

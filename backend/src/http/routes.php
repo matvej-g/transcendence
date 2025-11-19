@@ -1,6 +1,7 @@
 <?php
 
 use src\controllers\MatchesController;
+use src\controllers\TournamentController;
 use src\controllers\UserController;
 
 // pages
@@ -9,18 +10,20 @@ $this->router->get('/about', 'src/controllers/about.php');
 $this->router->get('/contact', 'src/controllers/contact.php');
 $this->router->get('/game', 'src/controllers/game.php');
 
-// Database
-// $this->router->post('/register', [UserController::class, 'register']);
+// users
 $this->router->get('/api/users', [UserController::class, 'getUsers']);
-$this->router->get('/api/user/{id}', [UserController::class, 'getUser']); // not working need proper handling of variable input
-$this->router->post('/api/user/new', [UserController::class, 'newUser']); // change to post
-
+$this->router->get('/api/user/{id}', [UserController::class, 'getUser']);
+// $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByName']);
+$this->router->post('/api/user/new', [UserController::class, 'newUser']);
+$this->router->post('/api/user/login', [UserController::class, 'userLogin']);
 
 // matches
 $this->router->get('/api/matches', [MatchesController::class, 'getMatches']);
 $this->router->get('/api/match/{id}', [MatchesController::class, 'getMatch']);
-// should be post laster
 $this->router->post('/api/match/new', [MatchesController::class, 'newMatch']);
-// $router->group('/api/user', function($r){
 
-// });
+// tournaments
+$this->router->get('/api/tournaments', [TournamentController::class, 'getTournaments']);
+$this->router->get('/api/tournament/{id}', [TournamentController::class, 'getTournament']);
+$this->router->post('/api/tournament/new', [TournamentController::class, 'newTournament']);
+

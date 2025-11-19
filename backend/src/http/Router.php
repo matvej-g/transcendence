@@ -53,7 +53,6 @@ class Router {
 		$pattern = "#^" . $pattern . "$#";
 		// dump('pattern:'.$pattern);
 		if (preg_match($pattern, $uri, $matches)) {
-			dump($matches);
 			return $matches;
 		}
 		return false;
