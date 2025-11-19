@@ -77,9 +77,11 @@
 	- 127.0.0.1:8080 -> 404 also in google chrome
 	- is it my problem or is it a general problem?
 - do exercises about flexbox
+- meeting
+
 - todo:
 	- finish exercises flexbox
-	- start strucuture of website with html and css (transforming it to / using tailwind css)
+	- start structure of website with html and css (transforming it to / using tailwind css)
 		- profile (which could be landing page)
 		- friends
 		- (game choice)

@@ -445,7 +445,7 @@ if needed I could do:
 - Connection:
 	- frontend has its own nginx
 	- separat nginx works as proxy
-	
+
 
 ## single-page application (SPA)
 - The browser's default behavior is to reload the entire page
@@ -469,3 +469,8 @@ if needed I could do:
 
 ## general questions:
 - will all data come in json format from the backend? -> yes
+
+## git
+- copy one file from one branch to another
+	- git checkout target-branch
+	- git checkout source-branch -- path/to/file
