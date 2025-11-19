@@ -76,3 +76,14 @@
 	- localhost:8080 -> 404 in firefox
 	- 127.0.0.1:8080 -> 404 also in google chrome
 	- is it my problem or is it a general problem?
+- do exercises about flexbox
+- todo:
+	- finish exercises flexbox
+	- start strucuture of website with html and css (transforming it to / using tailwind css)
+		- profile (which could be landing page)
+		- friends
+		- (game choice)
+		- chat
+		- navigation menu on top of each page
+	- in agreement with repective module-person
+	- get into javascript / typescript
