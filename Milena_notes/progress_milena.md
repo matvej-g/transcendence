@@ -70,3 +70,9 @@
 - added recent versions of Ivans frontend and made it run in single container
 - call with david:
 - connected frontend container with backend and nginx
+
+### --- Day 11: 19.11.2025 --- ###
+- issues:
+	- localhost:8080 -> 404 in firefox
+	- 127.0.0.1:8080 -> 404 also in google chrome
+	- is it my problem or is it a general problem?
