@@ -1,0 +1,48 @@
+<?php 
+
+namespace src\controllers;
+
+use src\Database;
+use src\http\HttpStatusCode;
+use src\http\Request;
+use src\http\Response;
+use src\Models\TournamentsModel;
+
+class TournamentController 
+{
+	private $tournaments;
+
+	public function __construct(Database $db) 
+	{
+		$this->tournaments = new TournamentsModel($db);
+	}
+
+	public function getTournaments(Request $request, $parameters): Response {
+		$allTournaments = $this->tournaments->getAllTournaments();
+		return new Response(HttpStatusCode::Ok, $allTournaments, ['Content-Type' => 'application/json']);
+	}
+
+	public function getTournament(Request $request, $parameters): Response {
+		$id = $parameters['id'] ?? null;
+		if (!ctype_digit($id))
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
+		$id = (int) $id;
+		$tournament = $this->tournaments->getTournamentById($id);
+		if (!$tournament)
+			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
+		return new Response(HttpStatusCode::Ok, $tournament, ['Content-Type' => 'application/json']);
+	}
+
+	public function newTournament(Request $request, $parameters): Response {
+		$name = $request->postParams['name'] ?? null;
+		
+		if (!is_string($name))
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);	
+
+		$id = $this->tournaments->createTournament($name);
+		if (!$id)
+			// not sure what the best error response is here
+			return new Response(HttpStatusCode::BadRequest, ["error" => ""], ['Content-Type' => 'application/json']);	
+		return new Response(HttpStatusCode::Ok, $id, ['Content-Type' => 'application/json']);
+	}
+}

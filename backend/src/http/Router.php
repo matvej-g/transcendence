@@ -41,15 +41,35 @@ class Router {
 	}
 
 
+	public function convert($route, $uri)
+	{
+		//  extracts {id} from route['uri'] and stores it inside the capture group 1
+		// 	replacing with regex expression for matching one or more characters after a slash
+		//  that capture group inside the string is named after the value that we have replaced it with which is id
+
+		// dump('uri: '.$uri);
+		// dump('route: '.$route['uri']);
+		$pattern = preg_replace('/\{(\w+)\}/', '(?P<\1>[^/]+)', $route['uri']);
+		$pattern = "#^" . $pattern . "$#";
+		// dump('pattern:'.$pattern);
+		if (preg_match($pattern, $uri, $matches)) {
+			return $matches;
+		}
+		return false;
+		// convert /api/user/{id} to regular expression
+		//  /api/user/{id}
+		// match regular expression
+	}
+
+
 	public function route($uri, $method, $request, $db): Response
 	{
 		foreach ($this->routes as $route) {
-			if ($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
-				
+			$matches = $this->convert($route, $uri);
+			if ($matches !== false && $matches[0] === $uri && $route['method'] === strtoupper($method)) {
 			// static page controllers
 			if (is_string($route['controller']))
 				return require base_path($route['controller']);
-			
 			// dynamic controller classes
 			if (is_array($route['controller'])) {
 				[$class, $methodName] = $route['controller'];
@@ -57,7 +77,7 @@ class Router {
 				// creating a Controller because $class holds name of controller
 				$controllerInstance = new $class($db);
 				// calling the method because $methodName holds the name of the method
-				return ($controllerInstance->$methodName($request));
+				return ($controllerInstance->$methodName($request, $matches));
 			}
 			}
 		}

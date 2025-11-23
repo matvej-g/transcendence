@@ -19,6 +19,6 @@ clean_cache:
 	docker system prune -a --volumes -f
 	docker buildx prune --all --force
 
-re: up
+re: down build up
 
 .PHONY: all up build down clean clean_cachere

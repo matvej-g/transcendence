@@ -1,7 +1,2 @@
+frontend/node_modules
 
-# Ignore compiled JavaScript files and source maps
-**/*.js
-**/*.js.map
-
-# Ignore node modules
-/node_modules

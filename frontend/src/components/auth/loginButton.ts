@@ -1,5 +1,5 @@
 // Compiles to /site/public/js/user/auth/loginButton.js
-import { $, log } from "../../utils/utils";
+import { $, log } from "../../utils/utils.js";
 import { loginHandle } from "./login.js";
 
 function wireLoginButton() {
