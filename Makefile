@@ -21,4 +21,15 @@ clean_cache:
 
 re: down build up
 
-.PHONY: all up build down clean clean_cachere
+help:
+	@echo "Available targets:"
+	@echo "  all          - Start containers (alias for 'up')"
+	@echo "  build        - Build all images without cache"
+	@echo "  up           - Start containers in detached mode"
+	@echo "  down         - Stop containers"
+	@echo "  clean        - Stop containers, remove volumes, local images and orphans"
+	@echo "  clean_cache  - Aggressively clean all Docker caches, images and volumes"
+	@echo "  re           - Rebuild and restart everything"
+	@echo "  help         - Show this help"
+
+.PHONY: all up build down clean clean_cachere help re
