@@ -1,6 +1,8 @@
 <?php
 // PHP part
+// Server-Side Rendering - preload data here
 $pageTitle = "Pong Game";
+// !!! Data for future use maybe ??? gameManager using it for now
 $initialData = [
   'gameMode' => null,
   'timestamp' => time()
@@ -49,6 +51,21 @@ $initialData = [
         </button>
       </div>
     </div>
+
+    <!-- Game Container -->
+    <div id="gameContainer" class="hidden flex flex-col items-center justify-center">
+      <canvas 
+        id="gameCanvas" 
+        class="border-4 border-white rounded-lg shadow-2xl bg-gray-900">
+      </canvas>
+      
+      <button 
+        id="exitGameButton"
+        class="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
+        Exit
+      </button>
+    </div>
+
   </div>
 
   <!-- SSR DATA, json_encode wandelt PHP-Array/Objekt in ein JSON string um -->
@@ -56,8 +73,8 @@ $initialData = [
       window.initialData = <?php echo json_encode($initialData); ?>;
   </script>
 
-  <!-- WICHTIG: Dein kompiliertes TypeScript -->
-  <script type="module" src="assets/main.js"></script>
+  <!-- Load JavaScript data here -->
+  <script type="module" src="assets/gameManager.js"></script>
 
 </body>
 </html>

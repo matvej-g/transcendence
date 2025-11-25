@@ -1,5 +1,7 @@
+import { GameCanvas } from './gameCanvas.js';
 // Game Manager Class
 class GameManager {
+    //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
         this.mainMenu = document.getElementById('mainMenu');
         this.gameModeMenu = document.getElementById('gameModeMenu');
@@ -7,6 +9,8 @@ class GameManager {
         this.playLocalButton = document.getElementById('playLocalButton');
         this.playRemoteButton = document.getElementById('playRemoteButton');
         this.backButton = document.getElementById('backButton');
+        this.exitGameButton = document.getElementById('exitGameButton');
+        this.gameCanvas = new GameCanvas();
         this.initEventListeners();
         this.loadInitialData();
     }
@@ -15,6 +19,7 @@ class GameManager {
         this.backButton?.addEventListener('click', () => this.showMainMenu());
         this.playLocalButton?.addEventListener('click', () => this.startLocalGame());
         this.playRemoteButton?.addEventListener('click', () => this.startRemoteGame());
+        this.exitGameButton?.addEventListener('click', () => this.exitGame());
     }
     loadInitialData() {
         const data = window.initialData;
@@ -30,17 +35,21 @@ class GameManager {
     }
     startLocalGame() {
         console.log('Starting local game...');
-        // TODO: Implementiere Local Game Logic
-        alert('Starting Local Game!');
+        this.gameModeMenu?.classList.add('hidden');
+        this.gameCanvas.show();
     }
     startRemoteGame() {
         console.log('Starting remote game...');
         // TODO: Implementiere Remote Game Logic
         alert('Starting Remote Game vs Player!');
     }
+    exitGame() {
+        console.log('Exit game, back to GameModeSelection');
+        this.gameCanvas.hide();
+        this.gameModeMenu?.classList.remove('hidden');
+    }
 }
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     new GameManager();
 });
-export {};
