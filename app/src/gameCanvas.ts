@@ -57,11 +57,15 @@ export class GameCanvas {
         
         // set initial Canvas Size
         this.resizeCanvas();
-        
+		this.render();
+		
         // set the rezise Listener
-        this.resizeHandler = () => this.resizeCanvas();
+        this.resizeHandler = () => {
+    	    this.resizeCanvas();
+        	this.render();
+    	};
+
         window.addEventListener('resize', this.resizeHandler);
-        
         console.log('Game canvas visible');
     }
 
@@ -78,5 +82,28 @@ export class GameCanvas {
         }
         
         console.log('Game canvas hidden');
+    }
+
+	/*
+	* Drawing inside Canvas
+	*/
+
+	private render(): void {
+		this.clear();
+		this.drawCenterLine();
+	}
+
+	// Draw center Line
+	private drawCenterLine(): void {
+        if (!this.renderingContext || !this.canvas) return;
+
+        this.renderingContext.strokeStyle = '#444444';
+        this.renderingContext.lineWidth = 2;
+        this.renderingContext.setLineDash([10, 10]);
+        this.renderingContext.beginPath();
+        this.renderingContext.moveTo(this.canvas.width / 2, 0);
+        this.renderingContext.lineTo(this.canvas.width / 2, this.canvas.height);
+        this.renderingContext.stroke();
+        this.renderingContext.setLineDash([]); // Reset
     }
 }
