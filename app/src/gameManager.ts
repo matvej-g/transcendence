@@ -1,5 +1,28 @@
+// Types
+interface InitialData {
+    gameMode: string | null;
+    timestamp: number;
+}
+
+declare global {
+    interface Window {
+        initialData: InitialData;
+    }
+}
+
+// Make this file a module so 'declare global' works
+export {};
+
 // Game Manager Class
 class GameManager {
+    private mainMenu: HTMLElement | null;
+    private gameModeMenu: HTMLElement | null;
+    private playButton: HTMLElement | null;
+    private playLocalButton: HTMLElement | null;
+    private playRemoteButton: HTMLElement | null;
+    private backButton: HTMLElement | null;
+
+    //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
         this.mainMenu = document.getElementById('mainMenu');
         this.gameModeMenu = document.getElementById('gameModeMenu');
@@ -7,40 +30,47 @@ class GameManager {
         this.playLocalButton = document.getElementById('playLocalButton');
         this.playRemoteButton = document.getElementById('playRemoteButton');
         this.backButton = document.getElementById('backButton');
+
         this.initEventListeners();
         this.loadInitialData();
     }
-    initEventListeners() {
+
+    private initEventListeners(): void {
         this.playButton?.addEventListener('click', () => this.showGameModeSelection());
         this.backButton?.addEventListener('click', () => this.showMainMenu());
         this.playLocalButton?.addEventListener('click', () => this.startLocalGame());
         this.playRemoteButton?.addEventListener('click', () => this.startRemoteGame());
     }
-    loadInitialData() {
+
+    private loadInitialData(): void {
         const data = window.initialData;
         console.log('SSR Data loaded:', data);
     }
-    showGameModeSelection() {
+
+    private showGameModeSelection(): void {
         this.mainMenu?.classList.add('hidden');
         this.gameModeMenu?.classList.remove('hidden');
     }
-    showMainMenu() {
+
+    private showMainMenu(): void {
         this.gameModeMenu?.classList.add('hidden');
         this.mainMenu?.classList.remove('hidden');
     }
-    startLocalGame() {
+
+    private startLocalGame(): void {
         console.log('Starting local game...');
         // TODO: Implementiere Local Game Logic
         alert('Starting Local Game!');
     }
-    startRemoteGame() {
+
+    private startRemoteGame(): void {
         console.log('Starting remote game...');
         // TODO: Implementiere Remote Game Logic
         alert('Starting Remote Game vs Player!');
     }
 }
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     new GameManager();
 });
-export {};
