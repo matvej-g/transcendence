@@ -16,7 +16,7 @@ NC='\033[0m'
 #dir creation and permissions
 mkdir -p "$DB_DIR"
 chown -R www-data:www-data "$DB_DIR"
-chmod 755 "$DB_DIR"
+chmod 2755 "$DB_DIR"
 
 # not sure if exiting is a good idea
 if [ ! -f "$SCHEMA" ]; then
@@ -31,8 +31,8 @@ fi
 # else
 # 	echo -e "${GREEN}Database does not exist... creating $DB_FILE${NC}";
 	echo -e "${GREEN}Applying schema to $DB_FILE${NC}"
-	# sudo -u www-data sqlite3 "$DB_FILE" < "$SCHEMA"
-	sqlite3 "$DB_FILE" < "$SCHEMA"
+	sudo -u www-data sqlite3 "$DB_FILE" < "$SCHEMA"
+	# sqlite3 "$DB_FILE" < "$SCHEMA"
 # fi
 
 exec php-fpm

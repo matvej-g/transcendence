@@ -1,4 +1,5 @@
 <?php
+// <!-- david -->
 // prevents silent type conversions
 declare(strict_types=1);
 
@@ -24,8 +25,8 @@ spl_autoload_register(function ($class) {
 
 $request = Request::createFromGlobals();
 
-
 $kernel = new Kernel();
 $response = $kernel->handle($request);
+
 
 $response->send();

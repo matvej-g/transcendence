@@ -18,6 +18,14 @@ services:
       - sqlite_data:/var/www/html/database
     networks: 
       - transcendence
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    restart: always
+    volumes: 
+      - ./frontend:/var/www/html
+    networks: 
+      - transcendence
   nginx:
     container_name: nginx
     build: ./nginx
