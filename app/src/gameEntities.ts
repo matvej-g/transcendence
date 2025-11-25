@@ -34,8 +34,8 @@ export interface GameConfig {
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
-    canvasWidth: 800,
-    canvasHeight: 600,
+    canvasWidth: 1400, // set max width here
+    canvasHeight: 700, // set max height here
     paddleWidth: 15,
     paddleHeight: 100,
     ballRadius: 10,

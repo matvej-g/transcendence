@@ -19,8 +19,8 @@ export class GameCanvas {
         if (!this.canvas) return;
 
         // Canvas size
-    	const maxWidth = 1400;
-    	const maxHeight = 700;
+    	const maxWidth = this.config.canvasWidth; //set this in gameEnteties
+    	const maxHeight = this.config.canvasHeight; //set this in gameEnteties
     	const viewportWidth = window.innerWidth * 0.85;
     	const viewportHeight = window.innerHeight * 0.7;
 
