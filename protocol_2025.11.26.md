@@ -1,0 +1,31 @@
+# Protocol, 26th November 2025
+
+## Mert
+- adjusted backend logic for controllers to respond in JSON format
+- encountered branch issues and had to fix repository problems
+todo:
+- finalize JSON response implementation for backend controllers
+
+## David
+- took a break from project work this week
+todo:
+- start database implementation with Matthias
+- finish API endpoints for RESTful API
+
+## Milena
+- started designing the profile page
+- considered other pages that need to be implemented
+- researched methods for combining everything into single page application (SPA)
+todo:
+- integrate pages into SPA structure
+
+## Ivan
+- implemented multiple language support
+todo:
+- add one more language to the system
+
+## Matthias
+- reworked game structure to better support both local and remote gameplay
+- improved code architecture for future multiplayer implementation
+todo:
+- implement remote gameplay functionality
