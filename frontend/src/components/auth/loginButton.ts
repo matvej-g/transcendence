@@ -1,5 +1,6 @@
 // Compiles to /site/public/js/user/auth/loginButton.js
 import { $, log } from "../../utils/utils.js";
+import { msg } from "../languages/auth/stringsMsgsHandlers.js";
 import { loginHandle } from "./login.js";
 
 function wireLoginButton() {
@@ -13,7 +14,7 @@ function wireLoginButton() {
 
     const res = await loginHandle(u, p);
     log(`[UI] login result: ${JSON.stringify(res)}`);
-    alert(res.ok ? `Login OK: ${res.user.username}` : `Login failed: ${res.error}`);
+    alert(res.ok ? msg("loginOkPrefix") + `${res.user.username}` : msg("loginFailedGeneric") + ` (${res.error})`);
   });
 }
 wireLoginButton();

@@ -9,11 +9,15 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900">
+  <!-- Language switcher mount point -->
+  <div data-lang-switcher></div>
+
   <!-- Page container -->
   <div class="mx-auto max-w-5xl p-4 md:p-8">
     <!-- Header -->
     <header class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-semibold tracking-tight">Welcome</h1>
+      <h1 class="text-2xl font-semibold tracking-tight"
+          data-i18n="landingDom.welcomeHeading"><!-- Welcome --></h1>
       <div class="text-sm text-gray-500" id="userMeta" aria-live="polite">
         <!-- optional: fill with username in TS -->
       </div>
@@ -21,7 +25,9 @@
 
     <!-- Actions -->
     <section aria-labelledby="actionsTitle" class="mb-8">
-      <h2 id="actionsTitle" class="sr-only">Actions</h2>
+      <h2 id="actionsTitle"
+          class="sr-only"
+          data-i18n="landingDom.actionsSectionLabel"><!-- Actions --></h2>
 
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <!-- 1v1 -->
@@ -29,10 +35,10 @@
           id="btn1v1"
           class="w-full rounded-2xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-describedby="desc1v1">
-          <div class="text-lg font-medium">1v1</div>
-          <p id="desc1v1" class="mt-1 text-sm text-gray-600">
-            Challenge another player directly.
-          </p>
+          <div class="text-lg font-medium"
+               data-i18n="landingDom.mode1v1Title"><!-- 1v1 --></div>
+          <p id="desc1v1" class="mt-1 text-sm text-gray-600"
+             data-i18n="landingDom.mode1v1Description"><!-- Challenge another player directly. --></p>
         </button>
 
         <!-- 1vPC -->
@@ -40,10 +46,10 @@
           id="btn1vPC"
           class="w-full rounded-2xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-describedby="desc1vpc">
-          <div class="text-lg font-medium">1vPC</div>
-          <p id="desc1vpc" class="mt-1 text-sm text-gray-600">
-            Practice against the computer.
-          </p>
+          <div class="text-lg font-medium"
+               data-i18n="landingDom.modeVsPcTitle"><!-- 1vPC --></div>
+          <p id="desc1vpc" class="mt-1 text-sm text-gray-600"
+             data-i18n="landingDom.modeVsPcDescription"><!-- Practice against the computer. --></p>
         </button>
 
         <!-- Tournament -->
@@ -51,10 +57,10 @@
           id="btnTournament"
           class="w-full rounded-2xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-describedby="descTournament">
-          <div class="text-lg font-medium">Tournament</div>
-          <p id="descTournament" class="mt-1 text-sm text-gray-600">
-            Create or join a bracket.
-          </p>
+          <div class="text-lg font-medium"
+               data-i18n="landingDom.tournamentTitle"><!-- Tournament --></div>
+          <p id="descTournament" class="mt-1 text-sm text-gray-600"
+             data-i18n="landingDom.tournamentDescription"><!-- Create or join a bracket. --></p>
         </button>
 
         <!-- My Profile -->
@@ -62,10 +68,10 @@
           id="btnProfile"
           class="w-full rounded-2xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-describedby="descProfile">
-          <div class="text-lg font-medium">My Profile</div>
-          <p id="descProfile" class="mt-1 text-sm text-gray-600">
-            View and edit your info.
-          </p>
+          <div class="text-lg font-medium"
+               data-i18n="landingDom.profileTitle"><!-- My Profile --></div>
+          <p id="descProfile" class="mt-1 text-sm text-gray-600"
+             data-i18n="landingDom.profileDescription"><!-- View and edit your info. --></p>
         </button>
 
         <!-- My Messages -->
@@ -73,10 +79,10 @@
           id="btnMessages"
           class="w-full rounded-2xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-describedby="descMessages">
-          <div class="text-lg font-medium">My Messages</div>
-          <p id="descMessages" class="mt-1 text-sm text-gray-600">
-            Read and send messages.
-          </p>
+          <div class="text-lg font-medium"
+               data-i18n="landingDom.messagesTitle"><!-- My Messages --></div>
+          <p id="descMessages" class="mt-1 text-sm text-gray-600"
+             data-i18n="landingDom.messagesDescription"><!-- Read and send messages. --></p>
         </button>
       </div>
     </section>
@@ -84,13 +90,13 @@
     <!-- Developer Log -->
     <section aria-labelledby="devlogTitle">
       <div class="mb-2 flex items-center justify-between">
-        <h2 id="devlogTitle" class="text-xl font-semibold">Developer Log</h2>
-        <!-- optional: a clear button you can wire later -->
+        <h2 id="devlogTitle"
+            class="text-xl font-semibold"
+            data-i18n="landingDom.devlogSectionTitle"><!-- Developer Log --></h2>
         <button
           id="btnClearLog"
-          class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm shadow-sm hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-          Clear
-        </button>
+          class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm shadow-sm hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          data-i18n="landingDom.devlogClearButtonLabel"><!-- Clear --></button>
       </div>
 
       <div
@@ -99,15 +105,16 @@
         role="log"
         aria-live="polite"
         aria-relevant="additions">
-        <!-- Append log lines here from TS, e.g.:
-             devLog.append(newLine("User clicked 1v1"));
-        -->
-        <div class="text-gray-500">[log] Ready.</div>
+        <div class="text-gray-500"
+             data-i18n="landingDom.devlogReadyMessage"><!-- [log] Ready. --></div>
       </div>
     </section>
   </div>
 
+  <!-- i18n / language init for this page -->
+  <script type="module" src="/dist/components/languages/landing/init.js"></script>
 
+  <!-- button logic -->
   <script type="module" src="/dist/components/landing/play1v1Button.js"></script>
   <script type="module" src="/dist/components/landing/play1vPcButton.js"></script>
   <script type="module" src="/dist/components/landing/openChatsButton.js"></script>

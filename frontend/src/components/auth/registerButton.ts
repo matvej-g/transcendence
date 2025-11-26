@@ -1,5 +1,6 @@
 // Compiles to /site/public/js/user/auth/registerButton.js
 import { $, log } from "../../utils/utils.js";
+import { msg } from "../languages/auth/stringsMsgsHandlers.js";
 import { registerHandle } from "./register.js";
 
 function wireRegisterButton() {
@@ -13,7 +14,7 @@ function wireRegisterButton() {
 
     const res = await registerHandle(u, p);
     log(`[UI] register result: ${JSON.stringify(res)}`);
-    alert(res.ok ? `Registered: ${res.user.username}` : `Register failed: ${res.error}`);
+    alert(res.ok ? msg(`registerOkPrefix`) + `${res.user.username}` : msg(`registerFailedGeneric`) + ` (${res.error})`);
   });
 }
 wireRegisterButton();
