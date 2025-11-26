@@ -68,8 +68,12 @@ export class GameCanvas {
     * Drawing inside Canvas
     */
     render() {
+        if (!this.renderingContext || !this.canvas)
+            return;
         this.clear();
         this.drawCenterLine();
+        this.drawLeftPaddle(); //remove later and use GameState
+        this.drawRightPaddle(); //remove later and use Gamestate
     }
     // Draw center Line
     drawCenterLine() {
@@ -83,5 +87,23 @@ export class GameCanvas {
         this.renderingContext.lineTo(this.canvas.width / 2, this.canvas.height);
         this.renderingContext.stroke();
         this.renderingContext.setLineDash([]); // Reset
+    }
+    // !!! draw left Paddle  (need remove)
+    drawLeftPaddle() {
+        if (!this.renderingContext || !this.canvas)
+            return;
+        const x = 20; // 20px from left edge
+        const y = (this.canvas.height - this.config.paddleHeight) / 2;
+        this.renderingContext.fillStyle = '#ffffff';
+        this.renderingContext.fillRect(x, y, this.config.paddleWidth, this.config.paddleHeight);
+    }
+    // !!! draw eight Paddle  (need remove)
+    drawRightPaddle() {
+        if (!this.renderingContext || !this.canvas)
+            return;
+        const x = this.canvas.width - 20 - this.config.paddleWidth;
+        const y = (this.canvas.height - this.config.paddleHeight) / 2;
+        this.renderingContext.fillStyle = '#ffffff';
+        this.renderingContext.fillRect(x, y, this.config.paddleWidth, this.config.paddleHeight);
     }
 }

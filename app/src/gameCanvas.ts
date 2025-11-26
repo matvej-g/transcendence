@@ -58,7 +58,7 @@ export class GameCanvas {
         // set initial Canvas Size
         this.resizeCanvas();
 		this.render();
-		
+
         // set the rezise Listener
         this.resizeHandler = () => {
     	    this.resizeCanvas();
@@ -89,8 +89,12 @@ export class GameCanvas {
 	*/
 
 	private render(): void {
+		if (!this.renderingContext || !this.canvas) return;
+
 		this.clear();
 		this.drawCenterLine();
+		this.drawLeftPaddle(); //remove later and use GameState
+		this.drawRightPaddle(); //remove later and use Gamestate
 	}
 
 	// Draw center Line
@@ -106,4 +110,26 @@ export class GameCanvas {
         this.renderingContext.stroke();
         this.renderingContext.setLineDash([]); // Reset
     }
+
+	// !!! draw left Paddle  (need remove)
+	private drawLeftPaddle(): void {
+		if (!this.renderingContext || !this.canvas) return;
+		
+		const x = 20; // 20px from left edge
+		const y = (this.canvas.height - this.config.paddleHeight) / 2;
+		
+		this.renderingContext.fillStyle = '#ffffff';
+		this.renderingContext.fillRect(x, y, this.config.paddleWidth, this.config.paddleHeight);
+	}
+	// !!! draw eight Paddle  (need remove)
+	private drawRightPaddle(): void {
+		if (!this.renderingContext || !this.canvas) return;
+		
+		const x = this.canvas.width - 20 - this.config.paddleWidth;
+		const y = (this.canvas.height - this.config.paddleHeight) / 2;
+		
+		this.renderingContext.fillStyle = '#ffffff';
+		this.renderingContext.fillRect(x, y, this.config.paddleWidth, this.config.paddleHeight);
+	}
+
 }
