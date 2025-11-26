@@ -152,7 +152,29 @@ export class GameEngine {
             ball.x + ball.radius >= paddle.x &&
             ball.y >= paddle.y &&
             ball.y <= paddle.y + paddle.height) {
-            ball.velocityX *= -1;
+            //hitPosition between 0 and 1 (0 = top, 1 = bottom)
+            const hitPosition = (ball.y - paddle.y) / paddle.height;
+            //convert it to -1 and 1 (-1 top, 1 = bottom)
+            const relativeHitPosition = (hitPosition - 0.5) * 2;
+            const maxAngle = Math.PI / 3; //60 degrees
+            const angle = relativeHitPosition * maxAngle;
+            //calc new speed
+            const speed = Math.sqrt(ball.velocityX * ball.velocityX + ball.velocityY * ball.velocityY);
+            const newVelocityX = -ball.velocityX;
+            const newVelocityY = Math.tan(angle) * Math.abs(newVelocityX);
+            //normalize speed
+            const magnitude = Math.sqrt(newVelocityX * newVelocityX + newVelocityY * newVelocityY);
+            ball.velocityX = (newVelocityX / magnitude) * speed;
+            ball.velocityY = (newVelocityY / magnitude) * speed;
+            //increase speed on each hit
+            ball.speed *= 1.05;
+            //prevent stuck in paddle
+            if (ball.velocityX > 0) {
+                ball.x = paddle.x + paddle.width + ball.radius;
+            }
+            else {
+                ball.x = paddle.x - ball.radius;
+            }
         }
     }
 }
