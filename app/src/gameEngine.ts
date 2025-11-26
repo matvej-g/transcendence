@@ -171,6 +171,21 @@ export class GameEngine {
         if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= dimensions.height) {
             ball.velocityY *= -1;
         }
+
+        //paddle collison
+        this.checkPaddleCollision(this.gameState.leftPaddle);
+        this.checkPaddleCollision(this.gameState.rightPaddle);
+    }
+
+    //check paddle collision
+    private checkPaddleCollision(paddle: Paddle): void {
+        const ball = this.gameState.ball;
+        if (ball.x - ball.radius <= paddle.x + paddle.width &&
+            ball.x + ball.radius >= paddle.x &&
+            ball.y >= paddle.y &&
+            ball.y <= paddle.y + paddle.height) {
+                ball.velocityX *= -1;
+            }
     }
 
 }
