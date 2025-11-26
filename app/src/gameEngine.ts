@@ -8,6 +8,7 @@ export class GameEngine {
     private animationId: number | null = null;
     private lastTime: number = 0;
     private isLocalGame: boolean = true;
+    private inputHandler?: () => { [key: string]: boolean};
 
     constructor(canvas: GameCanvas, config: GameConfig = DEFAULT_CONFIG, isLocalGame: boolean = true) {
         this.canvas = canvas;
@@ -26,7 +27,7 @@ export class GameEngine {
                 y: (dimensions.height - this.config.paddleHeight) / 2,
                 width: this.config.paddleWidth,
                 height: this.config.paddleHeight,
-                speed: 5,
+                speed: 500,
                 score: 0
             },
             rightPaddle: {
@@ -34,7 +35,7 @@ export class GameEngine {
                 y: (dimensions.height - this.config.paddleHeight) / 2,
                 width: this.config.paddleWidth,
                 height: this.config.paddleHeight,
-                speed: 5,
+                speed: 500,
                 score: 0
             },
             ball: {
@@ -48,6 +49,11 @@ export class GameEngine {
             isRunning: false,
             winner: null
         };
+    }
+
+    //
+    public setInputHandler(handler: () => {[key: string]: boolean}): void {
+        this.inputHandler = handler;
     }
 
     // start game state
@@ -73,6 +79,11 @@ export class GameEngine {
     public reset(): void {
         this.gameState = this.initializeGameState();
         this.lastTime = 0;
+    }
+
+    // Render everything
+    private render(): void {
+		this.canvas.render(this.gameState);
     }
 
     // Game Loop
@@ -102,7 +113,30 @@ export class GameEngine {
 
     // update local game logic 
     private update(deltaTime: number): void {
+        if (this.inputHandler) {
+            this.handleInput(this.inputHandler(), deltaTime);
+        }
+
         this.updateBall(deltaTime);
+    }
+
+    // handle Keyboard input
+    private handleInput(keyState: {[key: string]: boolean}, deltaTime: number): void {
+        // left Paddle (w/s)
+        if (keyState['w'] || keyState['W']) {
+            this.movePaddle('left', 'up', deltaTime);
+        }
+        if (keyState['s'] || keyState['S']) {
+            this.movePaddle('left', 'down', deltaTime);
+        }
+
+        // right paddle (arrow keys)
+        if (keyState['ArrowUp']) {
+            this.movePaddle('right', 'up', deltaTime);
+        }
+        if (keyState['ArrowDown']) {
+            this.movePaddle('right', 'down', deltaTime);
+        }
     }
 
     // update ball position
@@ -113,9 +147,19 @@ export class GameEngine {
         ball.y += ball.velocityY * ball.speed * deltaTime;
     }
 
-    // Render everything
-    private render(): void {
-		this.canvas.render(this.gameState);
+    //PUBLIC: move paddle 
+    public movePaddle(paddle: 'left' | 'right', direction: 'up' | 'down', deltaTime:number): void {
+        const targetPaddle = paddle === 'left' ? this.gameState.leftPaddle : this.gameState.rightPaddle;
+        const dimensions = this. canvas.getCanvasSize();
+
+        const movement = targetPaddle.speed * deltaTime;
+
+        if (direction === 'up') {
+            targetPaddle.y = Math.max(0, targetPaddle.y - movement);
+        } else {
+            targetPaddle.y = Math.min(dimensions.height - targetPaddle.height, targetPaddle.y + movement);
+        }
     }
+    
 
 }

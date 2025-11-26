@@ -28,7 +28,8 @@ class GameManager {
     
     private gameCanvas: GameCanvas;
     private gameEngine: GameEngine | null = null;
-
+    private keyState: {[key: string]: boolean} = {}; 
+    
     //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
         this.mainMenu = document.getElementById('mainMenu');
@@ -40,17 +41,21 @@ class GameManager {
         this.exitGameButton = document.getElementById('exitGameButton');
         
         this.gameCanvas = new GameCanvas();
-
+        
         this.initEventListeners();
         this.loadInitialData();
     }
-
+    
     private initEventListeners(): void {
         this.playButton?.addEventListener('click', () => this.showGameModeSelection());
         this.backButton?.addEventListener('click', () => this.showMainMenu());
         this.playLocalButton?.addEventListener('click', () => this.startLocalGame());
         this.playRemoteButton?.addEventListener('click', () => this.startRemoteGame());
         this.exitGameButton?.addEventListener('click', () => this.exitGame());
+        
+        //Keyboard events
+        window.addEventListener('keydown', (e) => this.keyState[e.key] = true);
+        window.addEventListener('keyup', (e) => this.keyState[e.key] = false);
     }
 
     private loadInitialData(): void {
@@ -73,6 +78,7 @@ class GameManager {
         this.gameModeMenu?.classList.add('hidden');
         this.gameCanvas.show();
         this.gameEngine = new GameEngine(this.gameCanvas);
+        this.gameEngine.setInputHandler(() => this.keyState);
         this.gameEngine.start();
     }
 
@@ -92,6 +98,10 @@ class GameManager {
 
         this.gameCanvas.hide();
         this.gameModeMenu?.classList.remove('hidden');
+    }
+
+    public getInputState() {
+        return this.keyState;
     }
 }
 

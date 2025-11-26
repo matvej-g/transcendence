@@ -37,7 +37,7 @@ export class GameEngine {
                 y: (dimensions.height - this.config.paddleHeight) / 2,
                 width: this.config.paddleWidth,
                 height: this.config.paddleHeight,
-                speed: 5,
+                speed: 500,
                 score: 0
             },
             rightPaddle: {
@@ -45,7 +45,7 @@ export class GameEngine {
                 y: (dimensions.height - this.config.paddleHeight) / 2,
                 width: this.config.paddleWidth,
                 height: this.config.paddleHeight,
-                speed: 5,
+                speed: 500,
                 score: 0
             },
             ball: {
@@ -59,6 +59,10 @@ export class GameEngine {
             isRunning: false,
             winner: null
         };
+    }
+    //
+    setInputHandler(handler) {
+        this.inputHandler = handler;
     }
     // start game state
     start() {
@@ -82,9 +86,33 @@ export class GameEngine {
         this.gameState = this.initializeGameState();
         this.lastTime = 0;
     }
+    // Render everything
+    render() {
+        this.canvas.render(this.gameState);
+    }
     // update local game logic 
     update(deltaTime) {
+        if (this.inputHandler) {
+            this.handleInput(this.inputHandler(), deltaTime);
+        }
         this.updateBall(deltaTime);
+    }
+    // handle Keyboard input
+    handleInput(keyState, deltaTime) {
+        // left Paddle (w/s)
+        if (keyState['w'] || keyState['W']) {
+            this.movePaddle('left', 'up', deltaTime);
+        }
+        if (keyState['s'] || keyState['S']) {
+            this.movePaddle('left', 'down', deltaTime);
+        }
+        // right paddle (arrow keys)
+        if (keyState['ArrowUp']) {
+            this.movePaddle('right', 'up', deltaTime);
+        }
+        if (keyState['ArrowDown']) {
+            this.movePaddle('right', 'down', deltaTime);
+        }
     }
     // update ball position
     updateBall(deltaTime) {
@@ -92,8 +120,16 @@ export class GameEngine {
         ball.x += ball.velocityX * ball.speed * deltaTime;
         ball.y += ball.velocityY * ball.speed * deltaTime;
     }
-    // Render everything
-    render() {
-        this.canvas.render(this.gameState);
+    //PUBLIC: move paddle 
+    movePaddle(paddle, direction, deltaTime) {
+        const targetPaddle = paddle === 'left' ? this.gameState.leftPaddle : this.gameState.rightPaddle;
+        const dimensions = this.canvas.getCanvasSize();
+        const movement = targetPaddle.speed * deltaTime;
+        if (direction === 'up') {
+            targetPaddle.y = Math.max(0, targetPaddle.y - movement);
+        }
+        else {
+            targetPaddle.y = Math.min(dimensions.height - targetPaddle.height, targetPaddle.y + movement);
+        }
     }
 }

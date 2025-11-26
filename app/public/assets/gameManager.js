@@ -5,6 +5,7 @@ class GameManager {
     //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
         this.gameEngine = null;
+        this.keyState = {};
         this.mainMenu = document.getElementById('mainMenu');
         this.gameModeMenu = document.getElementById('gameModeMenu');
         this.playButton = document.getElementById('playButton');
@@ -22,6 +23,9 @@ class GameManager {
         this.playLocalButton?.addEventListener('click', () => this.startLocalGame());
         this.playRemoteButton?.addEventListener('click', () => this.startRemoteGame());
         this.exitGameButton?.addEventListener('click', () => this.exitGame());
+        //Keyboard events
+        window.addEventListener('keydown', (e) => this.keyState[e.key] = true);
+        window.addEventListener('keyup', (e) => this.keyState[e.key] = false);
     }
     loadInitialData() {
         const data = window.initialData;
@@ -40,6 +44,7 @@ class GameManager {
         this.gameModeMenu?.classList.add('hidden');
         this.gameCanvas.show();
         this.gameEngine = new GameEngine(this.gameCanvas);
+        this.gameEngine.setInputHandler(() => this.keyState);
         this.gameEngine.start();
     }
     startRemoteGame() {
@@ -55,6 +60,9 @@ class GameManager {
         }
         this.gameCanvas.hide();
         this.gameModeMenu?.classList.remove('hidden');
+    }
+    getInputState() {
+        return this.keyState;
     }
 }
 // Initialize when DOM is ready
