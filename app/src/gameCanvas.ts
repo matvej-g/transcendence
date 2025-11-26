@@ -14,7 +14,7 @@ export class GameCanvas {
             this.canvas.width = this.config.canvasWidth;
             this.canvas.height = this.config.canvasHeight;
         }
-        
+
         console.log('GameCanvas initialized');
     }
 
@@ -38,6 +38,7 @@ export class GameCanvas {
 		this.drawPaddle(state.leftPaddle);
         this.drawPaddle(state.rightPaddle);
         this.drawBall(state.ball);
+        this.drawScore(state.leftPaddle.score ,state.rightPaddle.score);
 	}
 
 	// Draw center Line
@@ -72,6 +73,32 @@ export class GameCanvas {
         this.renderingContext.fill();
     }
 
+    // draw Score
+    private drawScore(leftScore: number, rightScore: number): void {
+        if (!this.renderingContext || !this.canvas) return;
+
+        this.renderingContext.fillStyle = '#ffffff';
+        this.renderingContext.font = '48px Arial';
+        this.renderingContext.textAlign = 'center';
+        this.renderingContext.textBaseline = 'top';
+
+        // Left score
+        this.renderingContext.fillText(
+            leftScore.toString(),
+            this.canvas.width / 4,
+            30
+        );
+
+        // Right score
+        this.renderingContext.fillText(
+            rightScore.toString(),
+            (this.canvas.width * 3) / 4,
+            30
+        );
+    }
+
+
+    
 	/*
 	* Public Helper functions
 	*/

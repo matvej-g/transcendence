@@ -29,6 +29,7 @@ export class GameCanvas {
         this.drawPaddle(state.leftPaddle);
         this.drawPaddle(state.rightPaddle);
         this.drawBall(state.ball);
+        this.drawScore(state.leftPaddle.score, state.rightPaddle.score);
     }
     // Draw center Line
     drawCenterLine() {
@@ -58,6 +59,19 @@ export class GameCanvas {
         this.renderingContext.beginPath();
         this.renderingContext.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
         this.renderingContext.fill();
+    }
+    // draw Score
+    drawScore(leftScore, rightScore) {
+        if (!this.renderingContext || !this.canvas)
+            return;
+        this.renderingContext.fillStyle = '#ffffff';
+        this.renderingContext.font = '48px Arial';
+        this.renderingContext.textAlign = 'center';
+        this.renderingContext.textBaseline = 'top';
+        // Left score
+        this.renderingContext.fillText(leftScore.toString(), this.canvas.width / 4, 30);
+        // Right score
+        this.renderingContext.fillText(rightScore.toString(), (this.canvas.width * 3) / 4, 30);
     }
     /*
     * Public Helper functions
