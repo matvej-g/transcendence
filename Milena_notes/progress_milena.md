@@ -76,7 +76,7 @@
 	- localhost:8080 -> 404 in firefox
 	- 127.0.0.1:8080 -> 404 also in google chrome
 	- is it my problem or is it a general problem?
-- do exercises about flexbox
+- do exercises about flexbox 1 - 2
 - meeting
 
 - todo:
@@ -89,3 +89,6 @@
 		- navigation menu on top of each page
 	- in agreement with repective module-person
 	- get into javascript / typescript
+
+### --- Day 12: 20.11.2025 --- ###
+- exercises about flexbox 3 - 6
