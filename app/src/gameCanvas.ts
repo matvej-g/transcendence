@@ -95,6 +95,7 @@ export class GameCanvas {
 		this.drawCenterLine();
 		this.drawLeftPaddle(); //remove later and use GameState
 		this.drawRightPaddle(); //remove later and use Gamestate
+		this.drawBall();
 	}
 
 	// Draw center Line
@@ -111,7 +112,7 @@ export class GameCanvas {
         this.renderingContext.setLineDash([]); // Reset
     }
 
-	// !!! draw left Paddle  (need remove)
+	// !!! draw left Paddle  (need change)
 	private drawLeftPaddle(): void {
 		if (!this.renderingContext || !this.canvas) return;
 		
@@ -121,7 +122,7 @@ export class GameCanvas {
 		this.renderingContext.fillStyle = '#ffffff';
 		this.renderingContext.fillRect(x, y, this.config.paddleWidth, this.config.paddleHeight);
 	}
-	// !!! draw eight Paddle  (need remove)
+	// !!! draw eight Paddle  (need change)
 	private drawRightPaddle(): void {
 		if (!this.renderingContext || !this.canvas) return;
 		
@@ -131,5 +132,19 @@ export class GameCanvas {
 		this.renderingContext.fillStyle = '#ffffff';
 		this.renderingContext.fillRect(x, y, this.config.paddleWidth, this.config.paddleHeight);
 	}
+
+	// !!! draw test ball (need change)
+	private drawBall(): void {
+        if (!this.renderingContext || !this.canvas) return;
+
+		const x = this.canvas.width / 2;
+		const y = this.canvas.height / 2;
+		const radius = this.config.ballRadius;
+
+        this.renderingContext.fillStyle = '#ffffff';
+        this.renderingContext.beginPath();
+        this.renderingContext.arc(x, y, radius, 0, Math.PI * 2);
+        this.renderingContext.fill();
+    }
 
 }
