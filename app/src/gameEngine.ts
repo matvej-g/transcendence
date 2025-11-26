@@ -27,7 +27,7 @@ export class GameEngine {
                 y: (dimensions.height - this.config.paddleHeight) / 2,
                 width: this.config.paddleWidth,
                 height: this.config.paddleHeight,
-                speed: 500,
+                speed: 550,
                 score: 0
             },
             rightPaddle: {
@@ -35,7 +35,7 @@ export class GameEngine {
                 y: (dimensions.height - this.config.paddleHeight) / 2,
                 width: this.config.paddleWidth,
                 height: this.config.paddleHeight,
-                speed: 500,
+                speed: 550,
                 score: 0
             },
             ball: {
@@ -119,6 +119,7 @@ export class GameEngine {
 
         this.updateBall(deltaTime);
         this.checkCollision();
+        this.checkScore();
     }
 
     // handle Keyboard input
@@ -213,4 +214,31 @@ export class GameEngine {
             }
     }
 
+    //check scoring
+    private checkScore(): void {
+        const ball = this.gameState.ball;
+        const dimensions = this.canvas.getCanvasSize();
+
+        //left side check (right player scores)
+        if (ball.x - ball.radius <= 0) {
+            this.gameState.rightPaddle.score++;
+            this.resetBall();
+        }
+
+        //right side check (left player scores)
+        if (ball.x + ball.radius >= dimensions.width) {
+            this.gameState.leftPaddle.score++;
+            this.resetBall();
+        }
+    }
+
+    //reset Ball
+    private resetBall(): void {
+        const dimensions = this.canvas.getCanvasSize();
+        this.gameState.ball.x = dimensions.width / 2;
+        this.gameState.ball.y = dimensions.height / 2;
+        this.gameState.ball.speed = 60;
+        this.gameState.ball.velocityY = (Math.random() > 0.5 ? 1 : -1) * 5,
+        this.gameState.ball. velocityX *= -1;
+    }
 }
