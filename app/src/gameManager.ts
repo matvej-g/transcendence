@@ -14,7 +14,7 @@ declare global {
 export {};
 
 import { GameCanvas } from './gameCanvas.js';
-
+import { GameEngine } from './gameEngine.js';
 
 // Game Manager Class
 class GameManager {
@@ -27,6 +27,7 @@ class GameManager {
     private exitGameButton: HTMLElement | null;
     
     private gameCanvas: GameCanvas;
+    private gameEngine: GameEngine | null = null;
 
     //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
@@ -71,6 +72,8 @@ class GameManager {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
         this.gameCanvas.show();
+        this.gameEngine = new GameEngine(this.gameCanvas);
+        this.gameEngine.start();
     }
 
     private startRemoteGame(): void {
@@ -81,6 +84,12 @@ class GameManager {
 
     private exitGame(): void {
         console.log('Exit game, back to GameModeSelection');
+
+        if (this.gameEngine) {
+            this.gameEngine.stop();
+            this.gameEngine = null;
+        }
+
         this.gameCanvas.hide();
         this.gameModeMenu?.classList.remove('hidden');
     }

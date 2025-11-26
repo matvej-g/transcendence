@@ -1,8 +1,10 @@
 import { GameCanvas } from './gameCanvas.js';
+import { GameEngine } from './gameEngine.js';
 // Game Manager Class
 class GameManager {
     //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
+        this.gameEngine = null;
         this.mainMenu = document.getElementById('mainMenu');
         this.gameModeMenu = document.getElementById('gameModeMenu');
         this.playButton = document.getElementById('playButton');
@@ -37,6 +39,8 @@ class GameManager {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
         this.gameCanvas.show();
+        this.gameEngine = new GameEngine(this.gameCanvas);
+        this.gameEngine.start();
     }
     startRemoteGame() {
         console.log('Starting remote game...');
@@ -45,6 +49,10 @@ class GameManager {
     }
     exitGame() {
         console.log('Exit game, back to GameModeSelection');
+        if (this.gameEngine) {
+            this.gameEngine.stop();
+            this.gameEngine = null;
+        }
         this.gameCanvas.hide();
         this.gameModeMenu?.classList.remove('hidden');
     }

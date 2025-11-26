@@ -38,43 +38,18 @@ export class GameCanvas {
         this.renderingContext.fillStyle = '#1a1a1a';
         this.renderingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
-    // Show game container
-    show() {
-        const container = document.getElementById('gameContainer');
-        container?.classList.remove('hidden');
-        // set initial Canvas Size
-        this.resizeCanvas();
-        this.render();
-        // set the rezise Listener
-        this.resizeHandler = () => {
-            this.resizeCanvas();
-            this.render();
-        };
-        window.addEventListener('resize', this.resizeHandler);
-        console.log('Game canvas visible');
-    }
-    // Hide game container
-    hide() {
-        const container = document.getElementById('gameContainer');
-        container?.classList.add('hidden');
-        // remove resize Listener
-        if (this.resizeHandler) {
-            window.removeEventListener('resize', this.resizeHandler);
-            this.resizeHandler = null;
-        }
-        console.log('Game canvas hidden');
-    }
     /*
-    * Drawing inside Canvas
+    * Drawing functions inside Canvas
     */
-    render() {
+    // Render game screen
+    render(state) {
         if (!this.renderingContext || !this.canvas)
             return;
         this.clear();
         this.drawCenterLine();
-        this.drawLeftPaddle(); //remove later and use GameState
-        this.drawRightPaddle(); //remove later and use Gamestate
-        this.drawBall();
+        this.drawPaddle(state.leftPaddle);
+        this.drawPaddle(state.rightPaddle);
+        this.drawBall(state.ball);
     }
     // Draw center Line
     drawCenterLine() {
@@ -89,34 +64,54 @@ export class GameCanvas {
         this.renderingContext.stroke();
         this.renderingContext.setLineDash([]); // Reset
     }
-    // !!! draw left Paddle  (need change)
-    drawLeftPaddle() {
-        if (!this.renderingContext || !this.canvas)
+    // draw Paddle
+    drawPaddle(paddle) {
+        if (!this.renderingContext)
             return;
-        const x = 20; // 20px from left edge
-        const y = (this.canvas.height - this.config.paddleHeight) / 2;
         this.renderingContext.fillStyle = '#ffffff';
-        this.renderingContext.fillRect(x, y, this.config.paddleWidth, this.config.paddleHeight);
+        this.renderingContext.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
     }
-    // !!! draw eight Paddle  (need change)
-    drawRightPaddle() {
-        if (!this.renderingContext || !this.canvas)
+    // draw Ball
+    drawBall(ball) {
+        if (!this.renderingContext)
             return;
-        const x = this.canvas.width - 20 - this.config.paddleWidth;
-        const y = (this.canvas.height - this.config.paddleHeight) / 2;
-        this.renderingContext.fillStyle = '#ffffff';
-        this.renderingContext.fillRect(x, y, this.config.paddleWidth, this.config.paddleHeight);
-    }
-    // !!! draw test ball (need change)
-    drawBall() {
-        if (!this.renderingContext || !this.canvas)
-            return;
-        const x = this.canvas.width / 2;
-        const y = this.canvas.height / 2;
-        const radius = this.config.ballRadius;
         this.renderingContext.fillStyle = '#ffffff';
         this.renderingContext.beginPath();
-        this.renderingContext.arc(x, y, radius, 0, Math.PI * 2);
+        this.renderingContext.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
         this.renderingContext.fill();
+    }
+    /*
+    * Public Helper functions
+    */
+    // Get canvas size
+    getCanvasSize() {
+        return {
+            width: this.canvas?.width || 0,
+            height: this.canvas?.height || 0
+        };
+    }
+    // Show game container
+    show() {
+        const container = document.getElementById('gameContainer');
+        container?.classList.remove('hidden');
+        // set initial Canvas Size
+        this.resizeCanvas();
+        // set the rezise Listener
+        this.resizeHandler = () => {
+            this.resizeCanvas();
+        };
+        window.addEventListener('resize', this.resizeHandler);
+        console.log('Game canvas visible');
+    }
+    // Hide game container
+    hide() {
+        const container = document.getElementById('gameContainer');
+        container?.classList.add('hidden');
+        // remove resize Listener
+        if (this.resizeHandler) {
+            window.removeEventListener('resize', this.resizeHandler);
+            this.resizeHandler = null;
+        }
+        console.log('Game canvas hidden');
     }
 }
