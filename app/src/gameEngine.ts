@@ -84,6 +84,9 @@ export class GameEngine {
     // Render everything
     private render(): void {
 		this.canvas.render(this.gameState);
+        if (this.gameState.winner) {
+            this.canvas.drawWinner(this.gameState.winner);
+        }
     }
 
     // Game Loop
@@ -230,6 +233,14 @@ export class GameEngine {
             this.gameState.leftPaddle.score++;
             this.resetBall();
         }
+
+        //check for winner
+        if (this.gameState.leftPaddle.score == this.config.maxScore) {
+            this.endGame('left');
+        }
+        if (this.gameState.rightPaddle.score == this.config.maxScore) {
+            this.endGame('right');
+        }
     }
 
     //reset Ball
@@ -240,5 +251,16 @@ export class GameEngine {
         this.gameState.ball.speed = 60;
         this.gameState.ball.velocityY = (Math.random() > 0.5 ? 1 : -1) * 5,
         this.gameState.ball. velocityX *= -1;
+    }
+
+    //end Game with winner
+    private endGame(winner: 'left' | 'right'): void {
+        this.gameState.winner = winner;
+        this.gameState.isRunning = false;
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+        this.canvas.render(this.gameState);
     }
 }

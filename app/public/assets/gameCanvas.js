@@ -73,6 +73,19 @@ export class GameCanvas {
         // Right score
         this.renderingContext.fillText(rightScore.toString(), (this.canvas.width * 3) / 4, 30);
     }
+    //draw Winner
+    drawWinner(winner) {
+        if (!this.renderingContext || !this.canvas)
+            return;
+        // Semi-transparent overlay
+        this.renderingContext.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.renderingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // Winner text
+        this.renderingContext.fillStyle = '#ffffff';
+        this.renderingContext.font = 'bold 64px Arial';
+        this.renderingContext.textAlign = 'center';
+        this.renderingContext.fillText(`${winner.toUpperCase()} WINS!`, this.canvas.width / 2, this.canvas.height / 2);
+    }
     /*
     * Public Helper functions
     */

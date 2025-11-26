@@ -4,5 +4,5 @@ export const DEFAULT_CONFIG = {
     paddleWidth: 15,
     paddleHeight: 100,
     ballRadius: 10,
-    maxScore: 5
+    maxScore: 1
 };
