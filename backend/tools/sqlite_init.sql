@@ -17,8 +17,9 @@ VALUES ('David Huss', 'dhuss42@heilbron.de', 123);
 
 -- INSERT INTO users(username, email, password_hash)
 -- VALUES ('mert-test', 'mertkinggs@gmail.com', 123);
-INSERT INTO users(username, email, password_hash)
-VALUES ('test', 'test42@test.de', 234);
+
+-- INSERT INTO users(username, email, password_hash)
+-- VALUES ('test', 'test42@test.de', 234);
 
 -- Pong match Data
 CREATE TABLE IF NOT EXISTS matches (

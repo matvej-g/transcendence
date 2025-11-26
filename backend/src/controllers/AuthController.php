@@ -35,7 +35,7 @@ class AuthController
         $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
         $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
-        $user = $this->userModel->findUserById($userId);
+        $user = $this->userModel->getUserById($userId);
         $this->userModel->saveTwoFactorCode($userId, $code, $expiresAt);
 
         sendTwoFactorEmail($user['email'], $code);

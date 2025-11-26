@@ -11,7 +11,7 @@ $userId = isset($_GET['user']) ? (int)$_GET['user'] : $defaultUserId;
 // Basic check: ensure user exists
 $db = new src\Database('sqlite:/var/www/html/database/transcendence.db');
 $userModel = new src\Models\UserModels($db);
-$user = $userModel->findUserById($userId);
+$user = $userModel->getUserById($userId);
 if (!$user) {
     $content = "<h1>User not found</h1><p>User ID: {$userId} does not exist.</p>";
     return new Response(HttpStatusCode::Ok, $content);
