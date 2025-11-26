@@ -118,6 +118,7 @@ export class GameEngine {
         }
 
         this.updateBall(deltaTime);
+        this.checkCollision();
     }
 
     // handle Keyboard input
@@ -161,5 +162,15 @@ export class GameEngine {
         }
     }
     
+    // Collision check
+    private checkCollision(): void {
+        const ball = this.gameState.ball;
+        const dimensions = this.canvas.getCanvasSize();
+
+        //top/bottom wall
+        if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= dimensions.height) {
+            ball.velocityY *= -1;
+        }
+    }
 
 }

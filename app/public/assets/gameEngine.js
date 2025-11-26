@@ -96,6 +96,7 @@ export class GameEngine {
             this.handleInput(this.inputHandler(), deltaTime);
         }
         this.updateBall(deltaTime);
+        this.checkCollision();
     }
     // handle Keyboard input
     handleInput(keyState, deltaTime) {
@@ -130,6 +131,15 @@ export class GameEngine {
         }
         else {
             targetPaddle.y = Math.min(dimensions.height - targetPaddle.height, targetPaddle.y + movement);
+        }
+    }
+    // Collision check
+    checkCollision() {
+        const ball = this.gameState.ball;
+        const dimensions = this.canvas.getCanvasSize();
+        //top/bottom wall
+        if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= dimensions.height) {
+            ball.velocityY *= -1;
         }
     }
 }
