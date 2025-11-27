@@ -97,3 +97,15 @@
 - exercises about flexbox 7
 
 ### --- Day 14: 26.11.2025 --- ###
+- started skelet of profile page
+- read about single page application
+- meeting
+
+### --- Day 15: 27.11.2025 --- ###
+continued with profile page
+
+- todo:
+	- transform into tailwind css
+	- put it together with the registration/ login part
+	- activate / deactivate sections
+	- adjust css to have one color theme(?)

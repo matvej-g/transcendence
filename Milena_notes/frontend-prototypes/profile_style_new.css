@@ -14,27 +14,28 @@ body {
     background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
 }
 
-a {
-    text-decoration: none;
-    color: #ff0055;
-    transition: color 0.3s ease;
-}
-
-a:hover {
-    color: #ff3366;
-}
-
 ul {
     list-style-type: none;
     padding: 0px;
     margin: 0px;
 }
 
-h1 {
-    font-size: 1rem;
-    color: #ff0055;
-    margin-left: 1rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+button {
+    background: linear-gradient(45deg, #2ecc71 0%, #27ae60 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 30px;
+    color: rgb(255, 255, 255);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    background: linear-gradient(45deg, #27ae60 0%, #2ecc71 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
 }
 
 h2 {
@@ -45,6 +46,7 @@ h2 {
 .header {
     display: flex;
     justify-content: space-between;
+	align-items: center;
     font-size: 1.2rem;
     padding: 0.6rem 2rem;
     flex-wrap: wrap;
@@ -60,14 +62,8 @@ h2 {
 .nav-bar-right, .nav-bar-left {
     display: flex;
     justify-content: space-between;
+	align-items: center;
     gap: 3rem;
-}
-
-.links {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin: 1rem;
 }
 
 .content {
@@ -145,6 +141,7 @@ img {
     position: relative;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
+	padding: 1rem;
 }
 
 .match-history .text-rectangle {
