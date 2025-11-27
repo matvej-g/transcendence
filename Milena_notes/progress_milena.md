@@ -92,3 +92,8 @@
 
 ### --- Day 12: 20.11.2025 --- ###
 - exercises about flexbox 3 - 6
+
+### --- Day 13: 21.11.2025 --- ###
+- exercises about flexbox 7
+
+### --- Day 14: 26.11.2025 --- ###
