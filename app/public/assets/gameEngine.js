@@ -142,7 +142,12 @@ export class GameEngine {
         const ball = this.gameState.ball;
         const dimensions = this.canvas.getCanvasSize();
         //top/bottom wall
-        if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= dimensions.height) {
+        if (ball.y - ball.radius <= 0) {
+            ball.y = ball.radius;
+            ball.velocityY *= -1;
+        }
+        else if (ball.y + ball.radius >= dimensions.height) {
+            ball.y = dimensions.height - ball.radius;
             ball.velocityY *= -1;
         }
         //paddle collison
@@ -171,7 +176,7 @@ export class GameEngine {
             ball.velocityX = (newVelocityX / magnitude) * speed;
             ball.velocityY = (newVelocityY / magnitude) * speed;
             //increase speed on each hit
-            ball.speed *= 1.05;
+            ball.speed = Math.min(ball.speed * 1.05, 300);
             //prevent stuck in paddle
             if (ball.velocityX > 0) {
                 ball.x = paddle.x + paddle.width + ball.radius;
