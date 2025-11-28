@@ -87,8 +87,7 @@ h2 {
     flex: 1 2 auto;
     width: 100%;
     background: linear-gradient(135deg, #40e5c9 0%, #2ecc71 100%);
-    padding: 2rem;
-    border-radius: 2rem;
+    padding: 1rem;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     flex-wrap: wrap;
 }
@@ -122,6 +121,7 @@ img {
     gap: 3rem;
     flex-direction: row;
     color: black;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .match-history {
@@ -135,7 +135,6 @@ img {
     margin: 1rem;
     padding: 1rem 2rem;
     flex: 1;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .text-rectangle {
