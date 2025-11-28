@@ -39,7 +39,9 @@ button:hover {
 }
 
 h1 {
+    font-size: 1.5rem;
     color: #40e5c9;
+    margin: 0px;
 }
 
 h2 {
@@ -52,7 +54,7 @@ h2 {
     justify-content: space-between;
 	align-items: center;
     font-size: 1rem;
-    padding: 0.6rem 2rem;
+    padding: 0.1rem 2rem;
     flex-wrap: wrap;
     color: white;
     background: linear-gradient(45deg, #2c3e50 0%, #3498db 100%);
@@ -166,8 +168,16 @@ img {
   flex: 0 0 auto;
 } */
 
+.match-middle {
+    display: flex;
+    justify-content: start;
+    gap: 1rem;
+    margin: 0 2rem;
+    width: 70%;
+}
+
 .nickname {
-  max-width: 20%;
+  max-width: 60%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
