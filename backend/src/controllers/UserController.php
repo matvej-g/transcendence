@@ -79,4 +79,11 @@ class UserController {
 			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
 		return new Response(HttpStatusCode::Ok, $body, ['Content-Type' => 'application/json']);
 	}
+
+	public function deleteUser(Request $request, $parameters): Response
+	{
+		$id = $request->postParams['id'] ?? null;
+		// invalid or empty
+		// not an int
+	}
 }

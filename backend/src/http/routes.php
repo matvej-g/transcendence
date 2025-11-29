@@ -16,6 +16,7 @@ $this->router->get('/api/user/{id}', [UserController::class, 'getUser']);
 // $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByName']);
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
 $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
+$this->router->delete('/api/user/login', [UserController::class, 'deleteUser']);
 
 // matches
 $this->router->get('/api/matches', [MatchesController::class, 'getMatches']);

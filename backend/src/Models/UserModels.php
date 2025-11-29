@@ -14,7 +14,6 @@ class UserModels {
 	{
 	}
 
-
 	public function getUserByUsernameOrEmail($usernameOrEmail) {
 		return $this->db->query(
 			"SELECT * FROM users WHERE username = ? OR email = ?",
