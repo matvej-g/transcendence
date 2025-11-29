@@ -20,6 +20,23 @@ class Validator
 	}
 
 
+	public static function validateUpdateUserData($userName, $email, $password = null) {
+		$errors = [];
+
+		if (!$userName || !$email)
+			$errors['Input'] = 'missing';
+		if (!self::validateString($userName, 1, 15))
+			$errors['userName'] = 'invalid';
+		if (!self::validateEmail($email))
+			$errors['email'] = 'invalid';
+		if ($password !== null) {
+			if (!self::validateString($password, 3, 15))
+				$errors['password'] = 'invalid';
+		}
+
+		return $errors;
+	}
+
 	public static function validateNewUserData($userName, $email, $password) {
 		$errors = [];
 

@@ -18,7 +18,10 @@ class Kernel
 	}
 
 	public function handle(Request $request): Response
-	{		
+	{	
+		if ($request->postParams === null) {
+    		return new Response(HttpStatusCode::BadRequest, ["error" => "Invalid JSON body"], ['Content-Type' => 'application/json']);
+		}
 		// extract the value without query string from url under key path
 		$uri = parse_url($request->getUri())['path'];		
 		

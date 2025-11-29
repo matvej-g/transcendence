@@ -50,11 +50,6 @@ class Router {
 		$pattern = preg_replace('/\{(\w+)\}/', '(?P<\1>[^/]+)', $route['uri']);
 		$pattern = "#^" . $pattern . "$#";
 		if (preg_match($pattern, $uri, $matches)) {
-			// dump('uri: '.$uri);
-			// dump('route: '.$route['uri']);
-			// dump('pattern:'.$pattern);
-			// dump($matches);
-			// die();
 			return $matches;
 		}
 		return false;

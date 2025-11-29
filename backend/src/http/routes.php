@@ -13,10 +13,13 @@ $this->router->get('/game', 'src/controllers/game.php');
 // users
 $this->router->get('/api/users', [UserController::class, 'getUsers']);
 $this->router->get('/api/user/{id}', [UserController::class, 'getUser']);
-// $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByName']);
+$this->router->get('/api/user/{email}', [UserController::class, 'getUserByEmail']);
+$this->router->get('/api/user/{userName}', [UserController::class, 'getUserByUsername']);
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
 $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
-$this->router->delete('/api/user/login', [UserController::class, 'deleteUser']);
+$this->router->patch('/api/user/update', [UserController::class, 'updateUser']);
+$this->router->patch('/api/user/changePassword', [UserController::class, 'changePassword']);
+$this->router->delete('/api/user/{id}', [UserController::class, 'deleteUser']);
 
 // matches
 $this->router->get('/api/matches', [MatchesController::class, 'getMatches']);
