@@ -79,6 +79,7 @@ export function t(flatKey: FlatKey): string {
 type LangListener = (lang: Lang) => void;
 const listeners = new Set<LangListener>();
 
+// adds callback for lang change events
 export function onLangChange(cb: LangListener): () => void {
   listeners.add(cb);
   return () => listeners.delete(cb);
@@ -97,7 +98,7 @@ export function setLang(lang: Lang) {
     // ignore if not implemented/available
   }
 
-  listeners.forEach((cb) => cb(lang));
+  listeners.forEach((cb) => cb(lang)); // execeutes all listeners/callbacks
 }
 
 // -------- DOM helper (HTML texts) --------
