@@ -2,21 +2,20 @@
 
 namespace src\controllers;
 
-use src\Database; // alias full namespace: makes it possible to use class name alone
+use src\Database;
 use src\http\HttpStatusCode;
 use src\http\Request;
 use src\http\Response;
-use src\Models\UserModels;
+use src\Models\UserModel;
 use src\Validator;
 
 class UserController {
 
-	private UserModels $users;
-
+	private UserModel $users;
 
 	public function __construct(Database $db)
 	{
-		$this->users = new UserModels($db);
+		$this->users = new UserModel($db);
 	}
 
 	public function getUser(Request $request, $parameters): Response

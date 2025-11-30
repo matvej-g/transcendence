@@ -20,6 +20,16 @@ class Response
 		return $this->status->value;
 	}
 
+	public function getContent(): mixed
+	{
+		return $this->content;
+	}
+
+	public function getHeaders(): array
+	{
+		return $this->headers;
+	}
+
 	public function send(): void
 	{
 		http_response_code($this->status->value);

@@ -5,9 +5,6 @@ use src\controllers\TournamentController;
 use src\controllers\UserController;
 
 // pages
-$this->router->get('/', 'src/controllers/home.php');
-$this->router->get('/about', 'src/controllers/about.php');
-$this->router->get('/contact', 'src/controllers/contact.php');
 $this->router->get('/game', 'src/controllers/game.php');
 
 // users
@@ -25,6 +22,8 @@ $this->router->delete('/api/user/{id}', [UserController::class, 'deleteUser']);
 $this->router->get('/api/matches', [MatchesController::class, 'getMatches']);
 $this->router->get('/api/match/{id}', [MatchesController::class, 'getMatch']);
 $this->router->post('/api/match/new', [MatchesController::class, 'newMatch']);
+$this->router->patch('/api/match/{id}/end', [MatchesController::class, 'endMatch']);
+$this->router->patch('/api/match/{id}', [MatchesController::class, 'updateScore']);
 
 // tournaments
 $this->router->get('/api/tournaments', [TournamentController::class, 'getTournaments']);

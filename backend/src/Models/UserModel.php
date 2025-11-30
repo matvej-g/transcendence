@@ -6,7 +6,7 @@ use src\Database;
 use PDO;
 
 // handles query logic for Users
-class UserModels {
+class UserModel {
 
 	public function __construct(
 		private Database $db
