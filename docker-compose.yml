@@ -10,6 +10,18 @@ services:
       - trancendence
     expose:
       - "9000"
+  websocket:
+    build:
+      context: .
+      dockerfile: docker/websocket/Dockerfile
+    container_name: websocket
+    volumes:
+      - ./app/backend:/var/www/backend
+    networks:
+      - trancendence
+    ports:
+      - "8081:8080"
+    command: php /var/www/backend/server.php
   nginx:
     build:
       context: .
@@ -24,6 +36,7 @@ services:
       - "8080:80"
     depends_on:
       - php
+      - websocket
 
 networks:
   trancendence:

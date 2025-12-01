@@ -38,7 +38,7 @@ server {
 	#
 	# include snippets/snakeoil.conf;
 
-	root /var/www/public;
+	root /var/www/html;
 
 	# Add index.php to the list if you are using PHP
 	index index.php index.html index.htm index.nginx-debian.html;
@@ -48,7 +48,7 @@ server {
 	location / {
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.
-		try_files $uri /index.php?$args;
+		try_files $uri $uri/ /index.php?$query_string;
 		#try_files $uri $uri/ =404;
 	}
 
@@ -62,6 +62,7 @@ server {
 		# fastcgi_pass unix:/run/php/php7.4-fpm.sock;
 		# With php-cgi (or other tcp sockets):
 		fastcgi_pass php:9000;
+		fastcgi_index index.php;
 	}
 
 	# deny access to .htaccess files, if Apache's document root
@@ -70,6 +71,14 @@ server {
 	#location ~ /\.ht {
 	#	deny all;
 	#}
+	location /ws {
+        proxy_pass http://websocket:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+		proxy_read_timeout 86400; #24h timeout 
+    }
 }
 
 
