@@ -1,7 +1,19 @@
 <?php
+require __DIR__ . '/vendor/autoload.php';
 
-echo "WebSocket Server would run here...\n";
+use Ratchet\Server\IoServer;
+use Ratchet\Http\HttpServer;
+use Ratchet\WebSocket\WsServer;
+use App\GameServer;
 
-while(true) {
-    sleep(3600);
-}
+$server = IoServer::factory(
+    new HttpServer(
+        new WsServer(
+            new GameServer()
+        )
+    ),
+    8080
+);
+
+echo "WebSocket Server running on port 8080\n";
+$server->run();
