@@ -128,5 +128,7 @@
 	- settings dropdown should be in the middle
 	- how to include language button in landing page??
 	- match history recenter
-	- show footer also in the beginning
+	- show footer also with auth
+	- 
+
 
