@@ -11,15 +11,25 @@
 
 	<nav class="header flex flex-wrap justify-between items-center text-white px-5 py-0.25 shadow-lg bg-gradient-to-br from-[#2c3e50] to-[#3498db]">
         <ul class="nav-bar-left flex gap-12">
-            <li class="nav-item">Profile</li>
-            <li class="nav-item">Game</li>
-            <li class="nav-item">Friends</li>
-            <li class="nav-item">Chat</li>
+            <li class="nav-item"><a href="#profile" class="hover:text-emerald-400 transition-colors">Profile</a></li>
+            <li class="nav-item"><a href="#game" class="hover:text-emerald-400 transition-colors">Game</a></li>
+            <li class="nav-item"><a href="#friends" class="hover:text-emerald-400 transition-colors">Friends</a></li>
+            <li class="nav-item"><a href="#chat" class="hover:text-emerald-400 transition-colors">Chat</a></li>
         </ul>
         <h1 class="text-xl text-emerald-400">ft_transcendence</h1>
         <ul class="nav-bar-right flex gap-12 items-center">
-            <li>Language</li>
-            <li>Settings</li>
+            <li class="relative group">
+                <button class="hover:text-emerald-400 transition-colors">Language</button>
+            </li>
+            <li class="relative group">
+                <button class="hover:text-emerald-400 transition-colors">Settings</button>
+                <div class="absolute right-0 mt-0 w-48 bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                    <a href="#settings/edit-username" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-t-lg transition-colors">Edit Username</a>
+                    <a href="#settings/change-password" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors">Change Password</a>
+                    <a href="#settings/change-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors">Change Avatar</a>
+                    <a href="#settings/2fa" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-b-lg transition-colors">2-Factor Auth</a>
+                </div>
+            </li>
             <button class="bg-gradient-to-r from-green-400 to-green-500 hover:bg-gradient-to-r hover:from-green-500 hover:to-green-400 border-none rounded-3xl px-4 py-1.5 my-1 text-white font-bold cursor-pointer transition-all duration-300 shadow-md hover:-translate-y-1 hover:shadow-lg">
                 Logout
             </button>
@@ -29,7 +39,7 @@
     <div class="content flex-1 flex flex-col justify-start items-center">
         <div class="profile flex justify-around items-center w-full bg-gradient-to-r from-[#40e5c9] to-[#2ecc71] p-4 shadow-lg flex-wrap">
             <div class="avatar-name flex flex-col items-center">
-                <img src="../profile_avatar.jpg" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
+                <img src="profile_avatar.jpg" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
                 <h2 class="text-white font-bold text-lg">nickname</h2>
             </div>
 
