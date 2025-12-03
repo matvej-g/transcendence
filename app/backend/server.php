@@ -12,8 +12,8 @@ $server = IoServer::factory(
             new GameServer()
         )
     ),
-    8080
+    8080,
+    '0.0.0.0'
 );
 
-echo "WebSocket Server running on port 8080\n";
 $server->run();

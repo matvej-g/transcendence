@@ -6,6 +6,7 @@ class GameManager {
     constructor() {
         this.gameEngine = null;
         this.keyState = {};
+        this.socket = null;
         this.mainMenu = document.getElementById('mainMenu');
         this.gameModeMenu = document.getElementById('gameModeMenu');
         this.playButton = document.getElementById('playButton');
@@ -49,8 +50,9 @@ class GameManager {
     }
     startRemoteGame() {
         console.log('Starting remote game...');
-        // TODO: Implementiere Remote Game Logic
-        alert('Starting Remote Game vs Player!');
+        this.gameModeMenu?.classList.add('hidden');
+        this.gameCanvas.show();
+        this.connectToServer('ws://localhost:8080/ws');
     }
     exitGame() {
         console.log('Exit game, back to GameModeSelection');
@@ -63,6 +65,38 @@ class GameManager {
     }
     getInputState() {
         return this.keyState;
+    }
+    connectToServer(url) {
+        console.log(`Connecting to ${url}...`);
+        try {
+            this.socket = new WebSocket(url);
+            this.setupEventHandlers();
+        }
+        catch (error) {
+            console.error('Failed to connect:', error);
+        }
+    }
+    // Event handler for websockets
+    setupEventHandlers() {
+        if (!this.socket)
+            return;
+        this.socket.onopen = () => {
+            console.log('Connected to server!');
+            this.socket?.send(JSON.stringify({
+                type: 'join',
+                data: { gameMode: 'remote' }
+            }));
+        };
+        this.socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            console.log('Message from server:', message);
+        };
+        this.socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+        this.socket.onclose = () => {
+            console.log('Connection closed');
+        };
     }
 }
 // Initialize when DOM is ready
