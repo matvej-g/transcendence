@@ -102,10 +102,25 @@
 - meeting
 
 ### --- Day 15: 27.11.2025 --- ###
-continued with profile page
+- continued with profile page
 
 - todo:
 	- transform into tailwind css
 	- put it together with the registration/ login part
 	- activate / deactivate sections
 	- adjust css to have one color theme(?)
+
+### --- Day 16: 28.11.2025 --- ###
+- finished profile page html/css
+- transformed it to tailwind css
+
+### --- Day 17: 03.12.2025 --- ###
+- read something about javascript
+- think about how to organize spa
+
+- next steps:
+	- pull from master
+	- use copilot
+	- edit profile html so navbar elements are with <a>
+	- put index and profile into one file
+		- try to use pretend-login button to do activate / disactivate sections

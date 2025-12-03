@@ -228,6 +228,11 @@ if needed I could do:
 	- All JavaScript code is valid TypeScript code
 	- TypeScript compiles down to regular JavaScript
 
+## javascript
+- assign variables:
+	- let, which we can re-assign. (old one was "var")
+	- const which we can’t re-assign and will throw an error if we try.
+
 ## tailwind css
 - CSS frameworks are like toolkits for making websites look good without having to start from scratch.
 - Utility-first frameworks like Tailwind CSS give you lots of small design choices that you can put together in different ways.
