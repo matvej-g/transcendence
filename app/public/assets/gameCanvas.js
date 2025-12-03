@@ -108,4 +108,15 @@ export class GameCanvas {
         container?.classList.add('hidden');
         console.log('Game canvas hidden');
     }
+    // for remote Play
+    showSearching() {
+        if (!this.renderingContext || !this.canvas)
+            return;
+        this.clear();
+        this.renderingContext.fillStyle = '#ffffff';
+        this.renderingContext.font = 'bold 48px Arial';
+        this.renderingContext.textAlign = 'center';
+        this.renderingContext.textBaseline = 'middle';
+        this.renderingContext.fillText('Searching for players...', this.canvas.width / 2, this.canvas.height / 2);
+    }
 }
