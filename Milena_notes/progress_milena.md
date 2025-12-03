@@ -117,10 +117,16 @@
 ### --- Day 17: 03.12.2025 --- ###
 - read something about javascript
 - think about how to organize spa
+- edit profile html so navbar elements are with <a>
+- merged index and profile into one file
+- use pretend-login button to do activate / disactivate sections
+- did some style changes
 
-- next steps:
-	- pull from master
-	- use copilot
-	- edit profile html so navbar elements are with <a>
-	- put index and profile into one file
-		- try to use pretend-login button to do activate / disactivate sections
+- todo:
+	- export script into ts file
+	- apply changes on login button like i did on pretend login
+	- settings dropdown should be in the middle
+	- how to include language button in landing page??
+	- match history recenter
+	- show footer also in the beginning
+
