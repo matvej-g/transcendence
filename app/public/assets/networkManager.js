@@ -26,9 +26,11 @@ export class NetworkManager {
         switch (message.type) {
             case 'connected':
                 console.log('Server confirmed:', message.data);
+                this.canvas.show();
                 break;
             case 'matchFound':
                 console.log('Match found!');
+                this.canvas.clear();
                 break;
             case 'gameState':
                 this.canvas.render(message.data);

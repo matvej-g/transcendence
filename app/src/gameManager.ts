@@ -15,6 +15,7 @@ export {};
 
 import { GameCanvas } from './gameCanvas.js';
 import { GameEngine } from './gameEngine.js';
+import { NetworkManager } from './networkManager.js';
 
 // Game Manager Class
 class GameManager {
@@ -28,9 +29,8 @@ class GameManager {
     
     private gameCanvas: GameCanvas;
     private gameEngine: GameEngine | null = null;
+    private networkManager: NetworkManager;
     private keyState: {[key: string]: boolean} = {}; 
-    
-    private socket: WebSocket | null = null;
 
     //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
@@ -43,7 +43,8 @@ class GameManager {
         this.exitGameButton = document.getElementById('exitGameButton');
         
         this.gameCanvas = new GameCanvas();
-        
+        this.networkManager = new NetworkManager(this.gameCanvas);
+
         this.initEventListeners();
         this.loadInitialData();
     }
@@ -87,8 +88,7 @@ class GameManager {
     private startRemoteGame(): void {
         console.log('Starting remote game...');
         this.gameModeMenu?.classList.add('hidden');
-        this.gameCanvas.show();
-        this.connectToServer('ws://localhost:8080/ws');
+        this.networkManager.connect('ws://localhost:8080/ws');
     }
 
     private exitGame(): void {
@@ -105,44 +105,6 @@ class GameManager {
 
     public getInputState() {
         return this.keyState;
-    }
-
-    private connectToServer(url: string): void {
-        console.log(`Connecting to ${url}...`);
-        
-        try {
-            this.socket = new WebSocket(url);
-            this.setupEventHandlers();
-        } catch (error) {
-            console.error('Failed to connect:', error);
-        }
-    }
-
-    // Event handler for websockets
-    private setupEventHandlers(): void {
-        if (!this.socket) return;
-
-        this.socket.onopen = () => {
-            console.log('Connected to server!');
-            
-            this.socket?.send(JSON.stringify({
-                type: 'join',
-                data: { gameMode: 'remote' }
-            }));
-        };
-
-        this.socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            console.log('Message from server:', message);
-        };
-
-        this.socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-
-        this.socket.onclose = () => {
-            console.log('Connection closed');
-        };
     }
 }
 

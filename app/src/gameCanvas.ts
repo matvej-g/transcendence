@@ -19,7 +19,7 @@ export class GameCanvas {
     }
 
 	// Clear entire canvas
-    private clear(): void {
+    public clear(): void {
         if (!this.renderingContext || !this.canvas) return;
         this.renderingContext.fillStyle = '#1a1a1a';
         this.renderingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
