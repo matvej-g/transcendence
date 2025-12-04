@@ -41,24 +41,18 @@ class Router {
 	}
 
 
+	//  extracts {id} from route['uri'] and stores it inside the capture group 1
+	// 	replacing with regex expression for matching one or more characters after a slash
+	//  that capture group inside the string is named after the value that we have replaced it with which is id
 	public function convert($route, $uri)
 	{
-		//  extracts {id} from route['uri'] and stores it inside the capture group 1
-		// 	replacing with regex expression for matching one or more characters after a slash
-		//  that capture group inside the string is named after the value that we have replaced it with which is id
 
-		// dump('uri: '.$uri);
-		// dump('route: '.$route['uri']);
 		$pattern = preg_replace('/\{(\w+)\}/', '(?P<\1>[^/]+)', $route['uri']);
 		$pattern = "#^" . $pattern . "$#";
-		// dump('pattern:'.$pattern);
 		if (preg_match($pattern, $uri, $matches)) {
 			return $matches;
 		}
 		return false;
-		// convert /api/user/{id} to regular expression
-		//  /api/user/{id}
-		// match regular expression
 	}
 
 

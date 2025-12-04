@@ -1,4 +1,3 @@
-<!-- david -->
 <?php
 
 // load from base path

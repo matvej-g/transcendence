@@ -6,10 +6,10 @@ export async function registerHandle(username: string, password: string): Promis
   console.log('[TS] registerHandle → input', { username, password });
 
   try {
-    const res = await fetch('/api/Register.php', {
+    const res = await fetch('/api/user/new', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernameOrEmail: username.trim(), password })
+      body: JSON.stringify({ userName: username.trim(), password })
     });
 
     const text = await res.text();
@@ -27,7 +27,7 @@ export async function registerHandle(username: string, password: string): Promis
     }
 
     // Expecting { ok: true, user: {...} } from PHP stub
-    return { ok: true, user: data.user };
+    return { ok: true, user: { id: data.id, username: data.userName } };
   } catch (e) {
     console.log('[TS] registerHandle → exception', e);
     return { ok: false, error: 'NETWORK_ERROR' };

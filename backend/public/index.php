@@ -1,5 +1,4 @@
 <?php
-// <!-- david -->
 // prevents silent type conversions
 declare(strict_types=1);
 use src\http\Kernel;
