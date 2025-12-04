@@ -5,7 +5,6 @@ namespace src\Models;
 use src\Database;
 use PDO;
 
-// handles query logic for Users
 class UserModel {
 
 	public function __construct(

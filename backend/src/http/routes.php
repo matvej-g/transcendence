@@ -24,6 +24,7 @@ $this->router->get('/api/match/{id}', [MatchesController::class, 'getMatch']);
 $this->router->post('/api/match/new', [MatchesController::class, 'newMatch']);
 $this->router->patch('/api/match/{id}/end', [MatchesController::class, 'endMatch']);
 $this->router->patch('/api/match/{id}', [MatchesController::class, 'updateScore']);
+$this->router->delete('/api/match/{id}', [MatchesController::class, 'deleteMatch']);
 
 // tournaments
 $this->router->get('/api/tournaments', [TournamentController::class, 'getTournaments']);

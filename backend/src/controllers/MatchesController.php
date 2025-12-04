@@ -154,8 +154,25 @@ class MatchesController{
 	}
 
 	// delete
-	public function deleteMatch()
+	public function deleteMatch(Request $request, $parameters): Response
 	{
-		
+		$id = $parameters['id'] ?? null;
+		if ($id === null || !ctype_digit($id)) {
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input not a valid match id"], ['Content-Type' => 'application/json']);	
+		}
+		$deletedRows = $this->matches->deleteMatch($id);
+		if ($deletedRows === null) {
+			return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
+		} elseif ($deletedRows === 0) {
+			return new Response(HttpStatusCode::NotFound, ["error" => "Match not found"], ['Content-Type' => 'application/json']);
+		}
+		return new Response(HttpStatusCode::Ok,["message" => "Match deleted successfully"], ['Content-Type' => 'application/json']);
+		// verify id
+		// if invalid return bad request
+		// get match by id
+		// if null databse error
+		// if not found return 404
+		// delete match in table
+		// return ok
 	}
 }

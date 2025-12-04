@@ -73,4 +73,17 @@ class MatchesModel {
 			return null;
 		}	
 	}
+
+	public function deleteMatch($matchId) {
+		try {
+			$statement = $this->db->query(
+				"DELETE FROM matches where id = ?",
+				[$matchId]
+			);
+			return $statement->rowCount();
+		}
+		catch (\PDOException) {
+			return null;
+		}
+	}
 }

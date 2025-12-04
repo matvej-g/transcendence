@@ -22,6 +22,23 @@ class TournamentController
 		return new Response(HttpStatusCode::Ok, $allTournaments, ['Content-Type' => 'application/json']);
 	}
 
+	public function getTournamentByName(Request $request, $parameters): Response
+	{
+		// not sure if is_string isreally needed
+		$name = $parameters['name'] ?? null;
+		if ($name === null || !is_string($name)) {
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
+		}
+		$tournament = $this->tournaments->getTournamentByName($name);
+		if ($tournament === null) {
+			return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
+		} elseif (!$tournament) {
+			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
+		}
+		return new Response(HttpStatusCode::Ok, $tournament, ['Content-Type' => 'application/json']);
+
+	}
+
 	public function getTournament(Request $request, $parameters): Response {
 		$id = $parameters['id'] ?? null;
 		if (!ctype_digit($id))
