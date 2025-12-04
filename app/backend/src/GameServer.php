@@ -41,17 +41,28 @@ class GameServer implements MessageComponentInterface {
 
                 $gameID = uniqid('game_');
                 $player->gameID = $gameID;
+                $player->paddle = 'left';
+
                 $opponent->gameID = $gameID;
+                $opponent->paddle = 'right';
 
                 echo "GameID created: { $gameID }, playergameID: { $player->gameID }, oppennent gameID { $opponent->gameID }.\n";
 
                 $player->send([
                     'type' => 'matchFound',
-                    'data' => ['message' => 'Match found! Starting game.']
+                    'data' => [
+                        'message' => 'Match found! Starting game.',
+                        'paddle' => 'left',
+                        'gameID' => $gameID
+                    ]
                 ]);
                 $opponent->send([
                     'type' => 'matchFound',
-                    'data' => ['message' => 'Match found! Starting game.']
+                    'data' => [
+                        'message' => 'Match found! Starting game.',
+                        'paddle' => 'right',
+                        'gameID' => $gameID    
+                    ]
                 ]);
 
                 $this->games[$gameID] = [
@@ -69,12 +80,43 @@ class GameServer implements MessageComponentInterface {
     }
 
     public function onClose(ConnectionInterface $conn) {
+        if (!isset($this->players[$conn])) return;
+
         $player = $this->players[$conn];
         echo "Connection closed: {$player->userID}\n";
+        
+        //remove player from waiting list
         $this->waitingPlayers = array_filter(
             $this->waitingPlayers,
             fn($p) => $p->userID !== $player->userID
         );
+
+        //send player message that opponent disconnected/left
+        if ($player->gameID && isset($this->games[$player->gameID])) {
+            $gameID = $player->gameID;
+            $game = $this->games[$gameID];
+
+            //find opponent
+            $opponent = null;
+            if ($game['player1']->userID === $player->userID) {
+                $opponent = $game['player2'];
+            } elseif ($game['player2']->userID === $player->userID) {
+                $opponent = $game['player1'];
+            }
+
+            if ($opponent && isset($this->players[$opponent->conn])) {
+                $opponent->send([
+                    'type' => 'opponentDisconnected',
+                    'data' => [
+                        'message' => 'Opponend disconnected. You win!',
+                        'winner' => $opponent->paddle
+                    ]
+                ]);
+                $opponent->gameID = null;
+                $opponent->paddle = null;
+            }
+            unset($this->games[$gameID]);
+        }
         unset($this->players[$conn]);
     }
 

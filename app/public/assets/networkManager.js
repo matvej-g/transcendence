@@ -38,6 +38,10 @@ export class NetworkManager {
             case 'gameOver':
                 this.canvas.drawWinner(message.data.winner);
                 break;
+            case 'opponentDisconnected':
+                console.log('Opponent disconnected:', message.data);
+                this.canvas.drawWinner(message.data.winner);
+                break;
         }
     }
     onError(error) {
