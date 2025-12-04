@@ -33,6 +33,7 @@ class GameServer implements MessageComponentInterface {
         $data = json_decode($msg, true);
         echo "Message from {$player->userID}: {$msg}\n";
 
+        //handle join players
         if ($data['type'] === 'join') {
             echo "Player {$player->userID} searching for match...\n";
             if (count($this->waitingPlayers) > 0) {
@@ -68,7 +69,8 @@ class GameServer implements MessageComponentInterface {
                 $this->games[$gameID] = [
                     'player1' => $player,
                     'player2' => $opponent,
-                    'started' => time()
+                    'started' => time(),
+                    'engine' => new GameEngine($gameID)
                 ];
                 //TODO: create game and start
             } else {
@@ -76,6 +78,23 @@ class GameServer implements MessageComponentInterface {
                 $this->waitingPlayers[] = $player;
                 echo "Player {$player->userID} added to waiting queue.\n";
             }
+        }
+
+        //handle input from players(paddle movement)
+        if ($data['type'] === 'input') {
+            if (!$player->gameID || !isset($this->games[$player->gameID])) {
+                return;
+            }
+            $game = $this->games[$player->gameID];
+            $engine = $game['engine'];
+            $direction = $data['data']['direction'] ?? null;
+
+            if ($direction && in_array($direction, ['up', 'down'])) {
+                $engine->movePaddle($player->paddle, $direction, 0.016); //~60 fps deltaTime
+            }
+
+            //jsut for testing
+            $this->gameLoop($player->gameID);
         }
     }
 
@@ -123,5 +142,19 @@ class GameServer implements MessageComponentInterface {
     public function onError(ConnectionInterface $conn, \Exception $e) {
         echo "Error: {$e->getMessage()}\n";
         $conn->close();
+    }
+
+    private function gameLoop(string $gameID): void {
+        $game = $this->games[$gameID];
+        $newState = $game['engine']->update();
+
+        $game['player1']->send([
+            'type' => 'gameState',
+            'data' => $newState
+        ]);
+        $game['player2']->send([
+            'type' => 'gameState',
+            'data' => $newState
+        ]);
     }
 }

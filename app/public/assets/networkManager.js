@@ -31,8 +31,10 @@ export class NetworkManager {
             case 'matchFound':
                 console.log('Match found!');
                 this.canvas.clear();
+                this.setupInputHandlers();
                 break;
             case 'gameState':
+                //console.log('GameState recived:', message.data);
                 this.canvas.render(message.data);
                 break;
             case 'gameOver':
@@ -58,5 +60,23 @@ export class NetworkManager {
     }
     disconnect() {
         this.socket?.close();
+    }
+    setupInputHandlers() {
+        // Keydown - Spieler drückt Taste
+        document.addEventListener('keydown', (e) => {
+            let direction = '';
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                direction = 'up';
+            }
+            else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                direction = 'down';
+            }
+            if (direction) {
+                this.send({
+                    type: 'input',
+                    data: { direction }
+                });
+            }
+        });
     }
 }
