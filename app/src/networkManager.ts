@@ -68,4 +68,8 @@ export class NetworkManager {
             this.socket.send(JSON.stringify(data));
         }
     }
+
+	public disconnect(): void {
+		this.socket?.close();
+	}
 }

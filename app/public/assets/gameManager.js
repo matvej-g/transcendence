@@ -60,6 +60,7 @@ class GameManager {
             this.gameEngine.stop();
             this.gameEngine = null;
         }
+        this.networkManager.disconnect();
         this.gameCanvas.hide();
         this.gameModeMenu?.classList.remove('hidden');
     }

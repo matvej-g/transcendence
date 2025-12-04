@@ -7,6 +7,7 @@ use Ratchet\ConnectionInterface;
 class GameServer implements MessageComponentInterface {
     protected $players;
     private array $waitingPlayers = [];
+    private array $games = [];
 
     public function __construct() {
         $this->players = new \SplObjectStorage;
@@ -38,6 +39,12 @@ class GameServer implements MessageComponentInterface {
                 $opponent = array_shift($this->waitingPlayers);
                 echo "Match found! {$player->userID} vs {$opponent->userID}\n";
 
+                $gameID = uniqid('game_');
+                $player->gameID = $gameID;
+                $opponent->gameID = $gameID;
+
+                echo "GameID created: { $gameID }, playergameID: { $player->gameID }, oppennent gameID { $opponent->gameID }.\n";
+
                 $player->send([
                     'type' => 'matchFound',
                     'data' => ['message' => 'Match found! Starting game.']
@@ -46,11 +53,17 @@ class GameServer implements MessageComponentInterface {
                     'type' => 'matchFound',
                     'data' => ['message' => 'Match found! Starting game.']
                 ]);
+
+                $this->games[$gameID] = [
+                    'player1' => $player,
+                    'player2' => $opponent,
+                    'started' => time()
+                ];
                 //TODO: create game and start
             } else {
                 //no opponent found yet
                 $this->waitingPlayers[] = $player;
-                echo "Player {$player->usedID} added to waiting queue.\n";
+                echo "Player {$player->userID} added to waiting queue.\n";
             }
         }
     }

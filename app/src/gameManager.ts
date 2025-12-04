@@ -99,6 +99,7 @@ class GameManager {
             this.gameEngine = null;
         }
 
+        this.networkManager.disconnect();
         this.gameCanvas.hide();
         this.gameModeMenu?.classList.remove('hidden');
     }

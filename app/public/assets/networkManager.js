@@ -52,4 +52,7 @@ export class NetworkManager {
             this.socket.send(JSON.stringify(data));
         }
     }
+    disconnect() {
+        this.socket?.close();
+    }
 }
