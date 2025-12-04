@@ -30,6 +30,7 @@ class GameEngine {
                 'width' => self::PADDLE_WIDTH,
                 'height' => self::PADDLE_HEIGHT,
                 'speed' => self::PADDLE_SPEED,
+                'velocity' => 0, // -1,0,1 
                 'score' => 0
             ],
             'rightPaddle' => [
@@ -38,6 +39,7 @@ class GameEngine {
                 'width' => self::PADDLE_WIDTH,
                 'height' => self::PADDLE_HEIGHT,
                 'speed' => self::PADDLE_SPEED,
+                'velocity' => 0, // -1,0,1
                 'score' => 0
             ],
             'ball' => [
@@ -61,30 +63,38 @@ class GameEngine {
 		$deltaTime = $currentTime - $this->lastUpdate;
 		$this->lastUpdate = $currentTime;
 
+		$this->updatePaddles($deltaTime);
+
 		//update ball pos
 		//check collisions
 		//check score
 		return $this->gameState;
 	}
 
+	private function updatePaddles(float $deltaTime): void {
+		foreach (['leftPaddle', 'rightPaddle'] as $paddleKey) {
+			$velocity = $this->gameState[$paddleKey]['velocity'];
 
-	public function movePaddle(string $paddle, string $direction, float $deltaTime): void {
-        $paddleKey = $paddle === 'left' ? 'leftPaddle' : 'rightPaddle';
-        $movement = $this->gameState[$paddleKey]['speed'] * $deltaTime;
+			if ($velocity != 0) {
+				$movement = $this->gameState[$paddleKey]['speed'] * $deltaTime * $velocity;
+				$this->gameState[$paddleKey]['y'] += $movement;
 
-        if ($direction === 'up') {
-            $this->gameState[$paddleKey]['y'] = max(
-                0, 
-                $this->gameState[$paddleKey]['y'] - $movement
-            );
-        } elseif ($direction === 'down') {
-            $maxY = self::CANVAS_HEIGHT - $this->gameState[$paddleKey]['height'];
-            $this->gameState[$paddleKey]['y'] = min(
-                $maxY,
-                $this->gameState[$paddleKey]['y'] + $movement
-            );
-        }
-    }
+				$this->gameState[$paddleKey]['y'] = max(
+					0,
+					min(
+						self::CANVAS_HEIGHT - $this->gameState[$paddleKey]['height'],
+						$this->gameState[$paddleKey]['y']
+					)
+				);
+			}
+		}
+	}
+
+	public function setPaddleVelocity(string $paddle, int $velocity): void {
+		$paddleKey = $paddle === 'left' ? 'leftPaddle' : 'rightPaddle';
+		//clamp velocity to -1, 0, -1
+		$this->gameState[$paddleKey]['velocity'] = max(-1, min(1, $velocity));
+	}
 
 
 

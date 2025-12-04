@@ -6,6 +6,9 @@ export class NetworkManager {
 	private socket: WebSocket | null = null;
 	private roomId: string | null = null;
 	private playerRole: 'left' | 'right' | null = null;
+	private currentGameState: any = null;
+	private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
+	private keyupHandler: ((e: KeyboardEvent) => void) | null = null;
 
 	constructor(canvas: GameCanvas) {
 		this.canvas = canvas;
@@ -46,18 +49,19 @@ export class NetworkManager {
 				break;
 
 			case 'gameState':
-				//console.log('GameState recived:', message.data);
+				console.log('GameState received:', message.data);
 				this.canvas.render(message.data);
 				break;
-			
+
 			case 'gameOver':
 				this.canvas.drawWinner(message.data.winner);
+				this.removeInputHandlers();
 				break;
 
 			case 'opponentDisconnected':
 				console.log('Opponent disconnected:', message.data);
-
 				this.canvas.drawWinner(message.data.winner);
+				this.removeInputHandlers();
 				break;
 		}
 	}
@@ -69,6 +73,7 @@ export class NetworkManager {
     private onClose(): void {
         console.log('Connection closed');
         this.canvas.hide();
+        this.removeInputHandlers();
     }
 
 	private send(data: any): void {
@@ -78,26 +83,65 @@ export class NetworkManager {
     }
 
 	public disconnect(): void {
+		this.removeInputHandlers();
 		this.socket?.close();
 	}
 
 	private setupInputHandlers(): void {
-		// Keydown - Spieler drückt Taste
-		document.addEventListener('keydown', (e) => {
+		this.removeInputHandlers();
+
+		const pressedKeys = new Set<string>();
+		this.keydownHandler = (e: KeyboardEvent) => {
+			//prevent repeated keydown events when holding key
+			if (pressedKeys.has(e.key)) return;
+			pressedKeys.add(e.key);
 			let direction = '';
-			
 			if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
 				direction = 'up';
 			} else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
 				direction = 'down';
 			}
-			
 			if (direction) {
 				this.send({
 					type: 'input',
-					data: { direction }
+					data: {
+						action: 'keydown',
+						direction
+					}
 				});
 			}
-		});
+		};
+
+		this.keyupHandler = (e: KeyboardEvent) => {
+			pressedKeys.delete(e.key);
+			let direction = '';
+			if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+				direction = 'up';
+			} else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+				direction = 'down';
+			}
+			if (direction) {
+				this.send({
+					type: 'input',
+					data: {
+						action: 'keyup',
+						direction
+					}
+				});
+			}
+		};
+		document.addEventListener('keydown', this.keydownHandler);
+		document.addEventListener('keyup', this.keyupHandler);
+	}
+
+	private removeInputHandlers(): void {
+		if (this.keydownHandler) {
+			document.removeEventListener('keydown', this.keydownHandler);
+			this.keydownHandler = null;
+		}
+		if (this.keyupHandler) {
+			document.removeEventListener('keyup', this.keyupHandler);
+			this.keyupHandler = null;
+		}
 	}
 }

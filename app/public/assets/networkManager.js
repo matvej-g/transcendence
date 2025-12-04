@@ -3,6 +3,9 @@ export class NetworkManager {
         this.socket = null;
         this.roomId = null;
         this.playerRole = null;
+        this.currentGameState = null;
+        this.keydownHandler = null;
+        this.keyupHandler = null;
         this.canvas = canvas;
     }
     connect(url) {
@@ -34,15 +37,17 @@ export class NetworkManager {
                 this.setupInputHandlers();
                 break;
             case 'gameState':
-                //console.log('GameState recived:', message.data);
+                console.log('GameState received:', message.data);
                 this.canvas.render(message.data);
                 break;
             case 'gameOver':
                 this.canvas.drawWinner(message.data.winner);
+                this.removeInputHandlers();
                 break;
             case 'opponentDisconnected':
                 console.log('Opponent disconnected:', message.data);
                 this.canvas.drawWinner(message.data.winner);
+                this.removeInputHandlers();
                 break;
         }
     }
@@ -52,6 +57,7 @@ export class NetworkManager {
     onClose() {
         console.log('Connection closed');
         this.canvas.hide();
+        this.removeInputHandlers();
     }
     send(data) {
         if (this.socket?.readyState === WebSocket.OPEN) {
@@ -59,11 +65,17 @@ export class NetworkManager {
         }
     }
     disconnect() {
+        this.removeInputHandlers();
         this.socket?.close();
     }
     setupInputHandlers() {
-        // Keydown - Spieler drückt Taste
-        document.addEventListener('keydown', (e) => {
+        this.removeInputHandlers();
+        const pressedKeys = new Set();
+        this.keydownHandler = (e) => {
+            //prevent repeated keydown events when holding key
+            if (pressedKeys.has(e.key))
+                return;
+            pressedKeys.add(e.key);
             let direction = '';
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
                 direction = 'up';
@@ -74,9 +86,43 @@ export class NetworkManager {
             if (direction) {
                 this.send({
                     type: 'input',
-                    data: { direction }
+                    data: {
+                        action: 'keydown',
+                        direction
+                    }
                 });
             }
-        });
+        };
+        this.keyupHandler = (e) => {
+            pressedKeys.delete(e.key);
+            let direction = '';
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                direction = 'up';
+            }
+            else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                direction = 'down';
+            }
+            if (direction) {
+                this.send({
+                    type: 'input',
+                    data: {
+                        action: 'keyup',
+                        direction
+                    }
+                });
+            }
+        };
+        document.addEventListener('keydown', this.keydownHandler);
+        document.addEventListener('keyup', this.keyupHandler);
+    }
+    removeInputHandlers() {
+        if (this.keydownHandler) {
+            document.removeEventListener('keydown', this.keydownHandler);
+            this.keydownHandler = null;
+        }
+        if (this.keyupHandler) {
+            document.removeEventListener('keyup', this.keyupHandler);
+            this.keyupHandler = null;
+        }
     }
 }

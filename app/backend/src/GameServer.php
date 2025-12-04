@@ -8,10 +8,22 @@ class GameServer implements MessageComponentInterface {
     protected $players;
     private array $waitingPlayers = [];
     private array $games = [];
+    private $loop;
 
-    public function __construct() {
+    public function __construct($loop = null) {
         $this->players = new \SplObjectStorage;
+        $this->loop = $loop;
         echo "GameServer initialized\n";
+
+        //start game loop at ~60 FPS (every 16ms)
+        if ($this->loop) {
+            $this->loop->addPeriodicTimer(0.016, function() {
+                $this->updateAllGames();
+            });
+            echo "Game loop timer registered\n";
+        } else {
+            echo "WARNING: No event loop provided!\n";
+        }
     }
 
     public function onOpen(ConnectionInterface $conn) {
@@ -66,13 +78,26 @@ class GameServer implements MessageComponentInterface {
                     ]
                 ]);
 
+                $engine = new GameEngine($gameID);
                 $this->games[$gameID] = [
                     'player1' => $player,
                     'player2' => $opponent,
                     'started' => time(),
-                    'engine' => new GameEngine($gameID)
+                    'engine' => $engine
                 ];
-                //TODO: create game and start
+
+                // Send initial game state to both players
+                $initialState = $engine->update();
+                $player->send([
+                    'type' => 'gameState',
+                    'data' => $initialState
+                ]);
+                $opponent->send([
+                    'type' => 'gameState',
+                    'data' => $initialState
+                ]);
+
+                echo "Game {$gameID} created and initial state sent.\n";
             } else {
                 //no opponent found yet
                 $this->waitingPlayers[] = $player;
@@ -87,14 +112,19 @@ class GameServer implements MessageComponentInterface {
             }
             $game = $this->games[$player->gameID];
             $engine = $game['engine'];
-            $direction = $data['data']['direction'] ?? null;
+            $action = $data['data']['action'] ?? null;
 
-            if ($direction && in_array($direction, ['up', 'down'])) {
-                $engine->movePaddle($player->paddle, $direction, 0.016); //~60 fps deltaTime
+            if ($action === 'keydown') {
+                $direction = $data['data']['direction'] ?? null;
+                if ($direction === 'up') {
+                    $engine->setPaddleVelocity($player->paddle, -1);
+                } elseif ($direction === 'down') {
+                    $engine->setPaddleVelocity($player->paddle, 1);
+                }
+            } elseif ($action === 'keyup') {
+                //stop paddle when key is releaser
+                $engine->setPaddleVelocity($player->paddle, 0);
             }
-
-            //jsut for testing
-            $this->gameLoop($player->gameID);
         }
     }
 
@@ -144,17 +174,27 @@ class GameServer implements MessageComponentInterface {
         $conn->close();
     }
 
-    private function gameLoop(string $gameID): void {
+    private function updateAllGames(): void {
+        if (count($this->games) > 0) {
+            echo "Tick: " . count($this->games) . " active games\n";
+        }
+        foreach ($this->games as $gameID => $game) {
+            $this->updateGame($gameID);
+        }
+    }
+
+    private function updateGame(string $gameID): void {
+        if (!isset($this->games[$gameID])) return;
+
         $game = $this->games[$gameID];
         $newState = $game['engine']->update();
 
-        $game['player1']->send([
+        $message = [
             'type' => 'gameState',
             'data' => $newState
-        ]);
-        $game['player2']->send([
-            'type' => 'gameState',
-            'data' => $newState
-        ]);
+        ];
+
+        $game['player1']->send($message);
+        $game['player2']->send($message);
     }
 }
