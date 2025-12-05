@@ -167,12 +167,5 @@ class MatchesController{
 			return new Response(HttpStatusCode::NotFound, ["error" => "Match not found"], ['Content-Type' => 'application/json']);
 		}
 		return new Response(HttpStatusCode::Ok,["message" => "Match deleted successfully"], ['Content-Type' => 'application/json']);
-		// verify id
-		// if invalid return bad request
-		// get match by id
-		// if null databse error
-		// if not found return 404
-		// delete match in table
-		// return ok
 	}
 }

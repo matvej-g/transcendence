@@ -56,4 +56,18 @@ class TournamentsModel {
 			return null;
 		}
 	}
+
+	public function endTournament($id)
+	{
+		try {
+			$this->db->query(
+				"UPDATE tournaments SET finished_at = CURRENT_TIMESTAMP WHERE id = ?",
+				[$id]
+			);
+			return $this->getTournamentById($id);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
 }

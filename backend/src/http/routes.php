@@ -1,8 +1,9 @@
 <?php
 
 use src\controllers\MatchesController;
-use src\controllers\TournamentController;
 use src\controllers\UserController;
+use src\controllers\TournamentController;
+use src\controllers\TournamentPlayerController;
 
 // pages
 $this->router->get('/game', 'src/controllers/game.php');
@@ -29,5 +30,12 @@ $this->router->delete('/api/match/{id}', [MatchesController::class, 'deleteMatch
 // tournaments
 $this->router->get('/api/tournaments', [TournamentController::class, 'getTournaments']);
 $this->router->get('/api/tournament/{id}', [TournamentController::class, 'getTournament']);
+$this->router->get('/api/tournament/{name}', [TournamentController::class, 'getTournamentByName']);
 $this->router->post('/api/tournament/new', [TournamentController::class, 'newTournament']);
+$this->router->patch('/api/tournament/{id}', [TournamentController::class, 'endTournament']);
+$this->router->delete('/api/tournament/{id}', [MatchesController::class, 'deleteTournament']);
 
+// tournament players
+$this->router->get('/api/tournament/{id}/players', [TournamentPlayerController::class, 'getTournamentPlayers']);
+$this->router->post('/api/tournament/{id}/player', [TournamentPlayerController::class, 'addPlayer']);
+$this->router->delete('/api/tournament/{id}/player/{id}', [TournamentPlayerController::class, 'deletePlayer']);

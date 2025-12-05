@@ -17,14 +17,8 @@ class TournamentController
 		$this->tournaments = new TournamentsModel($db);
 	}
 
-	public function getTournaments(Request $request, $parameters): Response {
-		$allTournaments = $this->tournaments->getAllTournaments();
-		return new Response(HttpStatusCode::Ok, $allTournaments, ['Content-Type' => 'application/json']);
-	}
-
 	public function getTournamentByName(Request $request, $parameters): Response
 	{
-		// not sure if is_string isreally needed
 		$name = $parameters['name'] ?? null;
 		if ($name === null || !is_string($name)) {
 			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
@@ -39,27 +33,64 @@ class TournamentController
 
 	}
 
-	public function getTournament(Request $request, $parameters): Response {
+	public function getTournament(Request $request, $parameters): Response 
+	{
 		$id = $parameters['id'] ?? null;
 		if (!ctype_digit($id))
 			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
 		$id = (int) $id;
 		$tournament = $this->tournaments->getTournamentById($id);
-		if (!$tournament)
+		if ($tournament === null) {
+			return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
+		} elseif (!$tournament) {
 			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
+		}
 		return new Response(HttpStatusCode::Ok, $tournament, ['Content-Type' => 'application/json']);
 	}
 
-	public function newTournament(Request $request, $parameters): Response {
-		$name = $request->postParams['name'] ?? null;
+	public function getTournaments(Request $request, $parameters): Response 
+	{
+		$allTournaments = $this->tournaments->getAllTournaments();
+		if ($allTournaments === null) {
+			return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
+		}
+		return new Response(HttpStatusCode::Ok, $allTournaments, ['Content-Type' => 'application/json']);
+	}
+
+	public function newTournament(Request $request, $parameters): Response 
+	{
 		
-		if (!is_string($name))
+		$name = $request->postParams['name'] ?? null;
+		if ($name == null || !is_string($name))
 			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);	
 
 		$id = $this->tournaments->createTournament($name);
-		if (!$id)
-			// not sure what the best error response is here
-			return new Response(HttpStatusCode::BadRequest, ["error" => ""], ['Content-Type' => 'application/json']);	
+		if ($id === null) {
+			return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"]);
+		}
 		return new Response(HttpStatusCode::Ok, $id, ['Content-Type' => 'application/json']);
 	}
+
+	public function endTournament(Request $request, $parameters): Response
+	{
+		$id = $parameters['id'] ?? null;
+		if ($id === null || !ctype_digit($id)) {
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);	
+		}
+		$tournament = $this->tournaments->getTournamentById($id);
+		if ($tournament['finished_at'] !== null) {
+			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input Tournament finished already"], ['Content-Type' => 'application/json']);	
+		}
+		$finishedTour = $this->tournaments->endTournament($id);
+		if ($finishedTour === null) {
+			return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"]);
+		} elseif (!$finishedTour) {
+			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
+		}
+		return new Response(HttpStatusCode::Ok, $finishedTour, ['Content-Type' => 'application/json']);
+	}
+
+	// 	Update name
+	// Start tournament
+	// Delete tournament
 }
