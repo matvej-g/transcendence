@@ -120,12 +120,12 @@ class GameEngine {
 		//leftside check (right player gets score)
 		if ($ball['x'] - $ball['radius'] <= 0) {
 			$this->gameState['rightPaddle']['score']++;
-			//reset Ball
+			$this->resetBall();
 		}
 		//right side check (left player scores)
 		if ($ball['x'] + $ball['radius'] >= self::CANVAS_WIDTH) {
 			$this->gameState['leftPaddle']['score']++;
-			//reset Ball
+			$this->resetBall();
 		}
 		//check for winner
 		if ($this->gameState['leftPaddle']['score'] >= self::MAX_SCORE) {
@@ -136,5 +136,14 @@ class GameEngine {
 			$this->gameState['winner'] = 'right';
 			$this->gameState['isRunning'] = false;
 		}
+	}
+
+	private function resetBall(): void {
+		$ball = &$this->gameState['ball'];
+		$ball['x'] = self::CANVAS_WIDTH / 2;
+		$ball['y'] = self::CANVAS_HEIGHT / 2;
+		$ball['speed'] = self::BALL_INITIAL_SPEED;
+		$ball['velocityX'] = (rand(0, 1) > 0.5 ? 1 : -1) * 5;
+		$ball['velocityY'] = (rand(0, 1) > 0.5 ? 1 : -1) * 5;
 	}
 }
