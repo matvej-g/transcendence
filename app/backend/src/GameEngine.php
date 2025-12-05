@@ -64,9 +64,8 @@ class GameEngine {
 		$this->lastUpdate = $currentTime;
 
 		$this->updatePaddles($deltaTime);
-
-		//update ball pos
-		//check collisions
+		$this->updateBall($deltaTime);
+		$this->checkCollision();
 		//check score
 		return $this->gameState;
 	}
@@ -90,12 +89,28 @@ class GameEngine {
 		}
 	}
 
+	private function updateBall(float $deltaTime): void {
+		$ball = &$this->gameState['ball'];
+
+		$ball['x'] += $ball['velocityX'] * $ball['speed'] * $deltaTime;
+		$ball['y'] += $ball['velocityY'] * $ball['speed'] * $deltaTime;
+	}
+
 	public function setPaddleVelocity(string $paddle, int $velocity): void {
 		$paddleKey = $paddle === 'left' ? 'leftPaddle' : 'rightPaddle';
 		//clamp velocity to -1, 0, -1
 		$this->gameState[$paddleKey]['velocity'] = max(-1, min(1, $velocity));
 	}
 
-
-
+	private function checkCollision(): void {
+		$ball = &$this->gameState['ball'];
+		//top/bottom wall
+		if ($ball['y'] - $ball['radius'] <= 0) {
+			$ball['y'] = $ball['radius'];
+			$ball['velocityY'] *= -1;
+		} else if ($ball['y'] + $ball['radius'] >= self::CANVAS_HEIGHT) {
+			$ball['y'] = self::CANVAS_HEIGHT - $ball['radius'];
+			$ball['velocityY'] *= -1;
+		}
+	}
 }

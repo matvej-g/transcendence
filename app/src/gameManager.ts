@@ -107,6 +107,7 @@ class GameManager {
     public getInputState() {
         return this.keyState;
     }
+    
 }
 
 // Initialize when DOM is ready

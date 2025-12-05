@@ -85,19 +85,6 @@ class GameServer implements MessageComponentInterface {
                     'started' => time(),
                     'engine' => $engine
                 ];
-
-                // Send initial game state to both players
-                $initialState = $engine->update();
-                $player->send([
-                    'type' => 'gameState',
-                    'data' => $initialState
-                ]);
-                $opponent->send([
-                    'type' => 'gameState',
-                    'data' => $initialState
-                ]);
-
-                echo "Game {$gameID} created and initial state sent.\n";
             } else {
                 //no opponent found yet
                 $this->waitingPlayers[] = $player;
