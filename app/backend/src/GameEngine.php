@@ -112,6 +112,46 @@ class GameEngine {
 			$ball['y'] = self::CANVAS_HEIGHT - $ball['radius'];
 			$ball['velocityY'] *= -1;
 		}
+
+		//paddle collisions
+		if ($ball['velocityX'] < 0) {
+    		$this->checkPaddleCollision($this->gameState['leftPaddle']);
+		} else {
+    		$this->checkPaddleCollision($this->gameState['rightPaddle']);
+		}
+	}
+
+	private function checkPaddleCollision(array &$paddle): void {
+		$ball = &$this->gameState['ball'];
+
+		if ($ball['x'] - $ball['radius'] <= $paddle['x'] + $paddle['width'] &&
+			$ball['x'] + $ball['radius'] >= $paddle['x'] &&
+			$ball['y'] >= $paddle['y'] &&
+			$ball['y'] <= $paddle['y'] + $paddle['height'])
+		{
+			//hitPosition between 0 and 1 (0 = top, 1 = bottom)
+			$hitPosition = ($ball['y'] - $paddle['y']) / $paddle['height'];
+			//convert it to -1 and 1 (-1 top, 1 = bottom)
+			$relativeHitPosition = ($hitPosition - 0.5) * 2;
+			$maxAngle = M_PI / 3; //60 degrees
+			$angle = $relativeHitPosition * $maxAngle;
+			//calc new speed
+			$speed = sqrt($ball['velocityX'] * $ball['velocityX'] + $ball['velocityY'] * $ball['velocityY']);
+			$newVelocityX = -$ball['velocityX'];
+			$newVelocityY = tan($angle) * abs($newVelocityX);
+			//normalize speed
+			$magnitude = sqrt($newVelocityX * $newVelocityX + $newVelocityY * $newVelocityY);
+			$ball['velocityX'] = ($newVelocityX / $magnitude) * $speed;
+			$ball['velocityY'] = ($newVelocityY / $magnitude) * $speed;
+			//increase speed on each hit
+			$ball['speed'] = min($ball['speed'] * 1.05, self::BALL_MAX_SPEED);
+			//prevent stuck in paddle
+			if ($ball['velocityX'] > 0) {
+				$ball['x'] = $paddle['x'] + $paddle['width'] + $ball['radius'];
+			} else {
+				$ball['x'] = $paddle['x'] - $ball['radius'];
+			}
+		}
 	}
 
 	private function checkScoring(): void {

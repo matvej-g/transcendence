@@ -43,7 +43,7 @@ class GameServer implements MessageComponentInterface {
     public function onMessage(ConnectionInterface $from, $msg) {
         $player = $this->players[$from];
         $data = json_decode($msg, true);
-        echo "Message from {$player->userID}: {$msg}\n";
+        //echo "Message from {$player->userID}: {$msg}\n";
 
         //handle join players
         if ($data['type'] === 'join') {
@@ -162,9 +162,9 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function updateAllGames(): void {
-        if (count($this->games) > 0) {
-            echo "Tick: " . count($this->games) . " active games\n";
-        }
+        // if (count($this->games) > 0) {
+        //     echo "Tick: " . count($this->games) . " active games\n";
+        // }
         foreach ($this->games as $gameID => $game) {
             $this->updateGame($gameID);
         }
