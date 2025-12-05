@@ -49,7 +49,7 @@ export class NetworkManager {
 				break;
 
 			case 'gameState':
-				console.log('GameState received:', message.data);
+				//console.log('GameState received:', message.data);
 				this.canvas.render(message.data);
 				break;
 
@@ -93,6 +93,11 @@ export class NetworkManager {
 
 		const pressedKeys = new Set<string>();
 		this.keydownHandler = (e: KeyboardEvent) => {
+			// Prevent scrolling for arrow keys and WASD
+			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+				e.preventDefault();
+			}
+
 			//prevent repeated keydown events when holding key
 			if (pressedKeys.has(e.key)) return;
 			pressedKeys.add(e.key);
@@ -114,6 +119,11 @@ export class NetworkManager {
 		};
 
 		this.keyupHandler = (e: KeyboardEvent) => {
+			// Prevent scrolling for arrow keys and WASD
+			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+				e.preventDefault();
+			}
+
 			pressedKeys.delete(e.key);
 			let direction = '';
 			if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {

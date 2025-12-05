@@ -119,4 +119,34 @@ export class GameCanvas {
         this.renderingContext.textBaseline = 'middle';
         this.renderingContext.fillText('Searching for players...', this.canvas.width / 2, this.canvas.height / 2);
     }
+    // Show countdown timer (3, 2, 1, GO!)
+    showCountdown(callback) {
+        if (!this.renderingContext || !this.canvas)
+            return;
+        let count = 3;
+        const showNumber = () => {
+            this.clear();
+            this.renderingContext.fillStyle = '#ffffff';
+            this.renderingContext.font = 'bold 120px Arial';
+            this.renderingContext.textAlign = 'center';
+            this.renderingContext.textBaseline = 'middle';
+            if (count > 0) {
+                this.renderingContext.fillText(count.toString(), this.canvas.width / 2, this.canvas.height / 2);
+            }
+            else {
+                this.renderingContext.fillStyle = '#00ff00';
+                this.renderingContext.fillText('GO!', this.canvas.width / 2, this.canvas.height / 2);
+            }
+            count--;
+            if (count >= 0) {
+                setTimeout(showNumber, 1000);
+            }
+            else {
+                setTimeout(() => {
+                    callback();
+                }, 500);
+            }
+        };
+        showNumber();
+    }
 }

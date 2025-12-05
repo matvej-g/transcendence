@@ -37,10 +37,11 @@ export class NetworkManager {
                 this.setupInputHandlers();
                 break;
             case 'gameState':
-                console.log('GameState received:', message.data);
+                //console.log('GameState received:', message.data);
                 this.canvas.render(message.data);
                 break;
             case 'gameOver':
+                console.log('Winner received:', message.data);
                 this.canvas.drawWinner(message.data.winner);
                 this.removeInputHandlers();
                 break;
@@ -72,6 +73,10 @@ export class NetworkManager {
         this.removeInputHandlers();
         const pressedKeys = new Set();
         this.keydownHandler = (e) => {
+            // Prevent scrolling for arrow keys and WASD
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
             //prevent repeated keydown events when holding key
             if (pressedKeys.has(e.key))
                 return;
@@ -94,6 +99,10 @@ export class NetworkManager {
             }
         };
         this.keyupHandler = (e) => {
+            // Prevent scrolling for arrow keys and WASD
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
             pressedKeys.delete(e.key);
             let direction = '';
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
