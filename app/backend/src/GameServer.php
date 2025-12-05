@@ -183,5 +183,23 @@ class GameServer implements MessageComponentInterface {
 
         $game['player1']->send($message);
         $game['player2']->send($message);
+        //clean up game if someone won
+        if ($newState['winner'] !== null) {
+            echo "Game {$gameID} finished! Winner: {$newState['winner']}\n";
+            $msgGameOver = [
+                'type' => 'gameOver',
+                'data' => [
+                    'winner' => $newState['winner']
+                ]
+            ];
+            $game['player1']->send($msgGameOver);
+            $game['player2']->send($msgGameOver);
+            $game['player1']->gameID = null;
+            $game['player1']->paddle = null;
+            $game['player2']->gameID = null;
+            $game['player2']->paddle = null;
+
+            unset($this->games[$gameID]);
+        }
     }
 }

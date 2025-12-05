@@ -54,6 +54,7 @@ export class NetworkManager {
 				break;
 
 			case 'gameOver':
+				console.log('Winner received:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
 				break;

@@ -66,7 +66,7 @@ class GameEngine {
 		$this->updatePaddles($deltaTime);
 		$this->updateBall($deltaTime);
 		$this->checkCollision();
-		//check score
+		$this->checkScoring();
 		return $this->gameState;
 	}
 
@@ -111,6 +111,30 @@ class GameEngine {
 		} else if ($ball['y'] + $ball['radius'] >= self::CANVAS_HEIGHT) {
 			$ball['y'] = self::CANVAS_HEIGHT - $ball['radius'];
 			$ball['velocityY'] *= -1;
+		}
+	}
+
+	private function checkScoring(): void {
+		$ball = $this->gameState['ball'];
+
+		//leftside check (right player gets score)
+		if ($ball['x'] - $ball['radius'] <= 0) {
+			$this->gameState['rightPaddle']['score']++;
+			//reset Ball
+		}
+		//right side check (left player scores)
+		if ($ball['x'] + $ball['radius'] >= self::CANVAS_WIDTH) {
+			$this->gameState['leftPaddle']['score']++;
+			//reset Ball
+		}
+		//check for winner
+		if ($this->gameState['leftPaddle']['score'] >= self::MAX_SCORE) {
+			$this->gameState['winner'] = 'left';
+			$this->gameState['isRunning'] = false;
+		}
+		if ($this->gameState['rightPaddle']['score'] >= self::MAX_SCORE) {
+			$this->gameState['winner'] = 'right';
+			$this->gameState['isRunning'] = false;
 		}
 	}
 }
