@@ -25,10 +25,10 @@
     <!-- HEADER / NAVBAR (hidden by default, shown after login) -->
     <nav id="navbar" class="hidden header flex flex-wrap justify-between items-center text-white px-5 py-0.25 shadow-lg bg-gradient-to-br from-[#2c3e50] to-[#3498db]">
         <ul class="nav-bar-left flex gap-12">
-            <li class="nav-item"><a href="#profile" class="hover:text-emerald-400 transition-colors">Profile</a></li>
-            <li class="nav-item"><a href="#game" class="hover:text-emerald-400 transition-colors">Game</a></li>
-            <li class="nav-item"><a href="#friends" class="hover:text-emerald-400 transition-colors">Friends</a></li>
-            <li class="nav-item"><a href="#chat" class="hover:text-emerald-400 transition-colors">Chat</a></li>
+            <li class="nav-item"><a href="#profile" class="hover:text-emerald-400 transition-colors" data-i18n="navbarDom.profile">Profile</a></li>
+            <li class="nav-item"><a href="#game" class="hover:text-emerald-400 transition-colors" data-i18n="navbarDom.game">Game</a></li>
+            <li class="nav-item"><a href="#friends" class="hover:text-emerald-400 transition-colors" data-i18n="navbarDom.friends">Friends</a></li>
+            <li class="nav-item"><a href="#chat" class="hover:text-emerald-400 transition-colors" data-i18n="navbarDom.chat">Chat</a></li>
         </ul>
         <h1 class="text-xl text-emerald-400">ft_transcendence</h1>
         <ul class="nav-bar-right flex gap-12 items-center">
@@ -36,15 +36,15 @@
                 <button class="hover:text-emerald-400 transition-colors" data-lang-switcher></button>
             </li>
             <li class="relative group">
-                <button class="hover:text-emerald-400 transition-colors">Settings</button>
+                <button class="hover:text-emerald-400 transition-colors" data-i18n="navbarDom.settings">Settings</button>
                 <div class="absolute left-0 mt-0 w-48 bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                    <a href="#settings/edit-username" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-t-lg transition-colors">Edit Username</a>
-                    <a href="#settings/change-password" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors">Change Password</a>
-                    <a href="#settings/change-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors">Change Avatar</a>
-                    <a href="#settings/2fa" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-b-lg transition-colors">2-Factor Auth</a>
+                    <a href="#settings/edit-username" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-t-lg transition-colors" data-i18n="navbarDom.edit_username">Edit Username</a>
+                    <a href="#settings/change-password" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_password">Change Password</a>
+                    <a href="#settings/change-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_avatar">Change Avatar</a>
+                    <a href="#settings/2fa" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-b-lg transition-colors" data-i18n="navbarDom.two_fa">2-Factor Auth</a>
                 </div>
             </li>
-            <button id="logoutBtn" class="bg-gradient-to-r from-green-400 to-green-500 hover:bg-gradient-to-r hover:from-green-500 hover:to-green-400 border-none rounded-3xl px-4 py-1.5 my-1 text-white font-bold cursor-pointer transition-all duration-300 shadow-md hover:-translate-y-1 hover:shadow-lg">
+            <button id="logoutBtn" class="bg-gradient-to-r from-green-400 to-green-500 hover:bg-gradient-to-r hover:from-green-500 hover:to-green-400 border-none rounded-3xl px-4 py-1.5 my-1 text-white font-bold cursor-pointer transition-all duration-300 shadow-md hover:-translate-y-1 hover:shadow-lg" data-i18n="navbarDom.logout">
                 Logout
             </button>
         </ul>
@@ -151,7 +151,7 @@
     </footer>
 
     <!-- i18n / language init for this page --> <!-- requires <div data-lang-switcher></div> -->
-    <script type="module" src="/dist/components/languages/auth/init.js"></script>
+    <script type="module" src="/dist/components/languages/init.js"></script>
 
     <!-- button logic -->
     <script type="module" src="/dist/components/auth/loginButton.js"></script>
