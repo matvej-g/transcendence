@@ -9,6 +9,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="min-h-screen bg-gradient-to-br from-gray-900 to-black flex flex-col justify-between">
+    <!-- Language switcher mount point -->
+    <div data-lang-switcher></div>
 
     <!-- AUTH NAVBAR (shown by default) -->
     <nav id="auth-navbar" class="header flex flex-wrap justify-between items-center text-white px-5 py-0.25 shadow-lg bg-gradient-to-br from-[#2c3e50] to-[#3498db]">
@@ -58,6 +60,9 @@
 
           <label for="user" class="block text-xs text-emerald-200" data-i18n="authDom.username">Username</label>
           <input id="user" autocomplete="username" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+
+          <label for="email" class="block text-xs text-emerald-200" data-i18n="authDom.email">Email</label>
+          <input id="email" type="email" autocomplete="email" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" />
 
           <label for="pass" class="block text-xs text-emerald-200" data-i18n="authDom.password">Password</label>
           <input id="pass" type="password" autocomplete="current-password" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" />
@@ -145,7 +150,7 @@
       A project made by dhuss, merdal, isemin, maustel, mgering
     </footer>
 
-    <!-- i18n / language init for this page -->
+    <!-- i18n / language init for this page --> <!-- requires <div data-lang-switcher></div> -->
     <script type="module" src="/dist/components/languages/auth/init.js"></script>
 
     <!-- button logic -->
