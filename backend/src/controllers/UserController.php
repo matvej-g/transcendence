@@ -35,7 +35,20 @@ class UserController {
 			return new Response(HttpStatusCode::BadRequest, ['error' => 'invalid Input'], ['Content-Type' => 'application/json']);
 		if (!password_verify($password, $user['password_hash']))
 			return new Response(HttpStatusCode::Unauthorised, ['error' => 'invalid password'], ['Content-Type' => 'application/json']);
-		return new Response(HttpStatusCode::Ok, $user, ['Content-Type' => 'application/json']);
+		
+		// Issue JWT with two_factor_verified=false
+		$token = generateJWT($user['id'], false, 3600);
+		setJWTCookie($token, 3600);
+		
+		return new Response(HttpStatusCode::Ok, [
+			'success' => true,
+			'user' => [
+				'id' => $user['id'],
+				'username' => $user['username'],
+				'email' => $user['email']
+			],
+			'token' => $token
+		], ['Content-Type' => 'application/json']);
 	}
 
 	public function newUser(Request $request, $parameters): Response

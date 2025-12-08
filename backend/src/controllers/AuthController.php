@@ -18,16 +18,20 @@ class AuthController
 
     public function sendTwoFactorCode()
     {
-        // require a valid JWT (for tests redirect to /issue-jwt)
+        // require a valid JWT
         $token = getJWTFromRequest();
         if (!$token) {
-            header('Location: /issue-jwt');
-            exit;
+            return new Response(
+                HttpStatusCode::Unauthorised,
+                json_encode(['success' => false, 'error' => 'No JWT token found'])
+            );
         }
         $payload = verifyJWT($token);
         if (!$payload) {
-            header('Location: /issue-jwt');
-            exit;
+            return new Response(
+                HttpStatusCode::Unauthorised,
+                json_encode(['success' => false, 'error' => 'Invalid JWT token'])
+            );
         }
 
         $userId = (int) $payload['user_id'];
@@ -36,12 +40,24 @@ class AuthController
         $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
 
         $user = $this->userModel->getUserById($userId);
+        if (!$user) {
+            return new Response(
+                HttpStatusCode::NotFound,
+                json_encode(['success' => false, 'error' => 'User not found'])
+            );
+        }
+
         $this->userModel->saveTwoFactorCode($userId, $code, $expiresAt);
 
         sendTwoFactorEmail($user['email'], $code);
 
-        header('Location: /verify-2fa');
-        exit;
+        return new Response(
+            HttpStatusCode::Ok,
+            json_encode([
+                'success' => true,
+                'message' => '2FA code sent to your email'
+            ])
+        );
     }
 
     public function verifyTwoFactorCode()
@@ -49,36 +65,61 @@ class AuthController
         // require a valid JWT
         $token = getJWTFromRequest();
         if (!$token) {
-            header('Location: /issue-jwt');
-            exit;
+            return new Response(
+                HttpStatusCode::Unauthorised,
+                json_encode(['success' => false, 'error' => 'No JWT token found'])
+            );
         }
         $payload = verifyJWT($token);
         if (!$payload) {
-            header('Location: /issue-jwt');
-            exit;
+            return new Response(
+                HttpStatusCode::Unauthorised,
+                json_encode(['success' => false, 'error' => 'Invalid JWT token'])
+            );
         }
 
         $userId = (int) $payload['user_id'];
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $code = $_POST['code'] ?? '';
-
-            if ($this->userModel->verifyTwoFactorCode($userId, $code)) {
-                // issue new JWT with 2FA flag
-                $newToken = generateJWT($userId, true);
-                setJWTCookie($newToken, 3600);
-
-                header('Location: /dashboard');
-                exit;
-            } else {
-                $error = 'Invalid or expired code';
-            }
+        // Only accept POST requests
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return new Response(
+                HttpStatusCode::BadRequest,
+                json_encode(['success' => false, 'error' => 'Method not allowed'])
+            );
         }
 
-        ob_start();
-        require base_path('views/verify-2fa.view.php');
-        $content = ob_get_clean();
-        
-        return new Response(HttpStatusCode::Ok, $content);
+        // Get JSON input
+        $input = json_decode(file_get_contents('php://input'), true);
+        $code = $input['code'] ?? '';
+
+        if (empty($code)) {
+            return new Response(
+                HttpStatusCode::BadRequest,
+                json_encode(['success' => false, 'error' => 'Code is required'])
+            );
+        }
+
+        if ($this->userModel->verifyTwoFactorCode($userId, $code)) {
+            // issue new JWT with 2FA flag
+            $newToken = generateJWT($userId, true);
+            setJWTCookie($newToken, 3600);
+
+            return new Response(
+                HttpStatusCode::Ok,
+                json_encode([
+                    'success' => true,
+                    'message' => '2FA verified successfully',
+                    'token' => $newToken
+                ])
+            );
+        } else {
+            return new Response(
+                HttpStatusCode::Unauthorised,
+                json_encode([
+                    'success' => false,
+                    'error' => 'Invalid or expired code'
+                ])
+            );
+        }
     }
 }
