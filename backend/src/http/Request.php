@@ -4,6 +4,9 @@ namespace src\http;
 
 class Request
 {
+	// User data from JWT (set by AuthMiddleware)
+	public ?array $user = null;
+
 	// making sure that the variables reflect the current stage of the request and cannot be changed anymore
 	// global variables could still be changed at this point
 	public function __construct(		public readonly array $getParams,

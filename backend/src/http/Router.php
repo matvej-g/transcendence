@@ -6,23 +6,24 @@ class Router {
 
 	protected $routes = [];
 
-	protected function add($method, $uri, $controller)
+	protected function add($method, $uri, $controller, $middleware = [])
 	{
 		$this->routes[] = [
 			'uri' => $uri,
 			'method' => $method,
 			'controller' => $controller,
+			'middleware' => $middleware,
 		];
 	}
 
-	public function get($uri, $controller)
+	public function get($uri, $controller, $middleware = [])
 	{
-		$this->add('GET', $uri, $controller);
+		$this->add('GET', $uri, $controller, $middleware);
 	}
 
-	public function post($uri, $controller)
+	public function post($uri, $controller, $middleware = [])
 	{
-		$this->add('POST', $uri, $controller);
+		$this->add('POST', $uri, $controller, $middleware);
 	}
 
 	public function delete($uri, $controller)
@@ -67,18 +68,29 @@ class Router {
 		foreach ($this->routes as $route) {
 			$matches = $this->convert($route, $uri);
 			if ($matches !== false && $matches[0] === $uri && $route['method'] === strtoupper($method)) {
-			// static page controllers
-			if (is_string($route['controller']))
-				return require base_path($route['controller']);
-			// dynamic controller classes
-			if (is_array($route['controller'])) {
-				[$class, $methodName] = $route['controller'];
 				
-				// creating a Controller because $class holds name of controller
-				$controllerInstance = new $class($db);
-				// calling the method because $methodName holds the name of the method
-				return ($controllerInstance->$methodName($request, $matches));
-			}
+				// Run middleware before controller
+				if (!empty($route['middleware'])) {
+					foreach ($route['middleware'] as $middleware) {
+						$middlewareResponse = call_user_func([$middleware, 'handle'], $request);
+						if ($middlewareResponse !== null) {
+							return $middlewareResponse;
+						}
+					}
+				}
+
+				// static page controllers
+				if (is_string($route['controller']))
+					return require base_path($route['controller']);
+				// dynamic controller classes
+				if (is_array($route['controller'])) {
+					[$class, $methodName] = $route['controller'];
+					
+					// creating a Controller because $class holds name of controller
+					$controllerInstance = new $class($db);
+					// calling the method because $methodName holds the name of the method
+					return ($controllerInstance->$methodName($request, $matches));
+				}
 			}
 		}
 		$this->abort();
