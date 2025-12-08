@@ -3,12 +3,11 @@
 namespace src\controllers;
 
 use src\Database;
-use src\http\HttpStatusCode;
 use src\http\Request;
-use src\http\Response;
+use src\controllers\BaseController;
 use src\Models\TournamentPlayerModel;
 
-class TournamentPlayerController
+class TournamentPlayerController extends BaseController
 {
     private TournamentPlayerModel $tournamentPlayers;
 
@@ -17,86 +16,91 @@ class TournamentPlayerController
         $this->tournamentPlayers = new TournamentPlayerModel($db);
     }
 
-    public function getTournamentPlayer(Request $request, $parameters): Response
+    public function getTournamentPlayer(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
         if ($id === null || !ctype_digit($id)) {
-            return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
+            return $this->jsonBadRequest('Bad Input');
         }
-        $id = (int) $id;
+        $id = (int)$id;
         $record = $this->tournamentPlayers->getTournamentPlayerById($id);
         if ($record === null) {
-            return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
-        } elseif (!$record) {
-            return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
+            return $this->jsonServerError();
         }
-        return new Response(HttpStatusCode::Ok, $record, ['Content-Type' => 'application/json']);
+        if (!$record) {
+            return $this->jsonNotFound('Record not found');
+        }
+        return $this->jsonSuccess($record);
     }
 
-    public function getTournamentPlayers(Request $request, $parameters): Response
+    public function getTournamentPlayers(Request $request, $parameters)
     {
         $all = $this->tournamentPlayers->getAllTournamentPlayers();
         if ($all === null) {
-            return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
+            return $this->jsonServerError();
         }
-        return new Response(HttpStatusCode::Ok, $all, ['Content-Type' => 'application/json']);
+        return $this->jsonSuccess($all);
     }
 
-    public function newTournamentPlayer(Request $request, $parameters): Response
+    public function newTournamentPlayer(Request $request, $parameters)
     {
         $tournamentId = $request->postParams['tournamentId'] ?? null;
         $userId = $request->postParams['userId'] ?? null;
-        if ($tournamentId === null || $userId === null || !ctype_digit((string)$tournamentId) || !ctype_digit((string)$userId)) {
-            return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
+        if ($tournamentId === null || $userId === null 
+            || !ctype_digit((string)$tournamentId) 
+            || !ctype_digit((string)$userId)) {
+            return $this->jsonBadRequest('Bad Input');
         }
-        $tournamentId = (int) $tournamentId;
-        $userId = (int) $userId;
+        $tournamentId = (int)$tournamentId;
+        $userId = (int)$userId;
         $id = $this->tournamentPlayers->createTournamentPlayer($tournamentId, $userId);
         if ($id === null) {
-            return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
+            return $this->jsonServerError();
         }
-        return new Response(HttpStatusCode::Created, ["id" => $id], ['Content-Type' => 'application/json']);
+        return $this->jsonCreated(['id' => $id]);
     }
 
-    public function updateTournamentPlayer(Request $request, $parameters): Response
+    public function updateTournamentPlayer(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
         if ($id === null || !ctype_digit($id)) {
-            return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
+            return $this->jsonBadRequest('Bad Input');
         }
-        $id = (int) $id;
+        $id = (int)$id;
         $existing = $this->tournamentPlayers->getTournamentPlayerById($id);
         if ($existing === null) {
-            return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
-        } elseif (!$existing) {
-            return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
+            return $this->jsonServerError();
+        }
+        if (!$existing) {
+            return $this->jsonNotFound('Record not found');
         }
         $tournamentId = $request->postParams['tournamentId'] ?? $existing['tournament_id'];
         $userId = $request->postParams['userId'] ?? $existing['user_id'];
         if (!ctype_digit((string)$tournamentId) || !ctype_digit((string)$userId)) {
-            return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
+            return $this->jsonBadRequest('Bad Input');
         }
-        $tournamentId = (int) $tournamentId;
-        $userId = (int) $userId;
+        $tournamentId = (int)$tournamentId;
+        $userId = (int)$userId;
         $updated = $this->tournamentPlayers->updateTournamentPlayer($id, $tournamentId, $userId);
-        if (!$updated) {
-            return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
+        if ($updated === null) {
+            return $this->jsonServerError();
         }
-        return new Response(HttpStatusCode::Ok, $updated, ['Content-Type' => 'application/json']);
+        return $this->jsonSuccess($updated);
     }
 
-    public function deleteTournamentPlayer(Request $request, $parameters): Response
+    public function deleteTournamentPlayer(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
         if ($id === null || !ctype_digit($id)) {
-            return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
+            return $this->jsonBadRequest('Bad Input');
         }
         $deleted = $this->tournamentPlayers->deleteTournamentPlayer((int)$id);
         if ($deleted === null) {
-            return new Response(HttpStatusCode::InternalServerError, ["error" => "Database error"], ['Content-Type' => 'application/json']);
-        } elseif ($deleted === 0) {
-            return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
+            return $this->jsonServerError();
         }
-        return new Response(HttpStatusCode::Ok, ["message" => "Record deleted successfully"], ['Content-Type' => 'application/json']);
+        if ($deleted === 0) {
+            return $this->jsonNotFound('Record not found');
+        }
+        return $this->jsonSuccess(['message' => 'Record deleted successfully']);
     }
 }

@@ -4,6 +4,7 @@ use src\controllers\MatchesController;
 use src\controllers\UserController;
 use src\controllers\TournamentController;
 use src\controllers\TournamentPlayerController;
+use src\controllers\TournamentMatchesController;
 
 // pages
 $this->router->get('/game', 'src/controllers/game.php');
@@ -33,9 +34,17 @@ $this->router->get('/api/tournament/{id}', [TournamentController::class, 'getTou
 $this->router->get('/api/tournament/{name}', [TournamentController::class, 'getTournamentByName']);
 $this->router->post('/api/tournament/new', [TournamentController::class, 'newTournament']);
 $this->router->patch('/api/tournament/{id}', [TournamentController::class, 'endTournament']);
-$this->router->delete('/api/tournament/{id}', [MatchesController::class, 'deleteTournament']);
+$this->router->delete('/api/tournament/{id}', [TournamentController::class, 'deleteTournament']);
 
 // tournament players
 $this->router->get('/api/tournament/{id}/players', [TournamentPlayerController::class, 'getTournamentPlayers']);
-$this->router->post('/api/tournament/{id}/player', [TournamentPlayerController::class, 'addPlayer']);
-$this->router->delete('/api/tournament/{id}/player/{id}', [TournamentPlayerController::class, 'deletePlayer']);
+$this->router->post('/api/tournament/{id}/player', [TournamentPlayerController::class, 'newTournamentPlayer']);
+$this->router->patch('/api/tournament/player/{id}', [TournamentPlayerController::class, 'updateTournamentPlayer']);
+$this->router->delete('/api/tournament/player/{id}', [TournamentPlayerController::class, 'deleteTournamentPlayer']);
+
+// tournament matches
+$this->router->get('/api/tournament/matches', [TournamentMatchesController::class, 'getTournamentMatches']);
+$this->router->get('/api/tournament/match/{id}', [TournamentMatchesController::class, 'getTournamentMatch']);
+$this->router->post('/api/tournament/match/new', [TournamentMatchesController::class, 'newTournamentMatch']);
+$this->router->patch('/api/tournament/match/{id}', [TournamentMatchesController::class, 'updateTournamentMatch']);
+$this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController::class, 'deleteTournamentMatch']);
