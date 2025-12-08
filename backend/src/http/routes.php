@@ -22,9 +22,6 @@ $this->router->post('/users/add', [UserController::class, 'addUser']);
 $this->router->post('/api/auth/send-2fa', [AuthController::class, 'sendTwoFactorCode'], [AuthMiddleware::class]);
 $this->router->post('/api/auth/verify-2fa', [AuthController::class, 'verifyTwoFactorCode'], [AuthMiddleware::class]);
 
-// Test route - issue JWT (remove in production)
-$this->router->get('/issue-jwt', 'src/controllers/issueJWT.php');
-
 $this->router->get('/game', 'src/controllers/game.php');
 
 // Public user routes - no auth required
