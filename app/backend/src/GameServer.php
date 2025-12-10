@@ -83,7 +83,9 @@ class GameServer implements MessageComponentInterface {
                     'player1' => $player,
                     'player2' => $opponent,
                     'started' => time(),
-                    'engine' => $engine
+                    'engine' => $engine,
+                    'lastLeftScore' => 0,
+                    'lastRightScore' => 0
                 ];
             } else {
                 //no opponent found yet
@@ -174,8 +176,10 @@ class GameServer implements MessageComponentInterface {
         if (!isset($this->games[$gameID])) return;
 
         $game = $this->games[$gameID];
+        $lastLeftScore = $game['lastLeftScore'];
+        $lastRightScore = $game['lastRightScore'];
         $newState = $game['engine']->update();
-
+        //message for Paddle and Ball positions
         $message = [
             'type' => 'gameUpdate',
             'data' => [
@@ -185,6 +189,17 @@ class GameServer implements MessageComponentInterface {
                 'ballY' => $newState['ball']['y'],
             ]
         ];
+
+        //message for score change
+        if ($newState['leftPaddle']['score'] != $game['lastLeftScore'] ||
+            $newState['rightPaddle']['score'] != $game['lastRightScore']) {
+                $message['data']['leftScore'] = $newState['leftPaddle']['score'];
+                $message['data']['rightScore'] = $newState['rightPaddle']['score'];
+
+                $this->games[$gameID]['lastLeftScore'] = $newState['leftPaddle']['score'];
+                $this->games[$gameID]['lastRightScore'] = $newState['rightPaddle']['score'];
+            }
+
 
         $game['player1']->send($message);
         $game['player2']->send($message);

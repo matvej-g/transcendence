@@ -79,11 +79,20 @@ export class NetworkManager {
 				this.canvas.render(message.data);
 =======
 			case 'gameUpdate':
-				console.log('GameUpdate received:', message.data);
+				// console.log('GameUpdate received:', message.data);
+				// console.log('leftScore:', message.data.leftScore, 'type:', typeof message.data.leftScore);
+				// console.log('rightScore:', message.data.rightScore, 'type:', typeof message.data.rightScore);
+
 				this.localGameState.leftPaddle.y = message.data.leftPaddleY;
 				this.localGameState.rightPaddle.y = message.data.rightPaddleY;
 				this.localGameState.ball.x = message.data.ballX;
 				this.localGameState.ball.y = message.data.ballY;
+				//check if message send with a score
+				if (message.data.leftScore !== undefined && message.data.rightScore !== undefined) {
+					//console.log('Score update:', message.data.leftScore, message.data.rightScore);
+					this.localGameState.leftPaddle.score = message.data.leftScore;
+					this.localGameState.rightPaddle.score = message.data.rightScore;
+				}
 				this.canvas.render(this.localGameState);
 >>>>>>> 34e7fc8 (removed localEngine.ts, optimized server logic)
 				break;
