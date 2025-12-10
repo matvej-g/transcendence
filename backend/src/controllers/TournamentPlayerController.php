@@ -44,8 +44,10 @@ class TournamentPlayerController extends BaseController
 
     public function newTournamentPlayer(Request $request, $parameters)
     {
-        $tournamentId = $request->postParams['tournamentId'] ?? null;
+        $tournamentId = $parameters['id'] ?? null;
         $userId = $request->postParams['userId'] ?? null;
+        var_dump($tournamentId);
+        var_dump($userId);
         if ($tournamentId === null || $userId === null 
             || !ctype_digit((string)$tournamentId) 
             || !ctype_digit((string)$userId)) {

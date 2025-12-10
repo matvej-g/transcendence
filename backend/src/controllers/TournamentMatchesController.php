@@ -44,8 +44,12 @@ class TournamentMatchesController extends BaseController
 
     public function newTournamentMatch(Request $request, $parameters)
     {
+        var_dump($parameters);
+        var_dump($request->postParams);
         $tournamentId = $request->postParams['tournamentId'] ?? null;
         $matchId = $request->postParams['matchId'] ?? null;
+        var_dump($tournamentId);
+        var_dump($matchId);
         if ($tournamentId === null || $matchId === null || !ctype_digit((string)$tournamentId) || !ctype_digit((string)$matchId)) {
             return $this->jsonBadRequest('Bad Input');
         }

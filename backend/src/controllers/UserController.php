@@ -163,6 +163,8 @@ class UserController extends BaseController
         return $this->jsonSuccess(['message' => 'Password changed']);
     }
 
+    // needs more validation (username email)
+    // needs old password
     public function updateUser(Request $request, $parameters)
     {
         $id = $request->postParams['id'] ?? null;
