@@ -14,7 +14,6 @@ declare global {
 export {};
 
 import { GameCanvas } from './gameCanvas.js';
-import { GameEngine } from './gameEngine.js';
 import { NetworkManager } from './networkManager.js';
 
 // Game Manager Class
@@ -28,7 +27,6 @@ class GameManager {
     private exitGameButton: HTMLElement | null;
     
     private gameCanvas: GameCanvas;
-    private gameEngine: GameEngine | null = null;
     private networkManager: NetworkManager;
     private keyState: {[key: string]: boolean} = {}; 
 
@@ -80,9 +78,9 @@ class GameManager {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
         this.gameCanvas.show();
-        this.gameEngine = new GameEngine(this.gameCanvas);
-        this.gameEngine.setInputHandler(() => this.keyState);
-        this.gameEngine.start();
+        // this.gameEngine = new GameEngine(this.gameCanvas);
+        // this.gameEngine.setInputHandler(() => this.keyState);
+        // this.gameEngine.start();
     }
 
     private startRemoteGame(): void {
@@ -93,11 +91,6 @@ class GameManager {
 
     private exitGame(): void {
         console.log('Exit game, back to GameModeSelection');
-
-        if (this.gameEngine) {
-            this.gameEngine.stop();
-            this.gameEngine = null;
-        }
 
         this.networkManager.disconnect();
         this.gameCanvas.hide();

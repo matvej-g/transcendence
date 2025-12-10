@@ -3,7 +3,6 @@ export interface Paddle {
     y: number;
     width: number;
     height: number;
-    speed: number;
     score: number;
 }
 
@@ -11,9 +10,6 @@ export interface Ball {
     x: number;
     y: number;
     radius: number;
-    velocityX: number;
-    velocityY: number;
-    speed: number;
 }
 
 export interface GameState {
@@ -30,7 +26,6 @@ export interface GameConfig {
     paddleWidth: number;
     paddleHeight: number;
     ballRadius: number;
-    maxScore: number;
 }
 
 export const DEFAULT_CONFIG: GameConfig = {
@@ -39,5 +34,4 @@ export const DEFAULT_CONFIG: GameConfig = {
     paddleWidth: 15,
     paddleHeight: 100,
     ballRadius: 10,
-    maxScore: 1
 };

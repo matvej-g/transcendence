@@ -1,3 +1,4 @@
+import { DEFAULT_CONFIG } from "./gameEntities.js";
 export class NetworkManager {
     constructor(canvas) {
         this.socket = null;
@@ -7,6 +8,29 @@ export class NetworkManager {
         this.keydownHandler = null;
         this.keyupHandler = null;
         this.canvas = canvas;
+        this.localGameState = {
+            leftPaddle: {
+                x: 20,
+                y: DEFAULT_CONFIG.canvasHeight / 2 - DEFAULT_CONFIG.paddleHeight / 2,
+                width: DEFAULT_CONFIG.paddleWidth,
+                height: DEFAULT_CONFIG.paddleHeight,
+                score: 0
+            },
+            rightPaddle: {
+                x: DEFAULT_CONFIG.canvasWidth - 20 - DEFAULT_CONFIG.paddleWidth,
+                y: DEFAULT_CONFIG.canvasHeight / 2 - DEFAULT_CONFIG.paddleHeight / 2,
+                width: DEFAULT_CONFIG.paddleWidth,
+                height: DEFAULT_CONFIG.paddleHeight,
+                score: 0
+            },
+            ball: {
+                x: DEFAULT_CONFIG.canvasWidth / 2,
+                y: DEFAULT_CONFIG.canvasHeight / 2,
+                radius: DEFAULT_CONFIG.ballRadius
+            },
+            isRunning: false,
+            winner: null
+        };
     }
     connect(url) {
         console.log(`Connecting to ${url}...`);
@@ -36,9 +60,19 @@ export class NetworkManager {
                 this.canvas.clear();
                 this.setupInputHandlers();
                 break;
+<<<<<<< HEAD
             case 'gameState':
                 //console.log('GameState received:', message.data);
                 this.canvas.render(message.data);
+=======
+            case 'gameUpdate':
+                console.log('GameUpdate received:', message.data);
+                this.localGameState.leftPaddle.y = message.data.leftPaddleY;
+                this.localGameState.rightPaddle.y = message.data.rightPaddleY;
+                this.localGameState.ball.x = message.data.ballX;
+                this.localGameState.ball.y = message.data.ballY;
+                this.canvas.render(this.localGameState);
+>>>>>>> 34e7fc8 (removed localEngine.ts, optimized server logic)
                 break;
             case 'gameOver':
                 console.log('Winner received:', message.data);

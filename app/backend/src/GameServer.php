@@ -177,8 +177,13 @@ class GameServer implements MessageComponentInterface {
         $newState = $game['engine']->update();
 
         $message = [
-            'type' => 'gameState',
-            'data' => $newState
+            'type' => 'gameUpdate',
+            'data' => [
+                'leftPaddleY' => $newState['leftPaddle']['y'],
+                'rightPaddleY' => $newState['rightPaddle']['y'],
+                'ballX' => $newState['ball']['x'],
+                'ballY' => $newState['ball']['y'],
+            ]
         ];
 
         $game['player1']->send($message);

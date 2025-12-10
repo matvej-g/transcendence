@@ -1,8 +1,9 @@
-import { GameState } from "./gameEntities";
+import { DEFAULT_CONFIG, GameState } from "./gameEntities.js";
 import { GameCanvas } from "./gameCanvas";
 
 export class NetworkManager {
 	private canvas: GameCanvas;
+	private localGameState: GameState; 
 	private socket: WebSocket | null = null;
 	private roomId: string | null = null;
 	private playerRole: 'left' | 'right' | null = null;
@@ -12,6 +13,30 @@ export class NetworkManager {
 
 	constructor(canvas: GameCanvas) {
 		this.canvas = canvas;
+
+		this.localGameState = {
+			leftPaddle: {
+				x: 20,
+				y: DEFAULT_CONFIG.canvasHeight / 2 - DEFAULT_CONFIG.paddleHeight / 2,
+				width: DEFAULT_CONFIG.paddleWidth,
+				height: DEFAULT_CONFIG.paddleHeight,
+				score: 0
+			},
+			rightPaddle: {
+				x: DEFAULT_CONFIG.canvasWidth - 20 - DEFAULT_CONFIG.paddleWidth,
+				y: DEFAULT_CONFIG.canvasHeight / 2 - DEFAULT_CONFIG.paddleHeight / 2,
+				width: DEFAULT_CONFIG.paddleWidth,
+				height: DEFAULT_CONFIG.paddleHeight,
+				score: 0
+			},
+			ball: {
+				x: DEFAULT_CONFIG.canvasWidth / 2,
+				y: DEFAULT_CONFIG.canvasHeight / 2,
+				radius: DEFAULT_CONFIG.ballRadius
+			},
+			isRunning: false,
+			winner: null
+		};
 	}
 
 	public connect(url: string): void {
@@ -48,9 +73,19 @@ export class NetworkManager {
 				this.setupInputHandlers();
 				break;
 
+<<<<<<< HEAD
 			case 'gameState':
 				//console.log('GameState received:', message.data);
 				this.canvas.render(message.data);
+=======
+			case 'gameUpdate':
+				console.log('GameUpdate received:', message.data);
+				this.localGameState.leftPaddle.y = message.data.leftPaddleY;
+				this.localGameState.rightPaddle.y = message.data.rightPaddleY;
+				this.localGameState.ball.x = message.data.ballX;
+				this.localGameState.ball.y = message.data.ballY;
+				this.canvas.render(this.localGameState);
+>>>>>>> 34e7fc8 (removed localEngine.ts, optimized server logic)
 				break;
 
 			case 'gameOver':

@@ -1,11 +1,9 @@
 import { GameCanvas } from './gameCanvas.js';
-import { GameEngine } from './gameEngine.js';
 import { NetworkManager } from './networkManager.js';
 // Game Manager Class
 class GameManager {
     //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
-        this.gameEngine = null;
         this.keyState = {};
         this.mainMenu = document.getElementById('mainMenu');
         this.gameModeMenu = document.getElementById('gameModeMenu');
@@ -45,9 +43,9 @@ class GameManager {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
         this.gameCanvas.show();
-        this.gameEngine = new GameEngine(this.gameCanvas);
-        this.gameEngine.setInputHandler(() => this.keyState);
-        this.gameEngine.start();
+        // this.gameEngine = new GameEngine(this.gameCanvas);
+        // this.gameEngine.setInputHandler(() => this.keyState);
+        // this.gameEngine.start();
     }
     startRemoteGame() {
         console.log('Starting remote game...');
@@ -56,10 +54,6 @@ class GameManager {
     }
     exitGame() {
         console.log('Exit game, back to GameModeSelection');
-        if (this.gameEngine) {
-            this.gameEngine.stop();
-            this.gameEngine = null;
-        }
         this.networkManager.disconnect();
         this.gameCanvas.hide();
         this.gameModeMenu?.classList.remove('hidden');
