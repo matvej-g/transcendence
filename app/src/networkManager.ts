@@ -10,6 +10,7 @@ export class NetworkManager {
 	private currentGameState: any = null;
 	private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 	private keyupHandler: ((e: KeyboardEvent) => void) | null = null;
+	private gameMode: 'local' | 'remote' | null = null;
 
 	constructor(canvas: GameCanvas) {
 		this.canvas = canvas;
@@ -39,10 +40,14 @@ export class NetworkManager {
 		};
 	}
 
-	public connect(url: string): void {
+	public connect(url: string, mode: 'local' | 'remote'): void {
 		console.log(`Connecting to ${url}...`);
-		this.canvas.showSearching();
-
+		this.gameMode = mode;
+		if (mode == 'local') {
+			this.canvas.show();
+		} else if (mode == 'remote') {
+			this.canvas.showSearching();
+		}
 		this.socket = new WebSocket(url);
 		this.socket.onopen = () => this.onConnected();
 		this.socket.onmessage = (event) => this.onMessage(event);
@@ -54,7 +59,7 @@ export class NetworkManager {
 		console.log('Connected to server!');
 		this.send({
 			type: 'join',
-			data: { gameMode: 'remote' }
+			data: { gameMode: this.gameMode }
 		});
 	}
 
@@ -73,28 +78,13 @@ export class NetworkManager {
 				this.setupInputHandlers();
 				break;
 
-<<<<<<< HEAD
-			case 'gameState':
-				//console.log('GameState received:', message.data);
-				this.canvas.render(message.data);
-=======
 			case 'gameUpdate':
-				// console.log('GameUpdate received:', message.data);
-				// console.log('leftScore:', message.data.leftScore, 'type:', typeof message.data.leftScore);
-				// console.log('rightScore:', message.data.rightScore, 'type:', typeof message.data.rightScore);
-
+				console.log('GameUpdate received:', message.data);
 				this.localGameState.leftPaddle.y = message.data.leftPaddleY;
 				this.localGameState.rightPaddle.y = message.data.rightPaddleY;
 				this.localGameState.ball.x = message.data.ballX;
 				this.localGameState.ball.y = message.data.ballY;
-				//check if message send with a score
-				if (message.data.leftScore !== undefined && message.data.rightScore !== undefined) {
-					//console.log('Score update:', message.data.leftScore, message.data.rightScore);
-					this.localGameState.leftPaddle.score = message.data.leftScore;
-					this.localGameState.rightPaddle.score = message.data.rightScore;
-				}
 				this.canvas.render(this.localGameState);
->>>>>>> 34e7fc8 (removed localEngine.ts, optimized server logic)
 				break;
 
 			case 'gameOver':
@@ -137,51 +127,77 @@ export class NetworkManager {
 
 		const pressedKeys = new Set<string>();
 		this.keydownHandler = (e: KeyboardEvent) => {
-			// Prevent scrolling for arrow keys and WASD
+			let paddle: 'left' | 'right' | undefined;
+			let direction: 'up' | 'down' | undefined;
+			//prevent scrolling with arrowkeys and space
 			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
 				e.preventDefault();
 			}
 
-			//prevent repeated keydown events when holding key
-			if (pressedKeys.has(e.key)) return;
-			pressedKeys.add(e.key);
-			let direction = '';
-			if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+			if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
 				direction = 'up';
-			} else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+			} else if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
 				direction = 'down';
 			}
+			//add paddle info in local mode
+			if (this.gameMode === 'local') {
+				if (e.key === 'w' || e.key === 'W' || e.key === 's' || e.key === 'S') {
+					paddle = 'left';
+				} else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+					paddle = 'right';
+				}
+			}
+
 			if (direction) {
+				//prevent repeated keydown events when holding key
+				if (pressedKeys.has(e.key)) return;
+				pressedKeys.add(e.key);
+
+				const inputData: any = {
+					action: 'keydown',
+					direction: direction
+				};
+				//add paddle info in local mode
+				if (paddle) {
+					inputData['paddle'] = paddle;
+				}
 				this.send({
 					type: 'input',
-					data: {
-						action: 'keydown',
-						direction
-					}
+					data: inputData
 				});
 			}
 		};
 
 		this.keyupHandler = (e: KeyboardEvent) => {
-			// Prevent scrolling for arrow keys and WASD
+			let paddle: 'left' | 'right' | undefined;
+
 			if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
 				e.preventDefault();
 			}
 
-			pressedKeys.delete(e.key);
-			let direction = '';
-			if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-				direction = 'up';
-			} else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-				direction = 'down';
-			}
-			if (direction) {
+			// Check if this is a game key
+			const isGameKey = ['w', 'W', 's', 'S', 'ArrowUp', 'ArrowDown'].includes(e.key);
+
+			if (isGameKey) {
+				pressedKeys.delete(e.key);
+				//for local mode send paddle side
+				if (this.gameMode === 'local') {
+					if (e.key === 'w' || e.key === 'W' || e.key === 's' || e.key === 'S') {
+						paddle = 'left';
+					} else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+						paddle = 'right';
+					}
+				}
+				const inputData: any = {
+					action: 'keyup'
+				};
+				//add paddle info in local mode
+				if (paddle) {
+					inputData['paddle'] = paddle;
+				}
 				this.send({
 					type: 'input',
-					data: {
-						action: 'keyup',
-						direction
-					}
+					data: inputData
 				});
 			}
 		};

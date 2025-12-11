@@ -77,16 +77,13 @@ class GameManager {
     private startLocalGame(): void {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
-        this.gameCanvas.show();
-        // this.gameEngine = new GameEngine(this.gameCanvas);
-        // this.gameEngine.setInputHandler(() => this.keyState);
-        // this.gameEngine.start();
+        this.networkManager.connect('ws://localhost:8080/ws', 'local');
     }
 
     private startRemoteGame(): void {
         console.log('Starting remote game...');
         this.gameModeMenu?.classList.add('hidden');
-        this.networkManager.connect('ws://localhost:8080/ws');
+        this.networkManager.connect('ws://localhost:8080/ws', 'remote');
     }
 
     private exitGame(): void {
