@@ -6,7 +6,7 @@ use Ratchet\ConnectionInterface;
 class Player {
     public ConnectionInterface $conn;
     public ?string $paddle = null;
-    public ?string $gameId = null;
+    public ?string $gameID = null;
     public string $username = '';
     public string $userID;
     public int $score = 0;

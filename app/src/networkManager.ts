@@ -84,6 +84,12 @@ export class NetworkManager {
 				this.localGameState.rightPaddle.y = message.data.rightPaddleY;
 				this.localGameState.ball.x = message.data.ballX;
 				this.localGameState.ball.y = message.data.ballY;
+				//check if message send with a score
+				if (message.data.leftScore !== undefined && message.data.rightScore !== undefined) {
+					//console.log('Score update:', message.data.leftScore, message.data.rightScore);
+					this.localGameState.leftPaddle.score = message.data.leftScore;
+					this.localGameState.rightPaddle.score = message.data.rightScore;
+				}
 				this.canvas.render(this.localGameState);
 				break;
 
