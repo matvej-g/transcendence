@@ -17,6 +17,9 @@ RUN npx tsc --build
 FROM nginx:alpine
 WORKDIR /usr/share/nginx/html
 
+# Install curl for healthchecks
+RUN apk add --no-cache curl
+
 # Copy static files
 COPY --from=builder /app/public/ .
 
