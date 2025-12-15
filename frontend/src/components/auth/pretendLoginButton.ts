@@ -1,5 +1,7 @@
 // Compiles to /site/public/js/user/auth/pretendLoginButton.js
 
+import { navigateToLandingPage } from "../landing/navigation.js";
+
 // import { $, log } from "../../utils/utils.js";
 //
 // function wirePretendLoginButton() {
@@ -31,15 +33,16 @@ function wirePretendLoginButton() {
 		}
 
 		// Fallback: if the router isn't present, directly reveal the main UI pieces
-		const navbar = document.getElementById('navbar');
-		const footer = document.getElementById('footer');
-		const profile = document.getElementById('profile-section');
-		const auth = document.getElementById('auth-section');
+		// const navbar = document.getElementById('navbar');
+		// const footer = document.getElementById('footer');
+		// const profile = document.getElementById('profile-section');
+		// const auth = document.getElementById('auth-section');
 
-		if (auth) auth.classList.add('hidden');
-		if (profile) profile.classList.remove('hidden');
-		if (navbar) navbar.classList.remove('hidden');
-		if (footer) footer.classList.remove('hidden');
+		// if (auth) auth.classList.add('hidden');
+		// if (profile) profile.classList.remove('hidden');
+		// if (navbar) navbar.classList.remove('hidden');
+		// if (footer) footer.classList.remove('hidden');
+		navigateToLandingPage(null);
 	});
 }
 

@@ -3,7 +3,7 @@ export type UserId = string;
 // data that is allowed to be passed to other usersq
 export interface UserDataPublic {
   id: UserId;
-  displayName: string;   // shown in UI
+  username: string;   // shown in UI
 }
 
 // What *only the server / this user* sees.
