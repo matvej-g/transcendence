@@ -11,7 +11,7 @@ export function navigateToLandingPage(userData: UserDataPublic | null): void {
 	try {
 		window.location.hash = '#profile';
 	} catch (e) {
-		console.warn('[pretendLoginButton] failed to set hash', e);
+		console.warn('[navigateToLandingPage] failed to set hash', e);
 	}
 
 	const navbar = document.getElementById('navbar');
