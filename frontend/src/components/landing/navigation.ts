@@ -7,6 +7,13 @@ export function navigateToLandingPage(userData: UserDataPublic | null): void {
 
 	// this section should be replaced with a call to the single page_view entity
 	// i.e. replace with step 1 and step 2 below in a single call
+	// Use hash navigation to trigger the SPA router in index-profile.html
+	try {
+		window.location.hash = '#profile';
+	} catch (e) {
+		console.warn('[pretendLoginButton] failed to set hash', e);
+	}
+
 	const navbar = document.getElementById('navbar');
 	const footer = document.getElementById('footer');
 	const profile = document.getElementById('profile-section');

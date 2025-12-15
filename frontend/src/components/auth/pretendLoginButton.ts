@@ -25,13 +25,6 @@ function wirePretendLoginButton() {
 	btn.addEventListener('click', () => {
 		console.log('[UI] pretendLogin → navigating to #profile');
 
-		// Use hash navigation to trigger the SPA router in index-profile.html
-		try {
-			window.location.hash = '#profile';
-		} catch (e) {
-			console.warn('[pretendLoginButton] failed to set hash', e);
-		}
-
 		navigateToLandingPage(null);
 	});
 }
