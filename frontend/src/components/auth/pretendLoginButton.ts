@@ -32,16 +32,6 @@ function wirePretendLoginButton() {
 			console.warn('[pretendLoginButton] failed to set hash', e);
 		}
 
-		// Fallback: if the router isn't present, directly reveal the main UI pieces
-		// const navbar = document.getElementById('navbar');
-		// const footer = document.getElementById('footer');
-		// const profile = document.getElementById('profile-section');
-		// const auth = document.getElementById('auth-section');
-
-		// if (auth) auth.classList.add('hidden');
-		// if (profile) profile.classList.remove('hidden');
-		// if (navbar) navbar.classList.remove('hidden');
-		// if (footer) footer.classList.remove('hidden');
 		navigateToLandingPage(null);
 	});
 }
