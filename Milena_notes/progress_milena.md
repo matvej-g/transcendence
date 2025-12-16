@@ -128,7 +128,17 @@
 	- settings dropdown should be in the middle
 	- how to include language button in landing page??
 	- match history recenter
-	- show footer also with auth
-	- 
+	- show footer also with auth -> in line "Show/hide navbars and footer based on section" -> remove hidden
+	-
 
+
+### questions for team
+- did ivan do the chat frontend?
+- what choices do we have for game?
+	- 1:1 remote
+	- tournament
+	- 1:1 local(?)
+- language button - its above the logout button and I dont know how to integrate it in a flex way
+	-> does Ivan know it?
+- (look at it again: permission denied when I try http://localhost:8080/api/users)
 
