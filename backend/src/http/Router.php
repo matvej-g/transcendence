@@ -25,24 +25,6 @@ class Router {
 	{
 		$this->add('POST', $uri, $controller, $middleware);
 	}
-    protected function add($method, $uri, $controller)
-    {
-        $this->routes[] = [
-            'uri' => $uri,
-            'method' => $method,
-            'controller' => $controller,
-        ];
-    }
-
-    public function get($uri, $controller)
-    {
-        $this->add('GET', $uri, $controller);
-    }
-
-    public function post($uri, $controller)
-    {
-        $this->add('POST', $uri, $controller);
-    }
 
     public function delete($uri, $controller)
     {
@@ -84,27 +66,6 @@ class Router {
         }
         return false;
     }
-
-    public function route($uri, $method, $request, $db): Response
-    {
-        foreach ($this->routes as $route) {
-            $matches = $this->convert($route, $uri);
-            if ($matches !== false && $matches[0] === $uri && $route['method'] === strtoupper($method)) {
-                // static page controllers
-                if (is_string($route['controller'])) {
-                    return require base_path($route['controller']);
-                }
-                // dynamic controller classes
-                if (is_array($route['controller'])) {
-                    [$class, $methodName] = $route['controller'];
-                    $controllerInstance = new $class($db);
-                    return ($controllerInstance->$methodName($request, $matches));
-                }
-            }
-        }
-        $this->abort();
-    }
-
 
 	public function route($uri, $method, $request, $db): Response
 	{
