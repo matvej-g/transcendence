@@ -1,48 +1,97 @@
-<?php 
+<?php
 
 namespace src\controllers;
 
 use src\Database;
-use src\http\HttpStatusCode;
 use src\http\Request;
-use src\http\Response;
+use src\controllers\BaseController;
 use src\Models\TournamentsModel;
 
-class TournamentController 
+class TournamentController extends BaseController
 {
-	private $tournaments;
+    private TournamentsModel $tournaments;
 
-	public function __construct(Database $db) 
-	{
-		$this->tournaments = new TournamentsModel($db);
-	}
+    public function __construct(Database $db)
+    {
+        $this->tournaments = new TournamentsModel($db);
+    }
 
-	public function getTournaments(Request $request, $parameters): Response {
-		$allTournaments = $this->tournaments->getAllTournaments();
-		return new Response(HttpStatusCode::Ok, $allTournaments, ['Content-Type' => 'application/json']);
-	}
+    public function getTournamentByName(Request $request, $parameters)
+    {
+        $name = $parameters['name'] ?? null;
+        if ($name === null || !is_string($name)) {
+            return $this->jsonBadRequest('Bad Input');
+        }
+        $tournament = $this->tournaments->getTournamentByName($name);
+        if ($tournament === null) {
+            return $this->jsonServerError();
+        }
+        if (!$tournament) {
+            return $this->jsonNotFound('Tournament not found');
+        }
+        return $this->jsonSuccess($tournament);
+    }
 
-	public function getTournament(Request $request, $parameters): Response {
-		$id = $parameters['id'] ?? null;
-		if (!ctype_digit($id))
-			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
-		$id = (int) $id;
-		$tournament = $this->tournaments->getTournamentById($id);
-		if (!$tournament)
-			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
-		return new Response(HttpStatusCode::Ok, $tournament, ['Content-Type' => 'application/json']);
-	}
+    public function getTournament(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest('Bad Input');
+        }
+        $id = (int)$id;
+        $tournament = $this->tournaments->getTournamentById($id);
+        if ($tournament === null) {
+            return $this->jsonServerError();
+        }
+        if (!$tournament) {
+            return $this->jsonNotFound('Tournament not found');
+        }
+        return $this->jsonSuccess($tournament);
+    }
 
-	public function newTournament(Request $request, $parameters): Response {
-		$name = $request->postParams['name'] ?? null;
-		
-		if (!is_string($name))
-			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);	
+    public function getTournaments(Request $request, $parameters)
+    {
+        $all = $this->tournaments->getAllTournaments();
+        if ($all === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess($all);
+    }
 
-		$id = $this->tournaments->createTournament($name);
-		if (!$id)
-			// not sure what the best error response is here
-			return new Response(HttpStatusCode::BadRequest, ["error" => ""], ['Content-Type' => 'application/json']);	
-		return new Response(HttpStatusCode::Ok, $id, ['Content-Type' => 'application/json']);
-	}
+    public function newTournament(Request $request, $parameters)
+    {
+        $name = $request->postParams['name'] ?? null;
+        if ($name === null || !is_string($name)) {
+            return $this->jsonBadRequest('Bad Input');
+        }
+        $id = $this->tournaments->createTournament($name);
+        if ($id === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonCreated(['id' => $id]);
+    }
+
+    public function endTournament(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest('Bad Input');
+        }
+        $id = (int)$id;
+        $tournament = $this->tournaments->getTournamentById($id);
+        if ($tournament === null) {
+            return $this->jsonServerError();
+        }
+        if (!$tournament) {
+            return $this->jsonNotFound('Tournament not found');
+        }
+        if ($tournament['finished_at'] !== null) {
+            return $this->jsonBadRequest('Tournament already finished');
+        }
+        $updated = $this->tournaments->endTournament($id);
+        if ($updated === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess($updated);
+    }
 }

@@ -12,15 +12,36 @@ class TournamentsModel {
 	}
 
 	public function getTournamentById($id) {
-		return $this->db->query(
-			"SELECT * FROM tournaments WHERE id = ?",
-			[$id])->fetch(PDO::FETCH_ASSOC);
+		try {
+			return $this->db->query(
+				"SELECT * FROM tournaments WHERE id = ?",
+				[$id])->fetch(PDO::FETCH_ASSOC);
+		}
+		catch (\PDOException) {
+			return null;
+		}
+	}
+
+	public function getTournamentByName($name) {
+		try {
+			return $this->db->query(
+				"SELECT * FROM tournaments WHERE tournament_name = ?",
+				[$name])->fetch(PDO::FETCH_ASSOC);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
 	}
 
 	public function getAllTournaments() {
-		return $this->db->query(
-			"SELECT * FROM tournaments"
-		)->fetchALL(PDO::FETCH_ASSOC);
+		try {
+			return $this->db->query(
+				"SELECT * FROM tournaments"
+			)->fetchALL(PDO::FETCH_ASSOC);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
 	}
 
 	public function createTournament($name): ?int {
@@ -30,6 +51,20 @@ class TournamentsModel {
 				[$name]
 			);
 			return $this->db->connection->lastInsertId();
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	public function endTournament($id)
+	{
+		try {
+			$this->db->query(
+				"UPDATE tournaments SET finished_at = CURRENT_TIMESTAMP WHERE id = ?",
+				[$id]
+			);
+			return $this->getTournamentById($id);
 		}
 		catch (\PDOException $e) {
 			return null;

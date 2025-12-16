@@ -4,6 +4,7 @@ import type { Lang } from "../i18n.js";
 type AuthDomKey =
   | "title"
   | "username"
+  | "email"
   | "password"
   | "loginBtn"
   | "registerBtn"
@@ -17,6 +18,7 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
   en: {
     title: "Authentication",
     username: "Username",
+    email: "Email",
     password: "Password",
     loginBtn: "Login",
     registerBtn: "Register",
@@ -25,6 +27,7 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
   ru: {
     title: "Аутентификация",
     username: "Имя пользователя",
+    email: "Электронная почта",
     password: "Пароль",
     loginBtn: "Войти",
     registerBtn: "Зарегистрироваться",

@@ -6,7 +6,7 @@ export async function loginHandle(username: string, password: string): Promise<L
   console.log('[TS] loginHandle → input', { username, password });
 
   try {
-    const res = await fetch('/api/login.php', {
+    const res = await fetch('/api/user/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ usernameOrEmail: username.trim(), password })
@@ -27,7 +27,7 @@ export async function loginHandle(username: string, password: string): Promise<L
     }
 
     // Expecting { ok: true, user: {...} } from PHP stub
-    return { ok: true, user: data.user };
+    return { ok: true, user: { id: data.id, username: data.userName } };
   } catch (e) {
     console.log('[TS] loginHandle → exception', e);
     return { ok: false, error: 'NETWORK_ERROR' };
