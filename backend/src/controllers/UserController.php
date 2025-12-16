@@ -2,94 +2,192 @@
 
 namespace src\controllers;
 
-use src\Database; // alias full namespace: makes it possible to use class name alone
-use src\http\HttpStatusCode;
+use src\Database;
 use src\http\Request;
-use src\http\Response;
-use src\Models\UserModels;
+use src\controllers\BaseController;
+use src\Models\UserModel;
 use src\Validator;
 
-class UserController {
+class UserController extends BaseController
+{
+    private UserModel $users;
 
-	private UserModels $users;
+    public function __construct(Database $db)
+    {
+        $this->users = new UserModel($db);
+    }
 
+    public function getUser(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $id = (int)$id;
+        $user = $this->users->getUserById($id);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+        return $this->jsonSuccess($user);
+    }
 
-	public function __construct(Database $db)
-	{
-		$this->users = new UserModels($db);
-	}
+    public function getUserByUsername(Request $request, $parameters)
+    {
+        $username = $parameters['userName'] ?? null;
+        if ($username === null || !is_string($username)) {
+            return $this->jsonBadRequest("Invalid username");
+        }
+        $user = $this->users->getUserByUsername($username);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+        return $this->jsonSuccess($user);
+    }
 
-	// for this to work needs updated router regex conversion logic
-	public function getUserbyName(Request $request, $parameters): Response
-	{
-	}
+    public function getUserByEmail(Request $request, $parameters)
+    {
+        $email = $parameters['email'] ?? null;
+        if ($email === null || !is_string($email)) {
+            return $this->jsonBadRequest("Invalid email");
+        }
+        $user = $this->users->getUserByEmail($email);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+        return $this->jsonSuccess($user);
+    }
 
-	// currently searching by email won't work because it's not unique
-	public function userLogin(Request $request, $parameters): Response
-	{
-		$usernameOrEmail = $request->postParams['usernameOrEmail'] ?? null;
-		$password = $request->postParams['password'] ?? null;
+    public function getUsers(Request $request, $parameters)
+    {
+        $allUsers = $this->users->getAllUsers();
+        if ($allUsers === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess($allUsers);
+    }
 
-		$user = $this->users->getUserByUsernameOrEmail($usernameOrEmail);
-		if (!$user)
-			return new Response(HttpStatusCode::BadRequest, ['error' => 'invalid Input'], ['Content-Type' => 'application/json']);
-		if (!password_verify($password, $user['password_hash']))
-			return new Response(HttpStatusCode::Unauthorised, ['error' => 'invalid password'], ['Content-Type' => 'application/json']);
-		
-		// Issue JWT with two_factor_verified=false
-		$token = generateJWT($user['id'], false, 3600);
-		setJWTCookie($token, 3600);
-		
-		return new Response(HttpStatusCode::Ok, [
-			'success' => true,
-			'user' => [
-				'id' => $user['id'],
-				'username' => $user['username'],
-				'email' => $user['email']
-			],
-			'token' => $token
-		], ['Content-Type' => 'application/json']);
-	}
+    public function userLogin(Request $request, $parameters)
+    {
+        $credential = $request->postParams['usernameOrEmail'] ?? null;
+        $password   = $request->postParams['password'] ?? null;
+        if ($credential === null || $password === null) {
+            return $this->jsonBadRequest("Username/email and password required");
+        }
+        $user = $this->users->getUserByUsernameOrEmail($credential);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+        if (!password_verify($password, $user['password_hash'])) {
+            return $this->jsonUnauthorized("Invalid password");
+        }
+        return $this->jsonSuccess($user);
+    }
 
-	public function newUser(Request $request, $parameters): Response
-	{
-		$userName = $request->postParams['userName'] ?? null;
-		$email = $request->postParams['email'] ?? null;
-		$password = $request->postParams['password'] ?? null;
+    public function newUser(Request $request, $parameters)
+    {
+        $username = $request->postParams['userName']  ?? null;
+        $email    = $request->postParams['email']     ?? null;
+        $password = $request->postParams['password']  ?? null;
+        // if ($email === null) {
+        //     $email = "hard@code.de";
+        // }
+        $errors = Validator::validateNewUserData($username, $email, $password);
+        if ($errors) {
+            return $this->jsonBadRequest(json_encode($errors));
+        }
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $id = $this->users->createUser($username, $email, $hash);
+        if ($id === null) {
+            return $this->jsonConflict("Conflicting user info");
+        }
+        return $this->jsonCreated(['id' => (int)$id]);
+    }
 
-		// change back once email is sent and unique
-		if ($email === null)
-			$email = "hard@code.de";
+    public function deleteUser(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $deleted = $this->users->deleteUser((int)$id);
+        if ($deleted === null) {
+            return $this->jsonServerError();
+        }
+        if ($deleted === 0) {
+            return $this->jsonNotFound("User not found");
+        }
+        return $this->jsonSuccess(['message' => 'User deleted']);
+    }
 
-		$errors = Validator::validateNewUserData($userName, $email, $password);
-		if ($errors)
-			return new Response(HttpStatusCode::BadRequest, ['errors' => $errors], ['Content-Type' => 'application/json']);	
+    public function changePassword(Request $request, $parameters)
+    {
+        $id = $request->postParams['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $user = $this->users->getUserById((int)$id);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+        $old = $request->postParams['oldPassword'] ?? null;
+        $new = $request->postParams['newPassword'] ?? null;
+        if ($old === null || $new === null) {
+            return $this->jsonBadRequest("Both old and new passwords required");
+        }
+        if (!password_verify($old, $user['password_hash'])) {
+            return $this->jsonBadRequest("Invalid current password");
+        }
+        if (password_verify($new, $user['password_hash'])) {
+            return $this->jsonBadRequest("New password must differ");
+        }
+        $hash = password_hash($new, PASSWORD_DEFAULT);
+        $updated = $this->users->updatePassword((int)$id, $hash);
+        if ($updated === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess(['message' => 'Password changed']);
+    }
 
-		$hash = password_hash($password, PASSWORD_DEFAULT);	
-		$body = $this->users->createUser($userName, $email, $hash);
-		if (!$body)
-			return new Response(HttpStatusCode::Conflict, ["error" => "conflicting unique user info"], ['Content-Type' => 'application/json']);	
-		return new Response(HttpStatusCode::Created, $body, ['Content-Type' => 'application/json']);
-	}
-
-	// returns all users or empty array
-	public function getUsers(Request $request, $parameters): Response
-	{
-		$allUsers = $this->users->getAllUsers();
-		return new Response(HttpStatusCode::Ok, $allUsers, ['Content-Type' => 'application/json']);
-	}
-
-	// gets individual user by id
-	// if user is not in database $body is empty and 404 is sent
-	public function getUser(Request $request, $parameters): Response
-	{
-		$id = $parameters['id'] ?? null;
-		if (!ctype_digit($id))
-			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
-		$id = (int) $id; 
-		$body = $this->users->getUserById($id);
-		if (!$body)
-			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
-		return new Response(HttpStatusCode::Ok, $body, ['Content-Type' => 'application/json']);
-	}
+    public function updateUser(Request $request, $parameters)
+    {
+        $id = $request->postParams['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $existing = $this->users->getUserById((int)$id);
+        if ($existing === null) {
+            return $this->jsonServerError();
+        }
+        if (!$existing) {
+            return $this->jsonNotFound("User not found");
+        }
+        $username = $request->postParams['userName'] ?? $existing['username'];
+        $email    = $request->postParams['email']    ?? $existing['email'];
+        $password = $request->postParams['password'] ?? null;
+        $errors = Validator::validateUpdateUserData($username, $email, $password);
+        if ($errors) {
+            return $this->jsonBadRequest(json_encode($errors));
+        }
+        $hash = $password ? password_hash($password, PASSWORD_DEFAULT) : $existing['password_hash'];
+        $updated = $this->users->updateUserInfo((int)$id, $username, $email, $hash);
+        if ($updated === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess($updated);
+    }
 }

@@ -1,5 +1,12 @@
+in this directory:
 
-To run the website
+index.html
+index_old -> auth file from ivan (can be deleted?)
+userLanding_old -> user landing placeholder from ivan (can be deleted?)
+profle_avatar -> for having an img in profile before connecting to backend
+
+
+To run the website without docker:
 
 0) - once per system (probably add to docker instructions)
 # Install nvm (Node Version Manager)
@@ -12,7 +19,7 @@ export NVM_DIR="$HOME/.nvm"
 nvm install --lts
 nvm use --lts
 
-# from project root 
+# from project root
 # IF package.json and package-lock.json are missing:
 npm init -y
 npm i -D typescript

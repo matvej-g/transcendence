@@ -5,7 +5,6 @@ DB_DIR="$DIR/database"
 DB_FILE="$DB_DIR/transcendence.db"
 SCHEMA="$DIR/tools/sqlite_init.sql"
 
-
 # === ANSI Colors ===
 RED='\033[0;31m'
 GREEN='\033[1;32m'
@@ -17,6 +16,7 @@ NC='\033[0m'
 mkdir -p "$DB_DIR"
 chown -R www-data:www-data "$DB_DIR"
 chmod 2755 "$DB_DIR"
+# try with 755
 
 # not sure if exiting is a good idea
 if [ ! -f "$SCHEMA" ]; then
@@ -26,18 +26,13 @@ else
 	echo -e "${GREEN}$SCHEMA exists!${NC}";
 fi
 
-# if [ -f $DB_FILE ]; then
-# 	echo -e "${YELLOW}$DB_FILE already exists${NC}";
-# else
-# 	echo -e "${GREEN}Database does not exist... creating $DB_FILE${NC}";
-	echo -e "${GREEN}Applying schema to $DB_FILE${NC}"
+# test this
+if [ ! -f "$DB_FILE" ]; then
+    echo -e "${GREEN}Creating database $DB_FILE and applying schema...${NC}"
 	sudo -u www-data sqlite3 "$DB_FILE" < "$SCHEMA"
-	# sqlite3 "$DB_FILE" < "$SCHEMA"
-# fi
+    chown www-data:www-data "$DB_FILE"
+else
+    echo -e "${YELLOW}Database already exists. Skipping schema.${NC}"
+fi
 
 exec php-fpm
-
-# sqlite3 -header -column "$DB_FILE" <<EOF
-# 	SELECT * FROM users;
-# EOF
-

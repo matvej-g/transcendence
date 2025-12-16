@@ -1,61 +1,169 @@
-<?php 
+<?php
 
 namespace src\controllers;
 
 use src\Database;
-use src\http\HttpStatusCode;
 use src\http\Request;
-use src\http\Response;
+use src\controllers\BaseController;
+use src\Models\UserModel;
 use src\Models\MatchesModel;
 
-class MatchesController{
+class MatchesController extends BaseController
+{
+    private MatchesModel $matches;
+    private UserModel $users;
 
-	private MatchesModel $matches;
+    public function __construct(Database $db)
+    {
+        $this->matches = new MatchesModel($db);
+        $this->users = new UserModel($db);
+    }
 
-	public function __construct(Database $db)
-	{
-			$this->matches = new MatchesModel($db);
-	}
+    public function getMatch(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest('Invalid match id');
+        }
+        $id = (int)$id;
+        $match = $this->matches->getMatchById($id);
+        if ($match === null) {
+            return $this->jsonServerError();
+        }
+        if (!$match) {
+            return $this->jsonNotFound('Match not found');
+        }
+        return $this->jsonSuccess($match);
+    }
 
-	// gets information concerning all Matches in Database
-	// if empty still returns 200 and empty array
-	public function getMatches(Request $request, $parameters): Response {
-		$allMatches = $this->matches->getAllMatches();
-		return new Response(HttpStatusCode::Ok, $allMatches, ['Content-Type' => 'application/json']);
-	}
+    public function getMatches(Request $request, $parameters)
+    {
+        $all = $this->matches->getAllMatches();
+        if ($all === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess($all);
+    }
 
-	// extracts id
-	// checks if it's an int
-	// runs query
-	// checks if empty
-	public function getMatch(Request $request, $parameters): Response {
-		$id = $parameters['id'] ?? null;
-		if (!ctype_digit($id))
-			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);
-		$id = (int) $id;
-		$body = $this->matches->getMatchById($id);
-		if (!$body)
-			return new Response(HttpStatusCode::NotFound, ["error" => "Not Found"], ['Content-Type' => 'application/json']);
-		return new Response(HttpStatusCode::Ok, $body, ['Content-Type' => 'application/json']);
-	}
+    public function newMatch(Request $request, $parameters)
+    {
+        $playerOneId = $request->postParams['idPlayerOne'] ?? null;
+        $playerTwoId = $request->postParams['idPlayerTwo'] ?? null;
 
-	public function newMatch(Request $request, $parameters): Response {
-		// array keys could be different later
-		$playerOneId = $request->postParams['player_one_id'] ?? null;
-		$playerTwoId = $request->postParams['player_two_id'] ?? null;
-		
-		if (!is_int($playerOneId) || !is_int($playerTwoId))
-			return new Response(HttpStatusCode::BadRequest, ["error" => "Bad Input"], ['Content-Type' => 'application/json']);	
-		// check if inside users table
-			// if bad data return 400
-		$id = $this->matches->createMatch($playerOneId, $playerTwoId);
-		if (!$id)
-			return new Response(HttpStatusCode::BadRequest, ["error" => "user id not found"], ['Content-Type' => 'application/json']);	
-		// handle error here
-		return new Response(HttpStatusCode::Ok, $id, ['Content-Type' => 'application/json']);
-	}
+        if ($playerOneId === null || $playerTwoId === null || !ctype_digit((string)$playerOneId) || !ctype_digit((string)$playerTwoId)) {
+            return $this->jsonBadRequest('Invalid user id');
+        }
 
-	public function endMatch() {
+        $playerOneId = (int)$playerOneId;
+        $playerTwoId = (int)$playerTwoId;
 
-	}
+        $userOne = $this->users->getUserById($playerOneId);
+        if ($userOne === null) {
+            return $this->jsonServerError();
+        }
+        if (!$userOne) {
+            return $this->jsonNotFound('User one not found');
+        }
+
+        $userTwo = $this->users->getUserById($playerTwoId);
+        if ($userTwo === null) {
+            return $this->jsonServerError();
+        }
+        if (!$userTwo) {
+            return $this->jsonNotFound('User two not found');
+        }
+
+        $id = $this->matches->createMatch($playerOneId, $playerTwoId);
+        if ($id === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonCreated(['id' => $id]);
+    }
+
+    public function updateScore(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest('Invalid match id');
+        }
+
+        $match = $this->matches->getMatchById((int)$id);
+        if ($match === null) {
+            return $this->jsonServerError();
+        }
+        if (!$match) {
+            return $this->jsonNotFound('Match not found');
+        }
+
+        if ($match['finished_at'] !== null) {
+            return $this->jsonBadRequest('Match already finished');
+        }
+
+        $scoreOne = $request->postParams['scorePlayerOne'] ?? null;
+        $scoreTwo = $request->postParams['scorePlayerTwo'] ?? null;
+        if ($scoreOne === null|| $scoreTwo === null || !ctype_digit($scoreOne) || !ctype_digit($scoreTwo)) {
+            return $this->jsonBadRequest('Invalid score values');
+        }
+
+        $scoreOne = (int)$scoreOne;
+        $scoreTwo = (int)$scoreTwo;
+        if ($scoreOne < 0 || $scoreTwo < 0 || $scoreOne < $match['score_player_one'] || $scoreTwo < $match['score_player_two']) {
+            return $this->jsonBadRequest('Scores must be non-negative and not decrease');
+        }
+
+        $updated = $this->matches->updateScore((int)$id, $scoreOne, $scoreTwo);
+        if ($updated === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess($updated);
+    }
+
+    public function endMatch(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest('Invalid match id');
+        }
+
+        $match = $this->matches->getMatchById((int)$id);
+        if ($match === null) {
+            return $this->jsonServerError();
+        }
+        if (!$match) {
+            return $this->jsonNotFound('Match not found');
+        }
+
+        if ($match['finished_at'] !== null) {
+            return $this->jsonBadRequest('Match already finished');
+        }
+
+        $winnerId = 0;
+        if ($match['score_player_one'] > $match['score_player_two']) {
+            $winnerId = $match['player_one_id'];
+        } elseif ($match['score_player_one'] < $match['score_player_two']) {
+            $winnerId = $match['player_two_id'];
+        }
+
+        $finished = $this->matches->endMatch((int)$id, $winnerId);
+        if ($finished === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess($finished);
+    }
+
+    public function deleteMatch(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if ($id === null || !ctype_digit($id)) {
+            return $this->jsonBadRequest('Invalid match id');
+        }
+        $deleted = $this->matches->deleteMatch((int)$id);
+        if ($deleted === null) {
+            return $this->jsonServerError();
+        }
+        if ($deleted === 0) {
+            return $this->jsonNotFound('Match not found');
+        }
+        return $this->jsonSuccess(['message' => 'Match deleted successfully']);
+    }
 }

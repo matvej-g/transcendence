@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS users (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	username TEXT NOT NULL UNIQUE,
-	email TEXT NOT NULL,
+	email TEXT NOT NULL UNIQUE,
 	password_hash TEXT NOT NULL,
 	two_factor_code TEXT DEFAULT NULL,
 	two_factor_expires_at DATETIME DEFAULT NULL,
