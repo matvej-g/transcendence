@@ -26,6 +26,15 @@ services:
       - ./frontend:/var/www/html
     networks: 
       - transcendence
+  websocket:
+    container_name: websocket
+    build:
+      context: .
+      dockerfile: websocket/Dockerfile
+    ports:
+      - "8081:8080"
+    networks:
+      - transcendence
   nginx:
     container_name: nginx
     build: ./nginx
@@ -36,5 +45,7 @@ services:
       - ./backend/public:/var/www/html/public
     depends_on:
       - php-backend
+      - frontend
+      - websocket
     networks:
       - transcendence
