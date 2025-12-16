@@ -31,8 +31,6 @@ services:
     build:
       context: .
       dockerfile: websocket/Dockerfile
-    volumes:
-      - ./backend:/var/www/backend
     ports:
       - "8081:8080"
     networks:

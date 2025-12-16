@@ -2,7 +2,7 @@
 # right now, symfony dumper and monolog (unused)
 /vendor
 #composer.json
-composer.lock
+#composer.lock
 
 # Documentation
 notes_david1.md
