@@ -5,7 +5,7 @@ use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
 use React\Socket\SocketServer;
-use App\GameServer;
+use Pong\GameServer;
 
 // Create event loop, manages all asynchronous operations
 $loop = React\EventLoop\Loop::get();

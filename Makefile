@@ -19,12 +19,7 @@ clean_cache:
 	docker system prune -a --volumes -f
 	docker buildx prune --all --force
 
-<<<<<<< HEAD
-re: up
-
-.PHONY: all up build down clean clean_cachere
-=======
-re: down build up
+re:	down build up
 
 frontend: ## Start only the frontend container
 	$(DC) up -d frontend
@@ -66,4 +61,3 @@ help:
 	@echo "  help          - Show this help"
 
 .PHONY: all up build down clean clean_cache help re frontend nginx php-backend re-frontend re-nginx re-php-backend
->>>>>>> origin/main
