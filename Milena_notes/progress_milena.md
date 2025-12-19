@@ -123,21 +123,17 @@
 - did some style changes
 
 - todo:
-	- export script into ts file
-	- apply changes on login button like i did on pretend login
-	- settings dropdown should be in the middle
-	- how to include language button in landing page??
-	- match history recenter
-	- show footer also with auth -> in line "Show/hide navbars and footer based on section" -> remove hidden
-	-
+	[x] export script into ts file
+	[ivan] apply changes on login button like i did on pretend login
+	[x] settings dropdown should be in the middle
+	[x] show footer also with auth -> in line "Show/hide navbars and footer based on section" -> remove hidden
 
 
-### questions for team
-- did ivan do the chat frontend?
+
+### 17.12. questions for team
+- did ivan do the chat frontend? -> not yet
+- http & css for chat -> ivan
 - what choices do we have for game? -> look in slack what he wrote
-	- 1:1 remote
-	- tournament
-	- 1:1 local(?)
 - language button - its above the logout button and I dont know how to integrate it in a flex way
 	-> does Ivan know it? no
 - game is too big for my screan
@@ -145,8 +141,19 @@
 	-> or smaller size would be good
 - (look at it again: permission denied when I try http://localhost:8080/api/users)
 
-- http & css for chat -> ivan
-
 me:
 - remove placeholders like game stats
 - do http for friends
+
+### --- Day 18 - 19.12.2025 --- ###
+- put script things from index into extra file
+- Todo:
+	- get into ts
+	- adjust game section
+	- create http friends
+	- give values to profile page
+	- logout button should really logout (username ets -> default/NULL?)
+	- what did Mert mean with that the profile should be private?
+	- how to include language button in landing page??
+	- german language part
+	- match history recenter

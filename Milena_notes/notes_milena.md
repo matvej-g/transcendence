@@ -459,6 +459,13 @@ if needed I could do:
 	1. The History API approach uses pushState and popstate events to manage navigation.
 	2. The hash-based approach uses URL fragments (#home, #profile) to manage navigation.
 
+### hash-based approach
+- we dont need klick event listeners
+- When you click a link like <a href="#/profile">, the browser updates the URL fragment automatically.
+- The browser dispatches a hashchange event to the window object. No JavaScript code needs to trigger this.
+- Your registered listener (via addEventListener or onhashchange) receives the event and executes your routing logic.
+- Same mechanism works for link clicks, back/forward buttons, programmatic location.hash changes, or direct URL editing.
+
 ## to talk about in team meeting 12.11. (or write on slack)
 - Ask if 3 weeks blackhole salvation is possible for Ivan
 - Ask if new eval date 24.01. would be fine for everyone
