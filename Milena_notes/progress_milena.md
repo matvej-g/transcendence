@@ -146,7 +146,8 @@ me:
 - do http for friends
 
 ### --- Day 18 - 19.12.2025 --- ###
-- put script things from index into extra file
+- put script things from index into extra file router.ts
+- added safe fallback and router:notfound event.
 - Todo:
 	- get into ts
 	- adjust game section
@@ -154,6 +155,8 @@ me:
 	- give values to profile page
 	- logout button should really logout (username ets -> default/NULL?)
 	- what did Mert mean with that the profile should be private?
+		-> add check if user is logged int if types #profile in URL
 	- how to include language button in landing page??
 	- german language part
 	- match history recenter
+	- give settings a meaning

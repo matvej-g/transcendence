@@ -466,6 +466,7 @@ if needed I could do:
 - Your registered listener (via addEventListener or onhashchange) receives the event and executes your routing logic.
 - Same mechanism works for link clicks, back/forward buttons, programmatic location.hash changes, or direct URL editing.
 
+
 ## to talk about in team meeting 12.11. (or write on slack)
 - Ask if 3 weeks blackhole salvation is possible for Ivan
 - Ask if new eval date 24.01. would be fine for everyone

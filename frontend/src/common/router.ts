@@ -5,13 +5,30 @@ const sections: Record<string, HTMLElement | null> = {
   'game': document.getElementById('game-section'),
   'friends': document.getElementById('friends-section'),
   'chat': document.getElementById('chat-section'),
+  'notfound': document.getElementById('notfound-section'),
 };
 
 const authNavbar = document.getElementById('auth-navbar');
 const navbar = document.getElementById('navbar');
 const footer = document.getElementById('footer');
 
+function resolveSection(sectionId: string): string {
+  if (sections[sectionId]) {
+    return sectionId;
+  }
+
+  // Unknown section requested — warn and notify consumers.
+  // Consumers can listen for the `router:notfound` event to show a custom 404 UI.
+  console.warn(`Router: unknown section "${sectionId}", showing 'notfound' section`);
+  window.dispatchEvent(new CustomEvent('router:notfound', { detail: { section: sectionId } }));
+
+  // Show the dedicated notfound section
+  return 'notfound';
+}
+
 function showSection(sectionId: string): void {
+    const target = resolveSection(sectionId);
+
   // Hide all sections
   Object.values(sections).forEach(section => {
     if (section) {
@@ -19,20 +36,16 @@ function showSection(sectionId: string): void {
     }
   });
 
-  // Show selected section
-  if (sections[sectionId]) {
-    sections[sectionId]?.classList.remove('hidden');
-  }
+  // Show selected (or fallback) section
+  sections[target]?.classList.remove('hidden');
 
   // Show/hide navbars and footer based on section
-  if (sectionId === 'auth') {
+  if (target === 'auth') {
     authNavbar?.classList.remove('hidden');
     navbar?.classList.add('hidden');
-    // footer?.classList.remove('hidden');
   } else {
     authNavbar?.classList.add('hidden');
     navbar?.classList.remove('hidden');
-    // footer?.classList.remove('hidden');
   }
 }
 
@@ -48,7 +61,12 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
   window.location.hash = '#';
 });
 
+// Notfound "Go to Home" button (if present)
+document.getElementById('notfoundHomeBtn')?.addEventListener('click', () => {
+  window.location.hash = '#';
+});
+
 // Initial load
-const initialHash = window.location.hash.slice(1);
-const initialSection = initialHash.split('/')[0] || 'auth';
+const initialHash = window.location.hash.slice(1);  //read everything after #
+const initialSection = initialHash.split('/')[0] || 'auth'; // Extracts the first segment before a slash
 showSection(initialSection);
