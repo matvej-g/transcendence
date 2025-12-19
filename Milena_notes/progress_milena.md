@@ -134,11 +134,19 @@
 
 ### questions for team
 - did ivan do the chat frontend?
-- what choices do we have for game?
+- what choices do we have for game? -> look in slack what he wrote
 	- 1:1 remote
 	- tournament
 	- 1:1 local(?)
 - language button - its above the logout button and I dont know how to integrate it in a flex way
-	-> does Ivan know it?
+	-> does Ivan know it? no
+- game is too big for my screan
+	-> eather flexible size
+	-> or smaller size would be good
 - (look at it again: permission denied when I try http://localhost:8080/api/users)
 
+- http & css for chat -> ivan
+
+me:
+- remove placeholders like game stats
+- do http for friends
