@@ -149,14 +149,14 @@ me:
 - put script things from index into extra file router.ts
 - added safe fallback and router:notfound event.
 - Todo:
-	- get into ts
+	- how to include language button in landing page??
 	- adjust game section
 	- create http friends
 	- give values to profile page
 	- logout button should really logout (username ets -> default/NULL?)
 	- what did Mert mean with that the profile should be private?
 		-> add check if user is logged int if types #profile in URL
-	- how to include language button in landing page??
 	- german language part
 	- match history recenter
 	- give settings a meaning
+	- get into ts
