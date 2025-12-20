@@ -149,8 +149,9 @@ me:
 - put script things from index into extra file router.ts
 - added safe fallback and router:notfound event.
 - Todo:
-	- how to include language button in landing page??
-	- adjust game section
+	[x] how to include language button in landing page?? (moved it beneath)
+	[x] adjust game section (flex and margin)
+	? - could we have http files outside of index? To avoid merge issues
 	- create http friends
 	- give values to profile page
 	- logout button should really logout (username ets -> default/NULL?)
@@ -160,3 +161,5 @@ me:
 	- match history recenter
 	- give settings a meaning
 	- get into ts
+
+### --- Day 19 - 20.12.2025 --- ###
