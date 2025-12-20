@@ -152,9 +152,10 @@ me:
 	[x] how to include language button in landing page?? (moved it beneath)
 	[x] adjust game section (flex and margin)
 	? - could we have http files outside of index? To avoid merge issues
-	- create http friends
+	- create html friends
 	- give values to profile page
 	- logout button should really logout (username ets -> default/NULL?)
+	- delete inserted things from login page
 	- what did Mert mean with that the profile should be private?
 		-> add check if user is logged int if types #profile in URL
 	- german language part
@@ -163,3 +164,14 @@ me:
 	- get into ts
 
 ### --- Day 19 - 20.12.2025 --- ###
+- trying to get into http requesting
+- questions:
+	- how to organize navigation? (navigation from Ivan do I need it? Or do I need just router.ts?)
+	- steps: get User Id (is retur value from login api point) and store it in frontend variable, then I can fetch any user data
+	- curl -X PATCH http://localhost:8080/api/user/changePassword \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "6",
+    "oldPassword": "heyhey",
+    "newPassword": "heyheyhey"
+  }'
