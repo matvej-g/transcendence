@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /var/www/html
 
-# COPY php app files
 COPY . /var/www/html/
 
 RUN chmod +x /var/www/html/tools/database_init.sh

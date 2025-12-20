@@ -16,7 +16,6 @@ class LoggingMiddleware {
 
 	public function handleRequest(Request $request): string
 	{
-		// generate unique ID for logging
 		$requestId = uniqid('');
 
 		$this->logger->info('Incoming request', [

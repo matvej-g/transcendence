@@ -6,21 +6,24 @@ use src\Database;
 use src\http\Request;
 use src\controllers\BaseController;
 use src\Models\UserModel;
+use src\Models\UserStatsModel;
 use src\Validator;
 
 class UserController extends BaseController
 {
     private UserModel $users;
+    private UserStatsModel $stats;
 
     public function __construct(Database $db)
     {
         $this->users = new UserModel($db);
+        $this->stats = new UserStatsModel($db);
     }
 
     public function getUser(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
         $id = (int)$id;
@@ -31,6 +34,7 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+        $user = user_to_public($user);
         return $this->jsonSuccess($user);
     }
 
@@ -47,6 +51,7 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+        $user = user_to_public($user);
         return $this->jsonSuccess($user);
     }
 
@@ -63,6 +68,7 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+        $user = user_to_public($user);
         return $this->jsonSuccess($user);
     }
 
@@ -72,7 +78,45 @@ class UserController extends BaseController
         if ($allUsers === null) {
             return $this->jsonServerError();
         }
+        $allUsers = array_map('user_to_public', $allUsers);
         return $this->jsonSuccess($allUsers);
+    }
+
+    public function getUserStats(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if (!Validator::validateId($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $id = (int) $id;
+
+        $user = $this->users->getUserById($id);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+
+        $stats = $this->stats->getStatsForUser($id);
+        if ($stats === null) {
+            return $this->jsonServerError();
+        }
+
+        if (!$stats) {
+            // no stats yet, return zeros for consistency
+            $stats = [
+                'user_id'        => $id,
+                'wins'           => 0,
+                'losses'         => 0,
+                'games_played'   => 0,
+                'goals_scored'   => 0,
+                'goals_conceded' => 0,
+                'last_game_at'   => null,
+            ];
+        }
+
+        return $this->jsonSuccess($stats);
     }
 
     public function userLogin(Request $request, $parameters)
@@ -92,6 +136,7 @@ class UserController extends BaseController
         if (!password_verify($password, $user['password_hash'])) {
             return $this->jsonUnauthorized("Invalid password");
         }
+        $user = user_to_public($user);
         return $this->jsonSuccess($user);
     }
 
@@ -100,9 +145,7 @@ class UserController extends BaseController
         $username = $request->postParams['userName']  ?? null;
         $email    = $request->postParams['email']     ?? null;
         $password = $request->postParams['password']  ?? null;
-        // if ($email === null) {
-        //     $email = "hard@code.de";
-        // }
+
         $errors = Validator::validateNewUserData($username, $email, $password);
         if ($errors) {
             return $this->jsonBadRequest(json_encode($errors));
@@ -118,7 +161,7 @@ class UserController extends BaseController
     public function deleteUser(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
         $deleted = $this->users->deleteUser((int)$id);
@@ -134,7 +177,7 @@ class UserController extends BaseController
     public function changePassword(Request $request, $parameters)
     {
         $id = $request->postParams['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
         $user = $this->users->getUserById((int)$id);
@@ -168,7 +211,7 @@ class UserController extends BaseController
     public function updateUser(Request $request, $parameters)
     {
         $id = $request->postParams['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
         $existing = $this->users->getUserById((int)$id);
@@ -190,6 +233,7 @@ class UserController extends BaseController
         if ($updated === null) {
             return $this->jsonServerError();
         }
+        $updated = user_to_public($updated);
         return $this->jsonSuccess($updated);
     }
 }
