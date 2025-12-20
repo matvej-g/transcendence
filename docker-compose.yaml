@@ -12,20 +12,32 @@ services:
   php-backend:
     container_name: php-backend
     build: ./backend
-    restart: always
+    restart: on-failure
     volumes: 
       - ./backend:/var/www/html
       - sqlite_data:/var/www/html/database
     networks: 
       - transcendence
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   frontend:
     container_name: frontend
     build: ./frontend
-    restart: always
+    restart: on-failure
     volumes: 
       - ./frontend:/var/www/html
     networks: 
       - transcendence
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   websocket:
     container_name: websocket
     build:
@@ -38,6 +50,7 @@ services:
   nginx:
     container_name: nginx
     build: ./nginx
+    restart: on-failure
     ports:
       - "8080:80"
       - "443:443"
@@ -49,3 +62,9 @@ services:
       - websocket
     networks:
       - transcendence
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

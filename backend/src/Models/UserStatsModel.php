@@ -1,0 +1,108 @@
+<?php
+
+namespace src\Models;
+
+use src\Database;
+use PDO;
+
+class UserStatsModel
+{
+    public function __construct(
+        private Database $db
+    ) {
+    }
+
+    public function getStatsForUser(int $userId): ?array
+    {
+        try {
+            $row = $this->db->query(
+                "SELECT * FROM user_stats WHERE user_id = ?",
+                [$userId]
+            )->fetch(PDO::FETCH_ASSOC);
+
+            return $row ?: [];
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+
+    private function ensureRow(int $userId): void
+    {
+        try {
+            $this->db->query(
+                "INSERT OR IGNORE INTO user_stats (user_id) VALUES (?)",
+                [$userId]
+            );
+        } catch (\PDOException $e) {
+            // ignore
+        }
+    }
+
+    public function recordMatchResult(int $winnerId, int $loserId, int $goalsWinner, int $goalsLoser): ?bool
+    {
+        try {
+            $this->ensureRow($winnerId);
+            $this->ensureRow($loserId);
+
+            // winner
+            $this->db->query(
+                "UPDATE user_stats
+                 SET wins = wins + 1,
+                     games_played = games_played + 1,
+                     goals_scored = goals_scored + ?,
+                     goals_conceded = goals_conceded + ?,
+                     last_game_at = CURRENT_TIMESTAMP
+                 WHERE user_id = ?",
+                [$goalsWinner, $goalsLoser, $winnerId]
+            );
+
+            // loser
+            $this->db->query(
+                "UPDATE user_stats
+                 SET losses = losses + 1,
+                     games_played = games_played + 1,
+                     goals_scored = goals_scored + ?,
+                     goals_conceded = goals_conceded + ?,
+                     last_game_at = CURRENT_TIMESTAMP
+                 WHERE user_id = ?",
+                [$goalsLoser, $goalsWinner, $loserId]
+            );
+
+            return true;
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+
+    public function recordDraw(int $userOneId, int $userTwoId, int $goalsOne, int $goalsTwo): ?bool
+    {
+        try {
+            $this->ensureRow($userOneId);
+            $this->ensureRow($userTwoId);
+
+            $this->db->query(
+                "UPDATE user_stats
+                 SET games_played = games_played + 1,
+                     goals_scored = goals_scored + ?,
+                     goals_conceded = goals_conceded + ?,
+                     last_game_at = CURRENT_TIMESTAMP
+                 WHERE user_id = ?",
+                [$goalsOne, $goalsTwo, $userOneId]
+            );
+
+            $this->db->query(
+                "UPDATE user_stats
+                 SET games_played = games_played + 1,
+                     goals_scored = goals_scored + ?,
+                     goals_conceded = goals_conceded + ?,
+                     last_game_at = CURRENT_TIMESTAMP
+                 WHERE user_id = ?",
+                [$goalsTwo, $goalsOne, $userTwoId]
+            );
+
+            return true;
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+}

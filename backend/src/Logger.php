@@ -11,8 +11,16 @@ class Logger {
 	public function __construct()
 	{
 		$logDir = BASE_PATH . '/tmp/logs';
+
 		if (!is_dir($logDir)) {
-			mkdir($logDir, 0777, true);
+			if (!@mkdir($logDir, 0775, true) && !is_dir($logDir)) {
+				throw new \RuntimeException("Failed to create log directory: {$logDir}");
+			}
+			@chmod($logDir, 0775);
+		}
+
+		if (!is_writable($logDir)) {
+			throw new \RuntimeException("Log directory is not writable: {$logDir}");
 		}
 
 		$this->infoLog = "$logDir/info.log";
@@ -38,14 +46,26 @@ class Logger {
 		if (empty($context)) {
 			$contextText = '';
 		} else {
-			$contextText = " " . json_encode($context);
+			$json = json_encode($context, JSON_PARTIAL_OUTPUT_ON_ERROR);
+			if ($json === false) {
+				$contextText = ' [context_encoding_error]';
+			} else {
+				$contextText = ' ' . $json;
+			}
 		}
 		$entry = "[$time] [$level]: $message$contextText" . PHP_EOL;
-		$logFile = match ($level) {
+		$logFile = match (strtoupper($level)) {
 			"ERROR" => $this->errorLog,
 			"DEBUG" => $this->debugLog,
 			default => $this->infoLog
 		};
-		file_put_contents($logFile, $entry, FILE_APPEND);
+
+		// Attempt to write with exclusive lock; throw on failure (fail-fast).
+		$result = @file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
+		if ($result === false) {
+			// write to PHP error_log as a last-resort and then throw
+			error_log("[LOGGER] Failed to write to {$logFile}: {$entry}");
+			throw new \RuntimeException("Failed to write to log file: {$logFile}");
+		}
 	}
 }
