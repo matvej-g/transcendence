@@ -18,9 +18,7 @@ class Validator
 		return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 	}
 
-	/**
-	 * Generic numeric ID validator: positive integer as string.
-	 */
+
 	public static function validateId($value): bool
 	{
 		if ($value === null) {
@@ -38,9 +36,6 @@ class Validator
 		return ctype_digit($value) && (int)$value > 0;
 	}
 
-	/**
-	 * Validate an array of numeric IDs.
-	 */
 	public static function validateIdArray($values): bool
 	{
 		if (!is_array($values) || count($values) === 0) {

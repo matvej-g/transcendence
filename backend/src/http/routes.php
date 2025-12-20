@@ -9,7 +9,7 @@ use src\controllers\MessagingController;
 use src\controllers\FriendshipController;
 use src\controllers\UserStatusController;
 
-// pages
+// pages 
 $this->router->get('/game', 'src/controllers/game.php');
 
 // users
