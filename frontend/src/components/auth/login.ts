@@ -2,6 +2,8 @@ export type LoginResult =
   | { ok: true; user: { id: string; username: string } }
   | { ok: false; error: string };
 
+import { setCurrentUserId } from './authUtils.js';
+
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
   console.log('[TS] loginHandle → input', { username, password });
 
@@ -26,8 +28,17 @@ export async function loginHandle(username: string, password: string): Promise<L
       return { ok: false, error: err };
     }
 
-    // Expecting { ok: true, user: {...} } from PHP stub
-    return { ok: true, user: { id: data.id, username: data.userName } };
+    // store user ID in localStorage (Milena) — handle multiple possible response shapes
+    const userIdToStore = data?.user?.id ?? data?.id ?? null;
+    if (userIdToStore) {
+      setCurrentUserId(userIdToStore);
+      console.log('User data stored:', data.user ?? data);
+    }
+
+    // Normalize return to include `user.id` and a username field
+    const returnedId = String(data?.user?.id ?? data?.id ?? '');
+    const returnedUsername = data?.user?.username ?? data?.userName ?? data?.username ?? '';
+    return { ok: true, user: { id: returnedId, username: returnedUsername } };
   } catch (e) {
     console.log('[TS] loginHandle → exception', e);
     return { ok: false, error: 'NETWORK_ERROR' };
