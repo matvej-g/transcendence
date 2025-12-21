@@ -2,7 +2,7 @@ export type LoginResult =
   | { ok: true; user: { id: string; username: string } }
   | { ok: false; error: string };
 
-import { setCurrentUserId } from './authUtils.js';
+import { setCurrentUserId, setUserOnline } from './authUtils.js';
 import { initProfile } from '../profile/profile.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
@@ -34,6 +34,8 @@ export async function loginHandle(username: string, password: string): Promise<L
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
       console.log('User data stored:', data.user ?? data);
+      // set user online on server
+      try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
       // initialize profile UI immediately
       initProfile().catch((e) => console.warn('[profile] init after login failed', e));
     }

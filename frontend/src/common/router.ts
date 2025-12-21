@@ -1,4 +1,4 @@
-import { clearCurrentUserId } from '../components/auth/authUtils.js';
+import { clearCurrentUserId, setUserOffline } from '../components/auth/authUtils.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
@@ -60,6 +60,8 @@ window.addEventListener('hashchange', () => {
 
 // Logout button
 document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  // mark user offline on server (best-effort)
+  setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
   clearCurrentUserId();
   window.location.hash = '#';
 });
