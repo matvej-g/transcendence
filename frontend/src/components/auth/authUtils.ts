@@ -18,4 +18,10 @@ export function getCurrentUserIdNumber(): number | null {
 
 export function setCurrentUserId(id: string | number): void {
   localStorage.setItem('userId', String(id));
+  console.log('User data stored in localStorage: id = ', id);
+}
+
+export function clearCurrentUserId(): void {
+  localStorage.removeItem('userId');
+  console.log('User data removed from localStorage.');
 }

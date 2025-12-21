@@ -81,7 +81,7 @@
         <div class="profile flex justify-around items-center w-full bg-gradient-to-r from-[#40e5c9] to-[#2ecc71] p-4 shadow-lg flex-wrap">
             <div class="avatar-name flex flex-col items-center">
                 <img src="profile_avatar.jpg" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
-                <h2 class="text-white font-bold text-lg">nickname</h2>
+                <h2 class="text-white font-bold text-lg" data-field="username"></h2>
             </div>
 
             <div class="stats flex flex-col justify-between items-center">
@@ -107,13 +107,13 @@
             <h3 class="mb-4 font-bold">Match History</h3>
             <ul class="text-rectangle flex flex-col items-start w-full">
                 <li class="match-item w-full flex justify-between py-1">
-                    <div class="date-time text-emerald-400">Date/Time</div>
+                    <div class="date-time text-emerald-400" data-field="matchDateTime"></div>
                     <div class="match-middle flex gap-4 w-[70%] mx-5">
-                        <div class="nickname truncate">nickname</div>
+                        <div class="truncate" data-field="playerUsername"></div>
                         <div>:</div>
-                        <div class="nickname truncate">otherplayer</div>
+                        <div class="truncate" data-field="opponentUsername"></div>
                     </div>
-                    <div class="text-emerald-400">3:5</div>
+                    <div class="text-emerald-400" data-field="matchScore"></div>
                 </li>
             </ul>
         </div>

@@ -1,3 +1,5 @@
+import { clearCurrentUserId } from '../components/auth/authUtils.js';
+
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
   'auth': document.getElementById('auth-section'),
@@ -58,6 +60,7 @@ window.addEventListener('hashchange', () => {
 
 // Logout button
 document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  clearCurrentUserId();
   window.location.hash = '#';
 });
 
