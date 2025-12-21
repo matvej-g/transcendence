@@ -3,7 +3,6 @@ import { $, log } from "../../utils/utils.js";
 import { msg } from "../languages/auth/stringsMsgsHandlers.js";
 import { registerHandle } from "./register.js";
 import type { RegisterRequest } from "./types.js";
-import { navigateToLandingPage } from "../landing/navigation.js";
 
 function wireRegisterButton() {
   const btn = document.getElementById("registerBtn") as HTMLButtonElement | null;
@@ -40,7 +39,7 @@ function wireRegisterButton() {
         : msg("registerFailedGeneric") + ` (${res.error})`
     );
 	if (res.ok) {
-		navigateToLandingPage(res.user);
+		window.location.hash = '#profile';
 	}
   });
 }

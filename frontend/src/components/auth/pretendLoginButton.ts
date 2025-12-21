@@ -1,6 +1,5 @@
 // Compiles to /site/public/js/user/auth/pretendLoginButton.js
 
-import { navigateToLandingPage } from "../landing/navigation.js";
 import { setCurrentUserId } from './authUtils.js';
 import { initProfile } from "../profile/profile.js";
 
@@ -28,7 +27,7 @@ function wirePretendLoginButton() {
 		console.log('[UI] pretendLogin → navigating to #profile');
 		setCurrentUserId(2);
 		// console.log('User data stored: id = 2');
-		navigateToLandingPage(null);
+		window.location.hash = '#profile';
 		initProfile().catch((e) => console.warn('[profile] init after register failed', e));
 
 	});
