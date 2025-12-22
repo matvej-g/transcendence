@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 to-black flex flex-col justify-between">
+	<div class="friends flex flex-col justify-between m-8 gap-16">
+    <!-- Search Section -->
+    <div class="searchbar flex flex-wrap justify-center items-center gap-4">
+        <input id="searchInput" name="to-search" type="text" placeholder="Search nickname..." class="border border-gray-400 p-2 rounded">
+        <button id="search-button" class="rounded px-3 py-1 bg-emerald-300 hover:bg-emerald-500 text-black">search</button>
+    </div>
+    <div id="search-result-message" class="text-red-400 text-center"></div>
+    <button id="add-friend-btn" class="hidden bg-blue-500 text-white px-3 py-1 rounded mx-auto">Send Friend Request</button>
+
+    <!-- Friends Block -->
+    <div class="friends-block flex justify-center gap-32 items-start">
+		<div class="flex flex-col">
+			<h1 class="text-black font-bold m-4 text-emerald-400">Your friends</h1>
+			<ul id="friends-list" class="flex flex-col m-4">
+				<!-- Example friend item -->
+				<li class="friend-item my-3 flex flex-wrap items-center gap-5" data-nickname="Nickname">
+					<img class="avatar text-white h-8 w-auto" src="profile_avatar.jpg" alt="Avatar image">
+					<h2 class="text-emerald-400">Nickname</h2>
+					<span class="online-status text-green-600">online</span>
+					<button class="delete-friend rounded bg-red-600 hover:bg-red-700 px-3 h-6">delete</button>
+				</li>
+			</ul>
+		</div>
+		<div class="flex flex-col">
+			<h2 class="text-black font-bold m-4 text-emerald-400">Friend Requests</h2>
+			<ul id="requests-list" class="flex flex-col m-4">
+				<!-- Example request item -->
+				<li class="friend-request-item my-3 flex flex-wrap items-center gap-5" data-nickname="RequesterNickname">
+					<img class="avatar text-white h-8 w-auto" src="profile_avatar.jpg" alt="Avatar image">
+					<h2 class="text-emerald-400">RequesterNickname</h2>
+					<button class="accept-request rounded bg-green-600 hover:bg-green-700 px-3 h-6">accept</button>
+					<button class="refuse-request rounded bg-red-600 hover:bg-red-700 px-3 h-6">refuse</button>
+				</li>
+			</ul>
+		</div>
+    </div>
+</div>
+</body>
+</html>
