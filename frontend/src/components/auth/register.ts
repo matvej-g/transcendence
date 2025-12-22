@@ -1,6 +1,7 @@
 import type { RegisterRequest, RegisterResult } from "./types.js";
 import { postRegisterRequest } from "./api.js";
-import { setCurrentUserId, setUserOnline } from './authUtils.js';
+import { setCurrentUserId } from './authUtils.js';
+import { setUserOnline } from './api.js';
 import { initProfile } from '../profile/profile.js';
 
 /**

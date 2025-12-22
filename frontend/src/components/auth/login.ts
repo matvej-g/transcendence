@@ -2,7 +2,8 @@ export type LoginResult =
   | { ok: true; user: { id: string; username: string } }
   | { ok: false; error: string };
 
-import { setCurrentUserId, setUserOnline } from './authUtils.js';
+import { setCurrentUserId } from './authUtils.js';
+import { setUserOnline } from './api.js';
 import { initProfile } from '../profile/profile.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {

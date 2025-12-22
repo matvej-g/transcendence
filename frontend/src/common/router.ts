@@ -1,4 +1,5 @@
-import { clearCurrentUserId, setUserOffline } from '../components/auth/authUtils.js';
+import { clearCurrentUserId} from '../components/auth/authUtils.js';
+import { setUserOffline } from '../components/auth/api.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
