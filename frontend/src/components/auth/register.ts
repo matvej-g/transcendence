@@ -1,5 +1,7 @@
 import type { RegisterRequest, RegisterResult } from "./types.js";
 import { postRegisterRequest } from "./api.js";
+import { setCurrentUserId, setUserOnline } from './authUtils.js';
+import { initProfile } from '../profile/profile.js';
 
 /**
  * Public API used by the UI.
@@ -13,6 +15,14 @@ export async function registerHandle(payload: RegisterRequest): Promise<Register
 
     if (!res.ok) {
       return buildRegisterErrorResult(data);
+    }
+
+    // store userId and initialize profile immediately
+    const userIdToStore = data?.id ?? data?.user?.id ?? null;
+    if (userIdToStore) {
+      setCurrentUserId(userIdToStore);
+      try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
+      initProfile().catch((e) => console.warn('[profile] init after register failed', e));
     }
 
     return buildRegisterSuccessResult(data);
