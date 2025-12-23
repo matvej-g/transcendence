@@ -3,22 +3,14 @@ export type LoginResult =
   | { ok: false; error: string };
 
 import { setCurrentUserId } from './authUtils.js';
-import { setUserOnline } from './api.js';
+import { setUserOnline, loginUser } from './api.js';
 import { initProfile } from '../profile/profile.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
   console.log('[TS] loginHandle → input', { username, password });
 
   try {
-    const res = await fetch('/api/user/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernameOrEmail: username.trim(), password })
-    });
-
-    const text = await res.text();
-    let data: any;
-    try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+    const { res, data } = await loginUser(username, password);
 
     // 3) Log response
     console.log('[TS] loginMiddleware → HTTP', res.status, res.statusText);

@@ -51,3 +51,15 @@ export async function setUserOffline(options?: { token?: string }): Promise<void
   const status = await re.json();
   console.log('User online:', status.online === 1);
 }
+
+export async function loginUser(username: string, password: string): Promise<any> {
+  const res = await fetch('/api/user/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ usernameOrEmail: username.trim(), password })
+  });
+  const text = await res.text();
+  let data: any;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+  return { res, data };
+}

@@ -166,7 +166,7 @@
           <div id="search-result-user" class="hidden flex flex-col items-center gap-2 mt-2">
             <div class="flex items-center gap-3">
               <img id="search-result-avatar" src="profile_avatar.jpg" alt="Avatar image" class="avatar h-8 w-8 rounded-full border border-emerald-400">
-              <span id="search-result-nickname" class="font-semibold text-emerald-300">Nickname</span>
+              <span id="search-result-nickname" class="font-semibold text-emerald-300"></span>
             </div>
             <button id="add-friend-btn" class="bg-blue-500 text-white px-3 py-1 rounded">Send Friend Request</button>
           </div>
@@ -243,5 +243,8 @@
 
     <!-- SPA Router -->
     <script type="module" src="/dist/common/router.js"></script>
+
+    <!-- Friends search button logic -->
+    <script type="module" src="/dist/components/friends/searchButton.js"></script>
   </body>
 </html>
