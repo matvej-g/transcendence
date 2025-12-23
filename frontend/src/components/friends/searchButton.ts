@@ -10,6 +10,13 @@ const searchResultNickname = document.getElementById('search-result-nickname');
 const addFriendBtn = document.getElementById('add-friend-btn');
 
 if (searchButton && searchInput && searchResultMessage && searchResultUser && searchResultAvatar && searchResultNickname && addFriendBtn) {
+  // Allow pressing Enter to trigger search
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); //stops the default action of an event from happening. 
+      searchButton.click();
+    }
+  });
   searchButton.addEventListener('click', async (e) => {
     e.preventDefault();
     const username = searchInput.value.trim();
