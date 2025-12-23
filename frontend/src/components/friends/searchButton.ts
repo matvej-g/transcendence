@@ -38,6 +38,8 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
       }
       // Show user info
       searchResultNickname.textContent = foundNickname;
+        // Clear the search input after use
+        searchInput.value = "";
       if (user.avatarUrl && searchResultAvatar) {
         searchResultAvatar.src = user.avatarUrl;
       } else {
@@ -49,6 +51,8 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
       searchResultMessage.textContent = 'User not found.';
       searchResultUser.classList.add('hidden');
       addFriendBtn.classList.add('hidden');
+        // Clear the search input on error as well
+        searchInput.value = "";
     }
   });
 }
