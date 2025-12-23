@@ -1,5 +1,6 @@
 import { getUserByUserId, getUserByUsername } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
+import { sendFriendRequest } from './api.js';
 
 const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
 const searchButton = document.getElementById('search-button');
@@ -13,23 +14,26 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
   // Allow pressing Enter to trigger search
   searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); //stops the default action of an event from happening. 
+      e.preventDefault(); //stops the default action of an event from happening.
       searchButton.click();
     }
   });
+
+  let friendUser: any = null;
+
   searchButton.addEventListener('click', async (e) => {
     e.preventDefault();
     const username = searchInput.value.trim();
     searchResultMessage.textContent = '';
     searchResultUser.classList.add('hidden');
-    addFriendBtn.classList.remove('hidden'); // ensure button is visible by default
+    addFriendBtn.classList.remove('hidden');
     if (!username) {
       searchResultMessage.textContent = 'Please enter a username.';
       return;
     }
     try {
       const user = await getUserByUsername(username);
-      // Prevent sending request to yourself (by id or nickname)
+      friendUser = user;
       const currentUserId = getCurrentUserId();
       const currentUser = await getUserByUserId(currentUserId);
       const currentNickname = currentUser.username;
@@ -43,23 +47,41 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
         addFriendBtn.classList.add('hidden');
         return;
       }
-      // Show user info
       searchResultNickname.textContent = foundNickname;
-        // Clear the search input after use
-        searchInput.value = "";
+      searchInput.value = "";
       if (user.avatarUrl && searchResultAvatar) {
         searchResultAvatar.src = user.avatarUrl;
       } else {
-        searchResultAvatar.src = 'profile_avatar.jpg'; // fallback
+        searchResultAvatar.src = 'profile_avatar.jpg';
       }
       searchResultUser.classList.remove('hidden');
       addFriendBtn.classList.remove('hidden');
     } catch (err) {
+      friendUser = null;
       searchResultMessage.textContent = 'User not found.';
       searchResultUser.classList.add('hidden');
       addFriendBtn.classList.add('hidden');
-        // Clear the search input on error as well
-        searchInput.value = "";
+      searchInput.value = "";
+    }
+  });
+
+  addFriendBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!friendUser || !friendUser.id) {
+      searchResultMessage.textContent = 'No user selected.';
+      return;
+    }
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      searchResultMessage.textContent = 'Current user not found.';
+      return;
+    }
+    try {
+      await sendFriendRequest(Number(friendUser.id), Number(currentUserId));
+      searchResultMessage.textContent = 'Friend request sent!';
+      addFriendBtn.classList.add('hidden');
+    } catch (err) {
+      searchResultMessage.textContent = 'Failed to send friend request.';
     }
   });
 }

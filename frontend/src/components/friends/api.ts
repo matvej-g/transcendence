@@ -29,11 +29,14 @@ export async function getFriends() {
 }
 
 // Send friend request
-export async function sendFriendRequest(payload: { toUserId: string }) {
+export async function sendFriendRequest(friendId: number, userId: number) {
   const res = await fetch('/api/friends/request', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    headers: {
+      'Content-Type': 'application/json',
+      'X-USER-ID': String(userId)
+    },
+    body: JSON.stringify({ friendId })
   });
   if (!res.ok) throw new Error('Failed to send friend request');
   return await res.json();
