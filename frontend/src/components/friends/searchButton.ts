@@ -11,6 +11,21 @@ const searchResultNickname = document.getElementById('search-result-nickname');
 const addFriendBtn = document.getElementById('add-friend-btn');
 
 if (searchButton && searchInput && searchResultMessage && searchResultUser && searchResultAvatar && searchResultNickname && addFriendBtn) {
+    let messageTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    function showMessage(text: string, colorClass: string) {
+      if (searchResultMessage == null)
+        return;
+      searchResultMessage.textContent = text;
+      searchResultMessage.classList.remove('text-green-500', 'text-red-400');
+      searchResultMessage.classList.add(colorClass);
+      searchResultMessage.style.opacity = '1';
+      if (messageTimeout) clearTimeout(messageTimeout);
+      messageTimeout = setTimeout(() => {
+        searchResultMessage.style.transition = 'opacity 0.5s';
+        searchResultMessage.style.opacity = '0';
+      }, 2500);
+    }
   // Allow pressing Enter to trigger search
   searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -25,10 +40,12 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
     e.preventDefault();
     const username = searchInput.value.trim();
     searchResultMessage.textContent = '';
+    searchResultMessage.classList.remove('text-green-500', 'text-red-400');
+    searchResultMessage.style.opacity = '1';
     searchResultUser.classList.add('hidden');
     addFriendBtn.classList.remove('hidden');
     if (!username) {
-      searchResultMessage.textContent = 'Please enter a username.';
+      showMessage('Please enter a username.', 'text-red-400');
       return;
     }
     try {
@@ -42,7 +59,7 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
         (currentUserId && (user.id === currentUserId || user.userId === currentUserId)) ||
         (currentNickname && foundNickname && currentNickname === foundNickname)
       ) {
-        searchResultMessage.textContent = 'You cannot send a friend request to yourself.';
+        showMessage('You cannot send a friend request to yourself.', 'text-red-400');
         searchResultUser.classList.add('hidden');
         addFriendBtn.classList.add('hidden');
         return;
@@ -58,7 +75,7 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
       addFriendBtn.classList.remove('hidden');
     } catch (err) {
       friendUser = null;
-      searchResultMessage.textContent = 'User not found.';
+      showMessage('User not found.', 'text-red-400');
       searchResultUser.classList.add('hidden');
       addFriendBtn.classList.add('hidden');
       searchInput.value = "";
@@ -68,20 +85,22 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
   addFriendBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     if (!friendUser || !friendUser.id) {
-      searchResultMessage.textContent = 'No user selected.';
+      showMessage('No user selected.', 'text-red-400');
       return;
     }
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
-      searchResultMessage.textContent = 'Current user not found.';
+      showMessage('Current user not found.', 'text-red-400');
       return;
     }
-    try {
-      await sendFriendRequest(Number(friendUser.id), Number(currentUserId));
-      searchResultMessage.textContent = 'Friend request sent!';
-      addFriendBtn.classList.add('hidden');
+        try {
+          await sendFriendRequest(Number(friendUser.id), Number(currentUserId));
+          showMessage('Friend request sent!', 'text-green-500');
+          addFriendBtn.classList.add('hidden');
+          searchResultUser.classList.add('hidden');
     } catch (err) {
-      searchResultMessage.textContent = 'Failed to send friend request.';
+      showMessage('Friend request already exists or invalid', 'text-red-400');
+      searchResultUser.classList.add('hidden');
     }
   });
 }
