@@ -84,6 +84,10 @@ export async function populateRequestsList() {
 function onFriendsSectionShown() {
 	const friendsSection = document.getElementById('friends-section');
 	if (!friendsSection) return;
+	// If already visible on load (e.g. after refresh), populate immediately
+	if (!friendsSection.classList.contains('hidden')) {
+		populateRequestsList();
+	}
 	// Use a MutationObserver to detect when the section becomes visible
 	const observer = new MutationObserver(() => {
 		if (!friendsSection.classList.contains('hidden')) {
