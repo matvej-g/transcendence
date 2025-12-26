@@ -46,10 +46,13 @@ export async function sendFriendRequest(friendId: number, userId: number) {
 }
 
 // Update friend request status (accept/refuse/delete)
-export async function updateFriendStatus(id: string, payload: { status: string }) {
-  const res = await fetch(`/api/friends/${encodeURIComponent(id)}`, {
+export async function updateFriendStatus(friendshipId: string, userId: number, payload: { status: string }) {
+  const res = await fetch(`/api/friends/${encodeURIComponent(friendshipId)}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-USER-ID': String(userId)
+    },
     body: JSON.stringify(payload)
   });
   if (!res.ok) throw new Error('Failed to update friend status');

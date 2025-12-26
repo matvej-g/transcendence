@@ -23,7 +23,8 @@ function createRequestItem(request: FriendRequest) {
 	acceptBtn.textContent = 'accept';
 	acceptBtn.onclick = async () => {
 		try {
-			await updateFriendStatus(String(request.id), { status: 'accepted' });
+			const userId = getCurrentUserId();
+			await updateFriendStatus(String(request.id), Number(userId), { status: 'accepted' });
 			li.remove();
 		} catch (e) {
 			alert('Failed to accept request');
@@ -35,7 +36,8 @@ function createRequestItem(request: FriendRequest) {
 	refuseBtn.textContent = 'refuse';
 	refuseBtn.onclick = async () => {
 		try {
-			await updateFriendStatus(String(request.id), { status: 'blocked' });
+			const userId = getCurrentUserId();
+			await updateFriendStatus(String(request.id), Number(userId), { status: 'blocked' });
 			li.remove();
 		} catch (e) {
 			alert('Failed to refuse request');
