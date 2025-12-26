@@ -22,8 +22,11 @@ export async function getUserByUserId(userId: string | null) {
 }
 
 // Get friends list
-export async function getFriends() {
-  const res = await fetch('/api/friends');
+export async function getFriends(userId: number) {
+  const res = await fetch('/api/friends', {
+    method: 'GET',
+    headers: {'X-USER-ID': String(userId)}
+  });
   if (!res.ok) throw new Error('Failed to fetch friends');
   return await res.json();
 }
