@@ -24,7 +24,7 @@ function createFriendItem(friend: FriendRequest) {
 		try {
 			const userId = getCurrentUserId();
 			await updateFriendStatus(String(friend.id), Number(userId), { status: 'blocked' });
-			li.remove();
+			await populateFriendsList();
 		} catch (e) {
 			alert('Failed to delete friend');
 		}
