@@ -3,6 +3,7 @@ import { getCurrentUserId } from '../auth/authUtils.js';
 import type {FriendRequest} from '../../common/types.js'
 
 
+import { populateFriendsList } from './friendsList.js';
 // Helper to create a request list item
 function createRequestItem(request: FriendRequest) {
 	const li = document.createElement('li');
@@ -18,6 +19,11 @@ function createRequestItem(request: FriendRequest) {
 	h2.className = 'text-emerald-400';
 	h2.textContent = request.friend.username || '';
 
+	const reloadLists = async () => {
+		await populateRequestsList();
+		await populateFriendsList();
+	};
+
 	const acceptBtn = document.createElement('button');
 	acceptBtn.className = 'accept-request rounded bg-green-600 hover:bg-green-700 px-3';
 	acceptBtn.textContent = 'accept';
@@ -25,7 +31,7 @@ function createRequestItem(request: FriendRequest) {
 		try {
 			const userId = getCurrentUserId();
 			await updateFriendStatus(String(request.id), Number(userId), { status: 'accepted' });
-			li.remove();
+			await reloadLists();
 		} catch (e) {
 			alert('Failed to accept request');
 		}
@@ -38,7 +44,7 @@ function createRequestItem(request: FriendRequest) {
 		try {
 			const userId = getCurrentUserId();
 			await updateFriendStatus(String(request.id), Number(userId), { status: 'blocked' });
-			li.remove();
+			await reloadLists();
 		} catch (e) {
 			alert('Failed to refuse request');
 		}
@@ -81,24 +87,5 @@ export async function populateRequestsList() {
 }
 
 // Auto-run on load
-function onFriendsSectionShown() {
-	const friendsSection = document.getElementById('friends-section');
-	if (!friendsSection) return;
-	// If already visible on load (e.g. after refresh), populate immediately
-	if (!friendsSection.classList.contains('hidden')) {
-		populateRequestsList();
-	}
-	// Use a MutationObserver to detect when the section becomes visible
-	const observer = new MutationObserver(() => {
-		if (!friendsSection.classList.contains('hidden')) {
-			populateRequestsList();
-		}
-	});
-	observer.observe(friendsSection, { attributes: true, attributeFilter: ['class'] });
-}
 
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', onFriendsSectionShown);
-} else {
-	onFriendsSectionShown();
-}
+// Auto-run logic moved to friendsContent.ts for better separation
