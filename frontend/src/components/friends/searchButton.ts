@@ -38,7 +38,8 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
 
   searchButton.addEventListener('click', async (e) => {
     e.preventDefault();
-    const username = searchInput.value.trim();
+    // Normalize spaces: trim and collapse multiple spaces
+    const username = searchInput.value.trim().replace(/\s+/g, ' ');
     searchResultMessage.textContent = '';
     searchResultMessage.classList.remove('text-green-500', 'text-red-400');
     searchResultMessage.style.opacity = '1';
