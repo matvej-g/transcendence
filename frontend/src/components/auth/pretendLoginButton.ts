@@ -22,8 +22,21 @@ function wirePretendLoginButton() {
 		return;
 	}
 
-	btn.addEventListener('click', () => {
-		console.log('[UI] pretendLogin → navigating to #profile');
+	btn.addEventListener('click', async () => {
+		console.log('[UI] pretendLogin → clearing JWT and navigating to #profile');
+		
+		// Clear JWT cookie before pretend login
+		try {
+			const response = await fetch('/api/user/logout', {
+				method: 'POST',
+				credentials: 'include'
+			});
+			if (!response.ok) {
+				console.warn('Logout endpoint returned error, but continuing');
+			}
+		} catch (error) {
+			console.error('Logout failed:', error);
+		}
 
 		navigateToLandingPage(null);
 	});
