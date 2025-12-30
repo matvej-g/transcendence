@@ -92,7 +92,20 @@ class UserController extends BaseController
         if (!password_verify($password, $user['password_hash'])) {
             return $this->jsonUnauthorized("Invalid password");
         }
-        return $this->jsonSuccess($user);
+        
+        // Generate JWT with two_factor_verified=false (mert)
+        $token = generateJWT($user['id'], false);
+        setJWTCookie($token);
+        
+        return $this->jsonSuccess([
+            'success' => true,
+            'user' => [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'email' => $user['email']
+            ],
+            'token' => $token
+        ]);
     }
 
     public function newUser(Request $request, $parameters)
@@ -190,4 +203,36 @@ class UserController extends BaseController
         }
         return $this->jsonSuccess($updated);
     }
+
+	//removes the jwt cookie when logging out (mert)
+    public function logout(Request $request, $parameters)
+    {
+        setcookie(
+            'jwt',
+            '',
+            [
+                'expires' => time() - 3600,
+                'path' => '/',
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]
+        );
+        
+        return $this->jsonSuccess(['message' => 'Logged out successfully']);
+    }
+
+	//for testing (mert)
+	public function getProtectedData(Request $request, $parameters)
+	{
+		// This endpoint requires JWT + 2FA verification
+		// If we reach here, user is fully authenticated
+		$userId = $request->user['user_id'] ?? null;
+		
+		return $this->jsonSuccess([
+			'message' => 'You have access to protected content!',
+			'user_id' => $userId,
+			'two_factor_verified' => $request->user['two_factor_verified'] ?? false,
+			'timestamp' => date('Y-m-d H:i:s')
+		]);
+	}
 }
