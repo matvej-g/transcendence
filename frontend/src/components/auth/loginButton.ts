@@ -17,7 +17,7 @@ function wireLoginButton() {
     const res = await loginHandle(u, p);
     log(`[UI] login result: ${JSON.stringify(res)}`);
     
-    if (res.ok) {
+    if (res.ok) {   //changes for 2fa and jwt (mert)
       // Login successful - now trigger 2FA
       log(`[UI] Login successful, sending 2FA code...`);
       
@@ -35,11 +35,6 @@ function wireLoginButton() {
     } else {
       alert(msg("loginFailedGeneric") + ` (${res.error})`);
     }
-    alert(res.ok ? msg("loginOkPrefix") + `${res.user.username}` : msg("loginFailedGeneric") + ` (${res.error})`);
-	if (res.ok) {
-		navigateToLandingPage(res.user);
-	}
-
   });
 }
 wireLoginButton();
