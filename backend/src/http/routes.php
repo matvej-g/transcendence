@@ -2,31 +2,14 @@
 
 use src\controllers\MatchesController;
 use src\controllers\UserController;
-use src\controllers\AuthController;
-use src\Middleware\AuthMiddleware;
-use src\Middleware\Require2FAMiddleware;
-
-// pages
-$this->router->get('/', 'src/controllers/home.php');
-$this->router->get('/about', 'src/controllers/about.php');
-$this->router->get('/contact', 'src/controllers/contact.php');
-$this->router->get('/dashboard', 'src/controllers/dashboard.php');
-
-// Database
-// $this->router->post('/register', [UserController::class, 'register']);
-$this->router->get('/users/show', [UserController::class, 'showUsers']);
-$this->router->post('/users/add', [UserController::class, 'addUser']);
-
-//2FA routes (API endpoints) - Require basic auth (JWT) but not 2FA yet
-$this->router->post('/api/auth/send-2fa', [AuthController::class, 'sendTwoFactorCode'], [AuthMiddleware::class]);
-$this->router->post('/api/auth/verify-2fa', [AuthController::class, 'verifyTwoFactorCode'], [AuthMiddleware::class]);
-
-$this->router->get('/game', 'src/controllers/game.php');
-
-// Public user routes - no auth required
 use src\controllers\TournamentController;
 use src\controllers\TournamentPlayerController;
 use src\controllers\TournamentMatchesController;
+
+//mert
+use src\controllers\AuthController;
+use src\Middleware\AuthMiddleware;
+use src\Middleware\Require2FAMiddleware;
 
 // pages
 $this->router->get('/game', 'src/controllers/game.php');
@@ -38,24 +21,11 @@ $this->router->get('/api/user/{email}', [UserController::class, 'getUserByEmail'
 $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByUsername']);
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
 $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
+$this->router->post('/api/user/logout', [UserController::class, 'logout']); //mert
 $this->router->patch('/api/user/update', [UserController::class, 'updateUser']);
 $this->router->patch('/api/user/changePassword', [UserController::class, 'changePassword']);
 $this->router->delete('/api/user/{id}', [UserController::class, 'deleteUser']);
 
-// Protected user routes - require full auth + 2FA
-$this->router->get('/api/users', [UserController::class, 'getUsers'], [Require2FAMiddleware::class]);
-$this->router->get('/api/user/{id}', [UserController::class, 'getUser'], [Require2FAMiddleware::class]);
-// $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByName']);
-
-// Protected match routes - require full auth + 2FA
-$this->router->get('/api/matches', [MatchesController::class, 'getMatches'], [Require2FAMiddleware::class]);
-$this->router->get('/api/match/{id}', [MatchesController::class, 'getMatch'], [Require2FAMiddleware::class]);
-$this->router->post('/api/match/new', [MatchesController::class, 'newMatch'], [Require2FAMiddleware::class]);
-
-// Protected tournament routes - require full auth + 2FA
-$this->router->get('/api/tournaments', [TournamentController::class, 'getTournaments'], [Require2FAMiddleware::class]);
-$this->router->get('/api/tournament/{id}', [TournamentController::class, 'getTournament'], [Require2FAMiddleware::class]);
-$this->router->post('/api/tournament/new', [TournamentController::class, 'newTournament'], [Require2FAMiddleware::class]);
 // matches
 $this->router->get('/api/matches', [MatchesController::class, 'getMatches']);
 $this->router->get('/api/match/{id}', [MatchesController::class, 'getMatch']);
@@ -84,3 +54,24 @@ $this->router->get('/api/tournament/match/{id}', [TournamentMatchesController::c
 $this->router->post('/api/tournament/match/new', [TournamentMatchesController::class, 'newTournamentMatch']);
 $this->router->patch('/api/tournament/match/{id}', [TournamentMatchesController::class, 'updateTournamentMatch']);
 $this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController::class, 'deleteTournamentMatch']);
+
+
+//mert
+
+// Protected user routes - require full auth + 2FA
+$this->router->get('/api/users', [UserController::class, 'getUsers'], [Require2FAMiddleware::class]);
+$this->router->get('/api/user/{id}', [UserController::class, 'getUser'], [Require2FAMiddleware::class]);
+// $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByName']);
+
+// Protected match routes - require full auth + 2FA
+$this->router->get('/api/matches', [MatchesController::class, 'getMatches'], [Require2FAMiddleware::class]);
+$this->router->get('/api/match/{id}', [MatchesController::class, 'getMatch'], [Require2FAMiddleware::class]);
+$this->router->post('/api/match/new', [MatchesController::class, 'newMatch'], [Require2FAMiddleware::class]);
+
+// Protected tournament routes - require full auth + 2FA
+$this->router->get('/api/tournaments', [TournamentController::class, 'getTournaments'], [Require2FAMiddleware::class]);
+$this->router->get('/api/tournament/{id}', [TournamentController::class, 'getTournament'], [Require2FAMiddleware::class]);
+$this->router->post('/api/tournament/new', [TournamentController::class, 'newTournament'], [Require2FAMiddleware::class]);
+
+// Protected test endpoint - require full auth + 2FA
+$this->router->get('/api/protected', [UserController::class, 'getProtectedData'], [Require2FAMiddleware::class]);
