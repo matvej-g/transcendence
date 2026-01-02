@@ -6,7 +6,7 @@ import { setCurrentUserId, setUserOnline } from './authUtils.js';
 import { initProfile } from '../profile/profile.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
-  console.log('[TS] loginHandle → input', { username, password });
+  console.log('[TS] loginHandle → input', { username, password }); // todo delete password log
 
   try {
     const res = await fetch('/api/user/login', {
@@ -30,6 +30,7 @@ export async function loginHandle(username: string, password: string): Promise<L
     }
 
     // store user ID in localStorage (Milena) — handle multiple possible response shapes
+	// todo why do we have userIdToStore AND returnedId?
     const userIdToStore = data?.user?.id ?? data?.id ?? null;
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
