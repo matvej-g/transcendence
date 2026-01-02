@@ -104,7 +104,6 @@ class UserController extends BaseController
         }
 
         if (!$stats) {
-            // no stats yet, return zeros for consistency
             $stats = [
                 'user_id'        => $id,
                 'wins'           => 0,
