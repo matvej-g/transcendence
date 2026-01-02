@@ -1,5 +1,6 @@
 /**
  * Auth-related small helpers.
+ * note: also used in src/components/messaging/chatPage.ts
  */
 export function getCurrentUserId(): string | null {
   const id = localStorage.getItem('userId');
