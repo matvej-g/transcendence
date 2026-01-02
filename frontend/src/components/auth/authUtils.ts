@@ -27,6 +27,23 @@ export function clearCurrentUserId(): void {
   console.log('User data removed from localStorage.');
 }
 
+export function setCurrentUsername(username: string): void {
+  localStorage.setItem('username', username);
+  console.log('Username stored in localStorage: username = ', username);
+}
+
+export function clearCurrentUsername(): void {
+  localStorage.removeItem('username');
+  console.log('Username removed from localStorage.');
+}
+
+export function getCurrentUsername(): string | null {
+  const username = localStorage.getItem('username');
+  if (!username) return null;
+  const trimmed = username.trim();
+  return trimmed === '' ? null : trimmed;
+}
+
 /**
  * !!! Todo: send TOken, otherwise it wont work !!!
  * Set user status to 'online'.
