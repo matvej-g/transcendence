@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
 	username TEXT NOT NULL UNIQUE,
 	email TEXT NOT NULL UNIQUE,
 	password_hash TEXT NOT NULL,
-	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    avatar_filename TEXT NOT NULL DEFAULT 'default.png',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- remove these users later on because of password hash

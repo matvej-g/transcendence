@@ -20,9 +20,11 @@ $this->router->get('/api/user/{email}', [UserController::class, 'getUserByEmail'
 $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByUsername']);
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
 $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
+$this->router->post('/api/user/{id}/uploadAvatar', [UserController::class, 'uploadAvatar']);
 $this->router->patch('/api/user/update', [UserController::class, 'updateUser']);
 $this->router->patch('/api/user/changePassword', [UserController::class, 'changePassword']);
 $this->router->delete('/api/user/{id}', [UserController::class, 'deleteUser']);
+$this->router->delete('/api/user/{id}/avatar', [UserController::class, 'deleteAvatar']);
 
 // matches
 $this->router->get('/api/matches', [MatchesController::class, 'getMatches']);

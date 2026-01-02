@@ -2,6 +2,7 @@
 
 namespace src\controllers;
 
+use finfo;
 use src\Database;
 use src\http\Request;
 use src\controllers\BaseController;
@@ -234,5 +235,65 @@ class UserController extends BaseController
         }
         $updated = user_to_public($updated);
         return $this->jsonSuccess($updated);
+    }
+
+    public function uploadAvatar(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if (!Validator::validateId($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $file = $request->files['avatar'] ?? null;
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            return $this->jsonBadRequest("No file uploaded or upload error");
+        }
+        if ($file['size'] > 1000000) {
+            return $this->jsonBadRequest("File too large");
+        }
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']);
+        if (!in_array($mime, ['image/png','image/jpeg'])) {
+            return $this->jsonBadRequest("Invalid file type");
+        }
+        $ext = $mime === 'image/png' ? 'png' : 'jpg';
+        $filename = bin2hex(random_bytes(16)) . ".$ext";
+        $targetDir = '/var/www/html/uploads/avatars/'; 
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+        $target = $targetDir . $filename;
+        if (!move_uploaded_file($file['tmp_name'], $target)) {
+            return $this->jsonServerError();
+        }
+        $user = $this->users->getUserById((int)$id);
+        if ($user && $user['avatar_filename'] !== 'default.png') {
+            @unlink($targetDir . $user['avatar_filename']);
+        }
+        $updated = $this->users->updateAvatarFilename((int)$id, $filename);
+        if (!$updated) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess(user_to_public($updated));
+    }
+
+    public function deleteAvatar(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if (!Validator::validateId($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $user = $this->users->getUserById((int)$id);
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+        $targetDir = '/var/www/html/uploads/avatars/'; 
+        if ($user['avatar_filename'] !== 'default.png') {
+            @unlink($targetDir . $user['avatar_filename']);
+        }
+        $updated = $this->users->updateAvatarFilename((int)$id, 'default.png');
+        if (!$updated) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess(user_to_public($updated));
     }
 }
