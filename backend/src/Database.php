@@ -21,7 +21,12 @@ class Database {
 	public function query($query, $parmas = [])
 	{
 		$statement = $this->connection->prepare($query);
-		$statement->execute($parmas);
+		$ok = $statement->execute($parmas);
+
+		if (!$ok) {
+			$err = $statement->errorInfo(); // [SQLSTATE, code, message]
+			error_log("[db] SQL error: " . json_encode($err) . " QUERY=" . $query);
+		}
 
 		return $statement;
 	}
