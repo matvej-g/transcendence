@@ -208,25 +208,8 @@
 			class="w-full bg-white/10 rounded px-3 py-2 outline-none text-sm"
 			/>
 		</div>
-	<!-- LEFT: CHAT LIST -->
-		<ul id="chat-list" class="divide-y divide-white/10">
-		<!-- Chat item -->
-		<li class="p-4 hover:bg-white/5 cursor-pointer">
-			<div class="font-semibold">alice</div>
-			<div class="text-sm text-white/60 truncate">
-			Hey, are we still playing tonight?
-			</div>
-		</li>
-
-		<li class="p-4 hover:bg-white/5 cursor-pointer">
-			<div class="font-semibold">bob</div>
-			<div class="text-sm text-white/60 truncate">
-			Last message preview goes here…
-			</div>
-		</li>
-
-		<!-- more chats -->
-		</ul>
+		<!-- LEFT: CHAT LIST -->
+		<ul id="chat-list" class="divide-y divide-white/10"></ul>
 	</aside>
 
 	<!-- RIGHT: ACTIVE CHAT -->
@@ -286,6 +269,9 @@
 
     <!-- profile initializer (fetches current user and updates nickname) -->
     <script type="module" src="/dist/components/profile/profile.js"></script>
+
+	<!-- chat component -->
+    <script type="module" src="/dist/components/messaging/chatPage.js"></script>
 
     <!-- SPA Router -->
     <script type="module" src="/dist/common/router.js"></script>
