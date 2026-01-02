@@ -115,7 +115,6 @@ formEl.addEventListener("submit", async (e) => {
 });
 
 // seaerch user
-
 document.addEventListener("DOMContentLoaded", () => {
 	const searchEl = document.getElementById("chat-search") as HTMLInputElement | null;
 	if (!searchEl) {
