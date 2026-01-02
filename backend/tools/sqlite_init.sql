@@ -49,7 +49,8 @@ CREATE TABLE IF NOT EXISTS tournaments (
 	id INTEGER PRIMARY KEY,
 	tournament_name TEXT NOT NULL,
 	started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-	finished_at DATETIME
+	finished_at DATETIME,
+	winner_id INTEGER REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS tournament_players (
@@ -126,5 +127,7 @@ CREATE TABLE IF NOT EXISTS user_stats (
 	games_played INTEGER NOT NULL DEFAULT 0,
 	goals_scored INTEGER NOT NULL DEFAULT 0,
 	goals_conceded INTEGER NOT NULL DEFAULT 0,
+	tournaments_played INTEGER NOT NULL DEFAULT 0,
+	tournaments_won INTEGER NOT NULL DEFAULT 0,
 	last_game_at DATETIME
 );

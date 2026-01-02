@@ -126,10 +126,6 @@ class MessagingController extends BaseController
         ];
     }
 
-    /**
-     * GET /api/conversations
-     * Returns ConversationSummary[] for current user.
-     */
     public function getConversations(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -153,10 +149,6 @@ class MessagingController extends BaseController
         return $this->jsonSuccess($summaries);
     }
 
-    /**
-     * GET /api/conversations/{id}
-     * Returns full Conversation { summary, messages }.
-     */
     public function getConversation(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -210,11 +202,6 @@ class MessagingController extends BaseController
         ]);
     }
 
-    /**
-     * POST /api/conversations
-     * Body: { participantIds: string[], message: { text: string }, currentUserId? }
-     * Returns created Message.
-     */
     public function createConversation(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -266,11 +253,7 @@ class MessagingController extends BaseController
         return $this->jsonCreated($apiMessage);
     }
 
-    /**
-     * POST /api/conversations/{id}/messages
-     * Body: { text: string, currentUserId? }
-     * Returns created Message.
-     */
+
     public function sendMessage(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -332,11 +315,6 @@ class MessagingController extends BaseController
         return $this->jsonCreated($apiMessage);
     }
 
-    /**
-     * PATCH /api/messages/{id}
-     * Body: { text: string, currentUserId? }
-     * Returns edited Message.
-     */
     public function editMessage(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);

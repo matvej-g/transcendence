@@ -34,7 +34,6 @@ class UserStatsModel
                 [$userId]
             );
         } catch (\PDOException $e) {
-            // ignore
         }
     }
 
@@ -104,5 +103,51 @@ class UserStatsModel
         } catch (\PDOException $e) {
             return null;
         }
+    }
+
+    public function recordTournamentParticipation(array $participantIds): ?bool
+    {
+        try {
+            foreach ($participantIds as $uid) {
+                $userId = (int) $uid;
+                $this->ensureRow($userId);
+                $this->db->query(
+                    "UPDATE user_stats SET tournaments_played = tournaments_played + 1 WHERE user_id = ?",
+                    [$userId]
+                );
+            }
+            return true;
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+
+    public function recordTournamentWin(int $winnerId): ?bool
+    {
+        try {
+            $this->ensureRow($winnerId);
+            $this->db->query(
+                "UPDATE user_stats SET tournaments_won = tournaments_won + 1 WHERE user_id = ?",
+                [$winnerId]
+            );
+            return true;
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+
+    public function recordTournamentResult(array $participantIds, ?int $winnerId): ?bool
+    {
+        $ok = $this->recordTournamentParticipation($participantIds);
+        if ($ok === null) {
+            return null;
+        }
+        if ($winnerId !== null) {
+            $ok = $this->recordTournamentWin($winnerId);
+            if ($ok === null) {
+                return null;
+            }
+        }
+        return true;
     }
 }
