@@ -210,61 +210,74 @@ class MessagingController extends BaseController
         ]);
     }
 
-    /**
-     * POST /api/conversations
-     * Body: { participantIds: string[], message: { text: string }, currentUserId? }
-     * Returns created Message.
-     */
-    public function createConversation(Request $request, $parameters)
-    {
-        $userId = $this->getCurrentUserId($request);
-        if ($userId === null) {
-            return $this->jsonBadRequest('Missing or invalid current user id');
-        }
+/**
+ * POST /api/conversations
+ * Body: { participantIds: string[], message: { text: string }, currentUserId? }
+ * Returns created Message.
+ */
+public function createConversation(Request $request, $parameters)
+{
+    $userId = $this->getCurrentUserId($request);
+    if ($userId === null) {
+        return $this->jsonBadRequest('Missing or invalid current user id');
+    }
 
-        $participantIds = $request->postParams['participantIds'] ?? null;
-        $messageData    = $request->postParams['message'] ?? null;
+    $participantIds = $request->postParams['participantIds'] ?? null;
+    $messageData    = $request->postParams['message'] ?? null;
 
-        if (!Validator::validateIdArray($participantIds ?? [])) {
-            return $this->jsonBadRequest('Invalid participant ids');
-        }
+    if (!Validator::validateIdArray($participantIds ?? [])) {
+        return $this->jsonBadRequest('Invalid participant ids');
+    }
 
-        $text = $messageData['text'] ?? null;
-        if ($text === null || !Validator::validateMessageText($text)) {
-            return $this->jsonBadRequest('Invalid message text');
-        }
+    $text = $messageData['text'] ?? null;
+    if ($text === null || !Validator::validateMessageText($text)) {
+        return $this->jsonBadRequest('Invalid message text');
+    }
 
-        // Ensure current user is part of the conversation
-        $allParticipantIds = array_map('intval', $participantIds);
-        if (!in_array($userId, $allParticipantIds, true)) {
-            $allParticipantIds[] = $userId;
-        }
+    // Ensure current user is part of the conversation
+    $allParticipantIds = array_map('intval', $participantIds);
+    if (!in_array($userId, $allParticipantIds, true)) {
+        $allParticipantIds[] = $userId;
+    }
 
-        // Create conversation (no special title for now)
+    try {
+        // 1) Create conversation (title = null)
         $conversationId = $this->conversations->createConversation(null);
         if ($conversationId === null) {
-            return $this->jsonServerError();
+            error_log("[messaging] createConversation: createConversation(null) returned null");
+            return $this->jsonServerError('createConversation failed');
         }
 
+        // 2) Add participants
         foreach ($allParticipantIds as $pid) {
-            $added = $this->conversations->addParticipant($conversationId, (int) $pid);
+            $added = $this->conversations->addParticipant((int)$conversationId, (int)$pid);
             if ($added === null) {
-                return $this->jsonServerError();
+                error_log("[messaging] createConversation: addParticipant failed. convo={$conversationId} pid={$pid}");
+                return $this->jsonServerError('addParticipant failed');
             }
         }
 
-        $row = $this->messages->createMessage($conversationId, $userId, $text);
+        // 3) Create first message
+        $row = $this->messages->createMessage((int)$conversationId, (int)$userId, (string)$text);
         if ($row === null) {
-            return $this->jsonServerError();
+            error_log("[messaging] createConversation: createMessage failed. convo={$conversationId} user={$userId}");
+            return $this->jsonServerError('createMessage failed');
         }
 
+        // 4) Map message
         $apiMessage = $this->mapMessageRowToApi($row);
         if ($apiMessage === null) {
-            return $this->jsonServerError();
+            error_log("[messaging] createConversation: mapMessageRowToApi failed");
+            return $this->jsonServerError('mapMessage failed');
         }
 
         return $this->jsonCreated($apiMessage);
+
+    } catch (\Throwable $e) {
+        error_log("[messaging] createConversation exception: " . $e->getMessage());
+        return $this->jsonServerError('Database exception');
     }
+}
 
     /**
      * POST /api/conversations/{id}/messages
