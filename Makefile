@@ -43,18 +43,7 @@ re-php-backend: ## Rebuild and restart only the PHP backend container
 	$(DC) up -d php-backend
 
 clean-conversations: ## Delete all conversations/messages and restart backend
-	$(DC) exec php-backend sh -lc "\
-	sqlite3 /var/www/html/database/transcendence.db <<'SQL' \
-	PRAGMA foreign_keys = ON; \
-	DELETE FROM message_read_states; \
-	DELETE FROM messages; \
-	DELETE FROM conversation_participants; \
-	DELETE FROM conversations; \
-	DELETE FROM sqlite_sequence WHERE name IN ( \
-		'message_read_states','messages','conversation_participants','conversations' \
-	); \
-	SQL \
-	"
+	$(DC) exec php-backend sh -lc 'sqlite3 /var/www/html/database/transcendence.db "PRAGMA foreign_keys=ON; DELETE FROM message_read_states; DELETE FROM messages; DELETE FROM conversation_participants; DELETE FROM conversations; DELETE FROM sqlite_sequence WHERE name IN (\"message_read_states\",\"messages\",\"conversation_participants\",\"conversations\");"'
 	$(DC) up -d php-backend
 
 clean-db: ## Remove SQLite DB, re-init schema, rebuild and restart backend
