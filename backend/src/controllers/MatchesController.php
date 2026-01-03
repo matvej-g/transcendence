@@ -106,7 +106,6 @@ class MatchesController extends BaseController
         if ($match['finished_at'] !== null) {
             return $this->jsonBadRequest('Match already finished');
         }
-
         $scoreOne = $request->postParams['scorePlayerOne'] ?? null;
         $scoreTwo = $request->postParams['scorePlayerTwo'] ?? null;
         if ($scoreOne === null|| $scoreTwo === null || !ctype_digit($scoreOne) || !ctype_digit($scoreTwo)) {
@@ -132,7 +131,6 @@ class MatchesController extends BaseController
         if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Invalid match id');
         }
-
         $match = $this->matches->getMatchById((int)$id);
         if ($match === null) {
             return $this->jsonServerError();
