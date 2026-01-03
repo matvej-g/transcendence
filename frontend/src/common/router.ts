@@ -1,4 +1,5 @@
 import { clearCurrentUserId, setUserOffline, clearCurrentUsername} from '../components/auth/authUtils.js';
+import { onFriendsSectionShown} from '../components/friends/friendsContent.js'
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
