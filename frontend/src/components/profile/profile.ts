@@ -3,6 +3,10 @@
 // a Promise<void>. The function body can use await to pause until async work completes.
 
 import { getCurrentUserId } from '../auth/authUtils.js';
+import { getUserByUserId } from './api.js';
+import { renderMatchHistory } from './matchHistory.js';
+import { fetchUserWinsAndLosses } from './stats.js';
+
 
 // profile initializer: fetch user data and populate all data-field elements
 async function initProfile(): Promise<void> {
@@ -14,14 +18,9 @@ async function initProfile(): Promise<void> {
   const callerUserId = userId; // capture to detect races
   console.log('[profile] initProfile → userId', callerUserId);
   try {
-    const res = await fetch(`/api/user/${userId}`, { method: 'GET' });
-    if (!res.ok) {
-      console.warn('[profile] fetch failed', res.status);
-      return;
-    }
-    const data = await res.json();
+    const data = await getUserByUserId(userId);
     console.log('[profile] initProfile → fetched user', data);
-    const username = data?.username ?? data?.userName ?? null;
+    const username = data?.username ?? null;
     if (!username) return;
 
     // avoid replacing UI if user changed during async fetch (race)
@@ -31,27 +30,27 @@ async function initProfile(): Promise<void> {
       return;
     }
 
-    // Fill all data-field elements in the profile
-    document.querySelectorAll('[data-field]').forEach((el: Element) => {
-      const fieldName = (el as HTMLElement).dataset.field;
-      if (!fieldName) return;
+    // insert username
+    document.getElementById('username')!.textContent = `${username}`;
 
-      let value: string | undefined;
-      switch (fieldName) {
-        case 'username':
-          value = username;
-          break;
-        case 'playerUsername':
-          // For now, use the logged-in user's username for player slots
-          value = username;
-          break;
-        // Add more field mappings as needed (opponentUsername, matchDateTime, matchScore, etc.)
+    // insert stats...
+    try {
+      const { wins, losses } = await fetchUserWinsAndLosses();
+      document.getElementById('match-wins')!.textContent = `${wins}`;
+      document.getElementById('match-losses')!.textContent = `${losses}`;
+      const total = wins + losses;
+      let rate = '0%';
+      if (total > 0) {
+        rate = ((wins / total) * 100).toFixed(1) + '%';
       }
+      document.getElementById('match-winning-rate')!.textContent = rate;
+    } catch (e) {
+      document.getElementById('match-wins')!.textContent = '?';
+      document.getElementById('match-losses')!.textContent = '?';
+      document.getElementById('match-winning-rate')!.textContent = '?';
+      console.warn('[profile] Could not fetch user stats', e);
+    }
 
-      if (value !== undefined) {
-        (el as HTMLElement).textContent = value;
-      }
-    });
   } catch (e) {
     console.warn('[profile] error', e);
   }
@@ -61,6 +60,8 @@ async function initProfile(): Promise<void> {
 const _currentUserId = getCurrentUserId();
 if (_currentUserId) {
   initProfile().catch(e => console.warn('[profile] init failed', e));
+  renderMatchHistory().catch(e => console.warn('[profile] match history failed', e));
 }
 
 export { initProfile };
+

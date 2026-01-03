@@ -1,6 +1,7 @@
 // Compiles to /site/public/js/user/auth/pretendLoginButton.js
 
-import { setCurrentUserId, setUserOnline } from './authUtils.js';
+import { setCurrentUserId } from './authUtils.js';
+import { setUserOnline } from './api.js';
 import { initProfile } from "../profile/profile.js";
 
 // import { $, log } from "../../utils/utils.js";
