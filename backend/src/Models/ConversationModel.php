@@ -20,6 +20,7 @@ class ConversationModel
                 [$id]
             )->fetch(PDO::FETCH_ASSOC) ?: [];
         } catch (\PDOException $e) {
+			error_log("[db] getConversationById PDOException: " . $e->getMessage());
             return null;
         }
     }
@@ -38,6 +39,7 @@ class ConversationModel
                 [$userId]
             )->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
+			error_log("[db] getConversationsForUser PDOException: " . $e->getMessage());
             return null;
         }
     }
@@ -51,6 +53,7 @@ class ConversationModel
             );
             return $this->db->connection->lastInsertId();
         } catch (\PDOException $e) {
+			error_log("[db] createConversation PDOException: " . $e->getMessage());
             return null;
         }
     }
@@ -64,6 +67,7 @@ class ConversationModel
             );
             return $this->db->connection->lastInsertId();
         } catch (\PDOException $e) {
+			error_log("[db] addParticipant PDOException: " . $e->getMessage());
             return null;
         }
     }
@@ -76,6 +80,7 @@ class ConversationModel
                 [$conversationId]
             )->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
+			error_log("[db] getParticipants PDOException: " . $e->getMessage());
             return null;
         }
     }

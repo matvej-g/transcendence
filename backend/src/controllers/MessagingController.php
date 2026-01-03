@@ -126,10 +126,6 @@ class MessagingController extends BaseController
         ];
     }
 
-    /**
-     * GET /api/conversations
-     * Returns ConversationSummary[] for current user.
-     */
     public function getConversations(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -153,10 +149,6 @@ class MessagingController extends BaseController
         return $this->jsonSuccess($summaries);
     }
 
-    /**
-     * GET /api/conversations/{id}
-     * Returns full Conversation { summary, messages }.
-     */
     public function getConversation(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -210,11 +202,7 @@ class MessagingController extends BaseController
         ]);
     }
 
-    /**
-     * POST /api/conversations
-     * Body: { participantIds: string[], message: { text: string }, currentUserId? }
-     * Returns created Message.
-     */
+
     public function createConversation(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -240,37 +228,45 @@ class MessagingController extends BaseController
             $allParticipantIds[] = $userId;
         }
 
-        // Create conversation (no special title for now)
-        $conversationId = $this->conversations->createConversation(null);
-        if ($conversationId === null) {
-            return $this->jsonServerError();
-        }
-
-        foreach ($allParticipantIds as $pid) {
-            $added = $this->conversations->addParticipant($conversationId, (int) $pid);
-            if ($added === null) {
-                return $this->jsonServerError();
+        try {
+            // 1) Create conversation (title = null)
+            $conversationId = $this->conversations->createConversation(null);
+            if ($conversationId === null) {
+                error_log("[messaging] createConversation: createConversation(null) returned null");
+                return $this->jsonServerError('createConversation failed');
             }
-        }
 
-        $row = $this->messages->createMessage($conversationId, $userId, $text);
-        if ($row === null) {
-            return $this->jsonServerError();
-        }
+            // 2) Add participants
+            foreach ($allParticipantIds as $pid) {
+                $added = $this->conversations->addParticipant((int)$conversationId, (int)$pid);
+                if ($added === null) {
+                    error_log("[messaging] createConversation: addParticipant failed. convo={$conversationId} pid={$pid}");
+                    return $this->jsonServerError('addParticipant failed');
+                }
+            }
 
-        $apiMessage = $this->mapMessageRowToApi($row);
-        if ($apiMessage === null) {
-            return $this->jsonServerError();
-        }
+            // 3) Create first message
+            $row = $this->messages->createMessage((int)$conversationId, (int)$userId, (string)$text);
+            if ($row === null) {
+                error_log("[messaging] createConversation: createMessage failed. convo={$conversationId} user={$userId}");
+                return $this->jsonServerError('createMessage failed');
+            }
 
-        return $this->jsonCreated($apiMessage);
+            // 4) Map message
+            $apiMessage = $this->mapMessageRowToApi($row);
+            if ($apiMessage === null) {
+                error_log("[messaging] createConversation: mapMessageRowToApi failed");
+                return $this->jsonServerError('mapMessage failed');
+            }
+
+            return $this->jsonCreated($apiMessage);
+
+        } catch (\Throwable $e) {
+            error_log("[messaging] createConversation exception: " . $e->getMessage());
+            return $this->jsonServerError('Database exception');
+        }
     }
 
-    /**
-     * POST /api/conversations/{id}/messages
-     * Body: { text: string, currentUserId? }
-     * Returns created Message.
-     */
     public function sendMessage(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -332,11 +328,6 @@ class MessagingController extends BaseController
         return $this->jsonCreated($apiMessage);
     }
 
-    /**
-     * PATCH /api/messages/{id}
-     * Body: { text: string, currentUserId? }
-     * Returns edited Message.
-     */
     public function editMessage(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);

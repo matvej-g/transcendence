@@ -2,15 +2,22 @@ export type LoginResult =
   | { ok: true; user: { id: string; username: string } }
   | { ok: false; error: string };
 
-import { setCurrentUserId } from './authUtils.js';
-import { setUserOnline, loginUser } from './api.js';
+import { setCurrentUserId, setUserOnline, setCurrentUsername } from './authUtils.js';
 import { initProfile } from '../profile/profile.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
-  console.log('[TS] loginHandle → input', { username, password });
+  console.log('[TS] loginHandle → input', { username, password }); // todo delete password log
 
   try {
-    const { res, data } = await loginUser(username, password);
+    const res = await fetch('/api/user/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernameOrEmail: username.trim(), password })
+    });
+
+    const text = await res.text();
+    let data: any;
+    try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
 
     // 3) Log response
     console.log('[TS] loginMiddleware → HTTP', res.status, res.statusText);
@@ -23,6 +30,7 @@ export async function loginHandle(username: string, password: string): Promise<L
     }
 
     // store user ID in localStorage (Milena) — handle multiple possible response shapes
+	// todo why do we have userIdToStore AND returnedId?
     const userIdToStore = data?.user?.id ?? data?.id ?? null;
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
@@ -32,10 +40,14 @@ export async function loginHandle(username: string, password: string): Promise<L
       // initialize profile UI immediately
       initProfile().catch((e) => console.warn('[profile] init after login failed', e));
     }
+	const userNameToStore = data?.user?.username ?? data?.userName ?? data?.username ?? null;
+	if (userNameToStore) {
+		setCurrentUsername(userNameToStore);
+	}
 
     // Normalize return to include `user.id` and a username field
-    const returnedId = String(data?.user?.id ?? data?.id ?? '');
-    const returnedUsername = data?.user?.username ?? data?.userName ?? data?.username ?? '';
+    const returnedId = String(userIdToStore ?? '');
+    const returnedUsername = String(userNameToStore ?? '');
     return { ok: true, user: { id: returnedId, username: returnedUsername } };
   } catch (e) {
     console.log('[TS] loginHandle → exception', e);

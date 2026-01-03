@@ -1,6 +1,4 @@
-import { clearCurrentUserId} from '../components/auth/authUtils.js';
-import { setUserOffline } from '../components/auth/api.js';
-import { onFriendsSectionShown } from '../components/friends/friendsContent.js';
+import { clearCurrentUserId, setUserOffline, clearCurrentUsername} from '../components/auth/authUtils.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
@@ -58,7 +56,7 @@ function showSection(sectionId: string): void {
   }
 }
 
-// Handle hash navigation
+// Handle hash navigation // todo add fetches to load appropriate data
 window.addEventListener('hashchange', () => {
   const hash = window.location.hash.slice(1);
   const section = hash.split('/')[0] || 'auth';
@@ -70,6 +68,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
   // mark user offline on server (best-effort)
   setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
   clearCurrentUserId();
+  clearCurrentUsername();
   window.location.hash = '#';
 });
 

@@ -10,20 +10,24 @@ use src\Models\TournamentPlayerModel;
 use src\Models\TournamentMatchesModel;
 use src\Models\MatchesModel;
 use src\Services\TournamentService;
+use src\Models\UserStatsModel;
 use src\Validator;
 
 class TournamentController extends BaseController
 {
     private TournamentsModel $tournaments;
+    private TournamentPlayerModel $playersModel;
     private TournamentService $tournamentService;
+    private UserStatsModel $userStats;
 
     public function __construct(Database $db)
     {
         $this->tournaments = new TournamentsModel($db);
-        $playersModel      = new TournamentPlayerModel($db);
+        $this->playersModel = new TournamentPlayerModel($db);
         $tmModel           = new TournamentMatchesModel($db);
         $matchesModel      = new MatchesModel($db);
-        $this->tournamentService = new TournamentService($playersModel, $tmModel, $matchesModel);
+        $this->tournamentService = new TournamentService($this->playersModel, $tmModel, $matchesModel);
+        $this->userStats = new UserStatsModel($db);
     }
 
     public function getTournamentByName(Request $request, $parameters)
@@ -98,10 +102,38 @@ class TournamentController extends BaseController
         if ($tournament['finished_at'] !== null) {
             return $this->jsonBadRequest('Tournament already finished');
         }
-        $updated = $this->tournaments->endTournament($id);
+
+        // optional winnerId in request body
+        $winnerRaw = $request->postParams['winnerId'] ?? null;
+        $winnerId = null;
+        if ($winnerRaw !== null) {
+            if (!Validator::validateId($winnerRaw)) {
+                return $this->jsonBadRequest('Invalid winner id');
+            }
+            $winnerId = (int) $winnerRaw;
+        }
+
+        $updated = $this->tournaments->endTournament($id, $winnerId);
         if ($updated === null) {
             return $this->jsonServerError();
         }
+
+        // gather participants for stats update
+        $allPlayers = $this->playersModel->getAllTournamentPlayers();
+        if ($allPlayers === null) {
+            // don't block the response on stats failure
+            return $this->jsonSuccess($updated);
+        }
+        $participantIds = [];
+        foreach ($allPlayers as $p) {
+            if ((int)$p['tournament_id'] === $id) {
+                $participantIds[] = (int)$p['user_id'];
+            }
+        }
+
+        // update aggregated stats, ignore failures
+        $this->userStats->recordTournamentResult($participantIds, $winnerId);
+
         return $this->jsonSuccess($updated);
     }
 

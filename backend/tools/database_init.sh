@@ -35,4 +35,13 @@ else
     echo -e "${YELLOW}Database already exists. Skipping schema.${NC}"
 fi
 
+# ensure avatars folder and default avatar
+mkdir -p "$DIR/uploads/avatars"
+chown -R www-data:www-data "$DIR/uploads/avatars"
+echo -e "${GREEN}Creating dir $DIR/uploads/avatars"
+if [ ! -f "$DIR/uploads/avatars/default.jpg" ]; then
+    cp "$DIR/public/default.jpg" "$DIR/uploads/avatars/default.jpg"
+	echo -e "${GREEN}Copying default avatar from $DIR/public/default.jpg"
+fi
+
 exec php-fpm

@@ -45,8 +45,6 @@ class TournamentMatchesController extends BaseController
 
     public function newTournamentMatch(Request $request, $parameters)
     {
-        var_dump($parameters);
-        var_dump($request->postParams);
         $tournamentId = $request->postParams['tournamentId'] ?? null;
         $matchId = $request->postParams['matchId'] ?? null;
         if (!Validator::validateId($tournamentId) || !Validator::validateId($matchId)) {
