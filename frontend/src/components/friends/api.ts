@@ -14,7 +14,6 @@ export async function getUserByUserId(userId: string | null) {
   if (userId == null)
   {
     throw new Error('User not found');
-    return ;
   }
   const res = await fetch(`/api/user/${encodeURIComponent(userId)}`);
   if (!res.ok) throw new Error('User not found');

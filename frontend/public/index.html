@@ -81,7 +81,7 @@
         <div class="profile flex justify-around items-center w-full bg-gradient-to-r from-[#40e5c9] to-[#2ecc71] p-4 shadow-lg flex-wrap">
             <div class="avatar-name flex flex-col items-center">
                 <img src="profile_avatar.jpg" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
-                <h2 class="text-white font-bold text-lg" data-field="username"></h2>
+                <h2 class="text-white font-bold text-lg" id="username"></h2>
             </div>
 
             <div class="stats flex flex-col justify-between items-center">
@@ -89,32 +89,25 @@
                 <div class="text-rectangle flex justify-between gap-12 text-black shadow-xl rounded-3xl p-4 backdrop-blur-sm font-[Brush_Script_MT]">
                     <ul class="match-stats pl-5">
                         <h4 class="font-bold">Matches</h4>
-                        <li>Wins: 4</li>
-                        <li>Losses: 6</li>
-                        <li>Winning rate: 40%</li>
+                        <li>Wins: <span  id="match-wins"></span></li>
+                        <li>Losses: <span id="match-losses"></span></li>
+                        <li>Winning rate: <span id="match-winning-rate"></span> </li>
                     </ul>
                     <ul class="tournament-stats">
                         <h4 class="font-bold">Tournaments</h4>
-                        <li>Wins: 4</li>
-                        <li>Losses: 6</li>
-                        <li>Winning rate: 40%</li>
+                        <li>Wins: <span id="tourn-wins"></span></li>
+                        <li>Losses: <span  id="tourn-losses"></span></li>
+                        <li>Winning rate: <span id="tourn-winning-rate"></span> </li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <div class="match-history w-1/2 flex flex-col justify-start items-center text-emerald-400 p-4 m-4 font-[Brush_Script_MT]">
+        <div class="match-history w-2/3 flex flex-col justify-center items-center text-emerald-400 p-4 m-auto font-[Brush_Script_MT]">
             <h3 class="mb-4 font-bold">Match History</h3>
             <ul class="text-rectangle flex flex-col items-start w-full">
-                <li class="match-item w-full flex justify-between py-1">
-                    <div class="date-time text-emerald-400" data-field="matchDateTime"></div>
-                    <div class="match-middle flex gap-4 w-[70%] mx-5">
-                        <div class="truncate" data-field="playerUsername"></div>
-                        <div>:</div>
-                        <div class="truncate" data-field="opponentUsername"></div>
-                    </div>
-                    <div class="text-emerald-400" data-field="matchScore"></div>
-                </li>
+                <!-- Match items will be rendered here by JS -->
+                <ul id="match-history-list" class="w-full"></ul>
             </ul>
         </div>
       </section>
