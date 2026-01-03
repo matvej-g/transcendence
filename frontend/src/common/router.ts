@@ -56,7 +56,7 @@ function showSection(sectionId: string): void {
   }
 }
 
-// Handle hash navigation // todo add fetches to load appropriate data
+// Handle hash navigation
 window.addEventListener('hashchange', () => {
   const hash = window.location.hash.slice(1);
   const section = hash.split('/')[0] || 'auth';
