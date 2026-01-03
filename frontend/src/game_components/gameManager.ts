@@ -3,6 +3,7 @@ export {};
 
 import { GameCanvas } from './gameCanvas.js';
 import { NetworkManager } from './networkManager.js';
+import { getCurrentUserIdNumber } from '../components/auth/authUtils.js';
 
 // Game Manager Class
 class GameManager {
@@ -40,13 +41,15 @@ class GameManager {
     private startLocalGame(): void {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
-        this.networkManager.connect('ws://localhost:8080/ws', 'local');
+        const userId = getCurrentUserIdNumber() || 1;
+        this.networkManager.connect('ws://localhost:8080/ws', 'local', userId);
     }
 
     private startRemoteGame(): void {
         console.log('Starting remote game...');
         this.gameModeMenu?.classList.add('hidden');
-        this.networkManager.connect('ws://localhost:8080/ws', 'remote');
+        const userId = getCurrentUserIdNumber() || 1;
+        this.networkManager.connect('ws://localhost:8080/ws', 'remote', userId);
     }
 
     private exitGame(): void {
