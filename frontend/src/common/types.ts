@@ -1,3 +1,4 @@
+
 export type UserId = string;
 
 // data that is allowed to be passed to other usersq
@@ -17,3 +18,16 @@ export interface UserDataPrivate {
   // Public profile block embedded here:
   public: UserDataPublic;
 }
+
+// Type for a friend request item
+export type FriendRequest = {
+	id: number;
+	friend: {
+		id: number;
+		username: string;
+		email?: string;
+		avatarUrl?: string;
+		[key: string]: any;
+	};
+	status: string;
+};

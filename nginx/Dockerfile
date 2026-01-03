@@ -2,7 +2,7 @@ FROM nginx:alpine
 
 RUN apk update && \
     apk upgrade && \
-    apk add --no-cache openssl
+    apk add --no-cache openssl curl
 
 COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
 COPY ./conf/openssl.conf /etc/nginx/ssl/openssl.conf
