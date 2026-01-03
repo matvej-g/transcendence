@@ -16,4 +16,11 @@ export async function getMatches() {
   return await res.json();
 }
 
+// Get user stats by user ID
+export async function getUserStats(userId: string | number) {
+  const res = await fetch(`/api/user/${encodeURIComponent(userId)}/stats`);
+  if (!res.ok) throw new Error('Could not fetch user stats');
+  return await res.json();
+}
+
 

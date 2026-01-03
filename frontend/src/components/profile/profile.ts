@@ -5,6 +5,7 @@
 import { getCurrentUserId } from '../auth/authUtils.js';
 import { getUserByUserId } from './api.js';
 import { renderMatchHistory } from './matchHistory.js';
+import { fetchUserWinsAndLosses } from './stats.js';
 
 
 // profile initializer: fetch user data and populate all data-field elements
@@ -33,12 +34,27 @@ async function initProfile(): Promise<void> {
     document.getElementById('username')!.textContent = `${username}`;
 
     // insert stats...
+    try {
+      const { wins, losses } = await fetchUserWinsAndLosses();
+      document.getElementById('match-wins')!.textContent = `${wins}`;
+      document.getElementById('match-losses')!.textContent = `${losses}`;
+      const total = wins + losses;
+      let rate = '0%';
+      if (total > 0) {
+        rate = ((wins / total) * 100).toFixed(1) + '%';
+      }
+      document.getElementById('match-winning-rate')!.textContent = rate;
+    } catch (e) {
+      document.getElementById('match-wins')!.textContent = '?';
+      document.getElementById('match-losses')!.textContent = '?';
+      document.getElementById('match-winning-rate')!.textContent = '?';
+      console.warn('[profile] Could not fetch user stats', e);
+    }
 
   } catch (e) {
     console.warn('[profile] error', e);
   }
 }
-
 
 // Run on module load only when a user is present
 const _currentUserId = getCurrentUserId();
