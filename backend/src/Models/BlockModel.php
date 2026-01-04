@@ -7,32 +7,29 @@ use PDO;
 
 class BlockModel
 {
-    public function __construct(
-        private Database $db
-    ) {
-    }
+    public function __construct(private Database $db) {}
 
-    public function blockUser(int $blockerId, int $blockedId): ?int
+    public function blockUser(int $blockerId, int $blockedId): ?bool
     {
         try {
             $this->db->query(
-                "INSERT INTO blocks (blocker_id, blocked_id) VALUES (?, ?)",
+                'INSERT OR REPLACE INTO blocks (blocker_id, blocked_id) VALUES (?, ?)',
                 [$blockerId, $blockedId]
             );
-            return (int) $this->db->connection->lastInsertId();
+            return true;
         } catch (\PDOException $e) {
             return null;
         }
     }
 
-    public function unblockUser(int $blockerId, int $blockedId): ?int
+    public function unblockUser(int $blockerId, int $blockedId): ?bool
     {
         try {
-            $stmt = $this->db->query(
-                "DELETE FROM blocks WHERE blocker_id = ? AND blocked_id = ?",
+            $this->db->query(
+                'DELETE FROM blocks WHERE blocker_id = ? AND blocked_id = ?',
                 [$blockerId, $blockedId]
             );
-            return $stmt->rowCount();
+            return true;
         } catch (\PDOException $e) {
             return null;
         }
@@ -42,26 +39,21 @@ class BlockModel
     {
         try {
             $row = $this->db->query(
-                "SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?",
+                'SELECT 1 FROM blocks WHERE blocker_id = ? AND blocked_id = ?',
                 [$blockerId, $blockedId]
             )->fetch(PDO::FETCH_ASSOC);
-
-            if ($row === false || $row === null) {
-                return false;
-            }
-
-            return true;
+            return $row !== false;
         } catch (\PDOException $e) {
             return null;
         }
     }
 
-    public function getBlocksForUser(int $blockerId): ?array
+    public function getBlocksForUser(int $userId): ?array
     {
         try {
             return $this->db->query(
-                "SELECT * FROM blocks WHERE blocker_id = ?",
-                [$blockerId]
+                "SELECT * FROM blocks WHERE blocker_id = ? OR blocked_id = ?",
+                [$userId, $userId]
             )->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             return null;
