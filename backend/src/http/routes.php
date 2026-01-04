@@ -66,8 +66,11 @@ $this->router->patch('/api/messages/{id}', [MessagingController::class, 'editMes
 
 // friendships
 $this->router->get('/api/friends', [FriendshipController::class, 'getFriends']);
+$this->router->get('/api/blocks', [FriendshipController::class, 'getBlocks']);
 $this->router->post('/api/friends/request', [FriendshipController::class, 'sendRequest']);
 $this->router->patch('/api/friends/{id}', [FriendshipController::class, 'updateStatus']);
+$this->router->post('/api/friends/block', [FriendshipController::class, 'blockUser']);
+$this->router->post('/api/friends/unblock', [FriendshipController::class, 'unblockUser']);
 
 // user status
 $this->router->get('/api/status/{id}', [UserStatusController::class, 'getStatus']);

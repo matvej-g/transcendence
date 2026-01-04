@@ -6,20 +6,26 @@ use src\Database;
 use src\http\Request;
 use src\Models\FriendshipModel;
 use src\Models\UserModel;
+use src\Models\BlockModel;
 use src\Validator;
 
 class FriendshipController extends BaseController
 {
     private FriendshipModel $friendships;
     private UserModel $users;
+    private BlockModel $blocks;
 
     public function __construct(Database $db)
     {
         $this->friendships = new FriendshipModel($db);
         $this->users       = new UserModel($db);
+        $this->blocks      = new BlockModel($db);
     }
 
-    // Mirrors MessagingController; replace with real auth later.
+    /*-------------------------------------------------------*/
+    /* replace with correct authentication logic later       */
+    /* gets current id from user and validates it            */
+    /*-------------------------------------------------------*/
     private function getCurrentUserId(Request $request): ?int
     {
         $server = $request->server;
@@ -39,13 +45,19 @@ class FriendshipController extends BaseController
         return null;
     }
 
+    /*-------------------------------------------------------*/
+    /* gets users current id                                 */
+    /* gets all friend requests statuses for that user       */
+    /*-------------------------------------------------------*/
     public function getFriends(Request $request, $parameters)
     {
+        // get current userID
         $userId = $this->getCurrentUserId($request);
         if ($userId === null) {
             return $this->jsonBadRequest('Missing or invalid current user id');
         }
 
+        // get all friendships for that user
         $rows = $this->friendships->getFriendshipsForUser($userId);
         if ($rows === null) {
             return $this->jsonServerError();
@@ -53,22 +65,36 @@ class FriendshipController extends BaseController
 
         $result = [];
         foreach ($rows as $row) {
-            $friendId = (int) $row['user_id'] === $userId
-                ? (int) $row['friend_id']
-                : (int) $row['user_id'];
+            if ((int) $row['user_id'] === $userId) {
+                $friendId = (int) $row['friend_id'];
+            } else {
+                $friendId = (int) $row['user_id'];
+            }
+
+            $senderId   = (int)$row['user_id'];
+            $receiverId = (int)$row['friend_id'];
+
+            $user = $this->users->getUserById($userId);
+            if ($user === null) {
+                return $this->jsonServerError();
+            }
+            if (!$user) {
+                continue;
+            }
 
             $friend = $this->users->getUserById($friendId);
             if ($friend === null) {
                 return $this->jsonServerError();
             }
             if (!$friend) {
-                // orphaned friendship row, skip
                 continue;
             }
 
             $result[] = [
-                'id'     => (int) $row['id'],
+                'friendshipId'     => (int) $row['id'],
                 'friend' => user_to_public($friend),
+                'senderId' => $senderId,
+                'receiverId' => $receiverId,
                 'status' => $row['status'],
             ];
         }
@@ -78,75 +104,273 @@ class FriendshipController extends BaseController
 
     public function sendRequest(Request $request, $parameters)
     {
+        // validate current user id
         $userId = $this->getCurrentUserId($request);
         if ($userId === null) {
             return $this->jsonBadRequest('Missing or invalid current user id');
         }
 
+        // retrieve friend id and validate
         $friendIdRaw = $request->postParams['friendId'] ?? null;
         if (!Validator::validateId($friendIdRaw)) {
             return $this->jsonBadRequest('Invalid friend id');
         }
         $friendId = (int) $friendIdRaw;
 
+        // check if the same id
         if ($friendId === $userId) {
             return $this->jsonBadRequest('Cannot befriend yourself');
         }
 
+        // retrieve user based on friendId
         $friend = $this->users->getUserById($friendId);
         if ($friend === null) {
+            var_dump('server error 0,5');
             return $this->jsonServerError();
         }
         if (!$friend) {
             return $this->jsonNotFound('Friend user not found');
         }
 
-        $id = $this->friendships->sendFriendRequest($userId, $friendId);
-        if ($id === null) {
-            // Could be unique constraint violation
-            return $this->jsonConflict('Friend request already exists or invalid');
+        // retrieve friendship status
+        $existing = $this->friendships->getFriendshipBetween($userId, $friendId);
+        if ($existing === null) {
+            var_dump('server error 0');
+            return $this->jsonServerError();
+        }
+        if ($existing) {
+            $status = $existing['status'];
+            // if there is a reverse pending request accept it
+            if ($status === 'pending' && $friendId === (int)$existing['user_id'] && $userId === (int)$existing['friend_id']) {
+                $accepted = $this->friendships->updateStatus((int)$existing['id'], 'accepted');
+                if ($accepted === null) {
+                    var_dump('server error 1');
+                    return $this->jsonServerError();
+                }
+                return $this->jsonCreated(['id' => (int)$accepted['id']]);
+            } else if ($status === 'pending') {
+                return $this->jsonConflict('Your already have a pending request');
+            } else if ($status === 'accepted') {
+                return $this->jsonConflict('Already Friends');
+            } else if ($status === 'blocked') {
+                $blockedByMe   = $this->blocks->isBlocked($userId, $friendId);
+                $blockedByThem = $this->blocks->isBlocked($friendId, $userId);
+                if ($blockedByMe === null || $blockedByThem === null) {
+                    var_dump('server error 2');
+                    return $this->jsonServerError();
+                }
+                if ($blockedByThem) {
+                    return $this->jsonConflict('You are blocked');
+                }
+                if ($blockedByMe) {
+                    $unblocked = $this->blocks->unblockUser($userId, $friendId);
+                    if ($unblocked === null) {
+                        var_dump('server error 3');
+                        return $this->jsonServerError();
+                    }
+                    $pending = $this->friendships->setPendingRequest((int)$existing['id'], $userId, $friendId);
+                    if ($pending === null) {
+                        var_dump('server error 4');
+                        return $this->jsonServerError();
+                    }
+                    return $this->jsonCreated(['id' => (int)$pending['id']]);
+                }
+            }
         }
 
-        return $this->jsonCreated(['id' => (int) $id]);
+        $id = $this->friendships->createRelation($userId, $friendId, 'pending');
+        if ($id === null) {
+            var_dump('server error 5');
+            return $this->jsonServerError();
+        }
+
+        return $this->jsonCreated(['id' => (int)$id]);
     }
 
+    // what about updating status with self?
     public function updateStatus(Request $request, $parameters)
     {
+        // get current user id
         $userId = $this->getCurrentUserId($request);
         if ($userId === null) {
             return $this->jsonBadRequest('Missing or invalid current user id');
         }
 
-        $id = $parameters['id'] ?? null;
-        if (!Validator::validateId($id)) {
+        // retrieve friendship id
+        $idParam = $parameters['id'] ?? null;
+        if (!Validator::validateId($idParam)) {
             return $this->jsonBadRequest('Invalid friendship id');
         }
-        $id = (int) $id;
+        $id = (int)$idParam;
 
+        // retrieve status of update
+        $status = $request->postParams['status'] ?? null;
+        $allowed = ['pending', 'accepted'];
+        if (!is_string($status) || !in_array($status, $allowed, true)) {
+            return $this->jsonBadRequest('Invalid status');
+        }
+
+        // retrieve exisiting friendship
         $existing = $this->friendships->getById($id);
         if ($existing === null) {
+            var_dump('server error 6');
             return $this->jsonServerError();
         }
         if (!$existing) {
             return $this->jsonNotFound('Friendship not found');
         }
 
-        // Ensure current user is part of this friendship
-        if ((int) $existing['user_id'] !== $userId && (int) $existing['friend_id'] !== $userId) {
+        // check if user is part of friendship
+        if ((int)$existing['user_id'] !== $userId && (int)$existing['friend_id'] !== $userId) {
             return $this->jsonUnauthorized('Not a participant of this friendship');
         }
-
-        $status = $request->postParams['status'] ?? null;
-        $allowed = ['pending', 'accepted', 'blocked'];
-        if (!is_string($status) || !in_array($status, $allowed, true)) {
-            return $this->jsonBadRequest('Invalid status');
-        }
-
+        
+        // update status
         $updated = $this->friendships->updateStatus($id, $status);
         if ($updated === null) {
+            var_dump('server error 7');
             return $this->jsonServerError();
         }
 
         return $this->jsonSuccess($updated);
+    }
+
+    public function blockUser(Request $request, $parameters)
+    {
+        // get blocker Id
+        $blockerId = $this->getCurrentUserId($request);
+        if ($blockerId === null) {
+            return $this->jsonBadRequest('Missing or invalid current user id');
+        }
+
+        // get blocked Id
+        $blockedIdRaw = $request->postParams['blockedId'] ?? null;
+        if (!Validator::validateId($blockedIdRaw)) {
+            return $this->jsonBadRequest('Invalid blockedId');
+        }
+        $blockedId = (int)$blockedIdRaw;
+
+        // check if same id
+        if ($blockedId === $blockerId) {
+            return $this->jsonBadRequest('Cannot block yourself');
+        }
+
+        // check if already blocked
+        $isBlocked = $this->blocks->isBlocked($blockerId, $blockedId);
+        if ($isBlocked) {
+            return $this->jsonBadRequest('User already blocked');
+        }
+
+        // block user in block table
+        $blockedRelation = $this->blocks->blockUser($blockerId, $blockedId);
+        if ($blockedRelation === null) {
+            return $this->jsonServerError();
+        } else {
+            // block user in friendships table
+            $friendshipRelation = $this->friendships->getFriendshipBetween($blockerId, $blockedId);
+            if ($friendshipRelation === false) {
+                $this->friendships->createRelation($blockerId, $blockedId, 'blocked');
+            } else if ($friendshipRelation === null) {
+                return $this->jsonServerError();
+            } else {
+                $frndsTblBlc = $this->friendships->updateStatus($friendshipRelation['id'], 'blocked');
+                if ($frndsTblBlc === null) {
+                    return $this->jsonServerError();
+                }
+            }
+        }
+        return $this->jsonCreated(['id' => (int)$blockedRelation]);
+    }
+
+    public function unblockUser(Request $request, $parameters)
+    {
+        $blockerId = $this->getCurrentUserId($request);
+        if ($blockerId === null) {
+            return $this->jsonBadRequest('Missing or invalid current user id');
+        }
+
+        // get blocked Id
+        $blockedIdRaw = $request->postParams['blockedId'] ?? null;
+        if (!Validator::validateId($blockedIdRaw)) {
+            return $this->jsonBadRequest('Invalid blockedId');
+        }
+        $blockedId = (int)$blockedIdRaw;
+
+        // check if same id
+        if ($blockedId === $blockerId) {
+            return $this->jsonBadRequest('Cannot unblock yourself');
+        }
+
+        // check if actually blocked
+        $isBlocked = $this->blocks->isBlocked($blockerId, $blockedId);
+        if (!$isBlocked) {
+            var_dump('error 1');
+            return $this->jsonBadRequest('User is not blocked');
+        }
+
+        $blockedRelation = $this->blocks->unblockUser($blockerId, $blockedId);
+        if ($blockedRelation === null) {
+            var_dump('error 2');
+            return $this->jsonServerError();
+        } else {
+            // unblock user in friendships table
+            $friendshipRelation = $this->friendships->getFriendshipBetween($blockerId, $blockedId);
+            if ($friendshipRelation === false) {
+                return $this->jsonBadRequest('User is not blocked');
+            } else if ($friendshipRelation === null) {
+                var_dump('error 3');
+                return $this->jsonServerError();
+            } else {
+                var_dump($friendshipRelation['id']);
+                $frndsTblUblc = $this->friendships->unblockUserFriendships($blockerId, $blockedId);
+                var_dump($frndsTblUblc);
+                if ($frndsTblUblc === null) {
+                    var_dump('error 4');
+                    return $this->jsonServerError();
+                }
+            }
+        }
+        return $this->jsonCreated(['id' => (int)$blockedRelation]);
+    }
+
+    public function getBlocks(Request $request, $parameters)
+    {
+        $blockerId = $this->getCurrentUserId($request);
+        if ($blockerId === null) {
+            return $this->jsonBadRequest('Missing or invalid current user id');
+        }
+
+        $rows = $this->blocks->getBlocksForUser($blockerId);
+        if ($rows === null) {
+            return $this->jsonServerError();
+        }
+
+        $result = [];
+        foreach ($rows as $row) {
+
+            $blocked = $this->users->getUserById($row['blocked_id']);
+            if ($blocked === null) {
+                return $this->jsonServerError();
+            }
+            if (!$blocked) {
+                continue;
+            }
+
+            $blocker = $this->users->getUserById($row['blocker_id']);
+            if ($blocker === null) {
+                return $this->jsonServerError();
+            }
+            if (!$blocker) {
+                continue;
+            }
+
+            $result[] = [
+                'id'     => (int) $row['id'],
+                'blocker' => user_to_public($blocker),
+                'blocked' => user_to_public($blocked),
+            ];
+        }
+
+        return $this->jsonSuccess($result);
     }
 }
