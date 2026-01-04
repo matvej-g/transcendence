@@ -32,7 +32,7 @@ class Validator
 		if (!is_string($value)) {
 			return false;
 		}
-
+		
 		return ctype_digit($value) && (int)$value > 0;
 	}
 
@@ -87,6 +87,10 @@ class Validator
 	{
 		$errors = [];
 
+		// keine leerzeichen
+		// Problematische Sonderzeichen in url
+		// umlaute 
+		// konvertieren oder error
 		if (!$userName || !$email || !$password) {
 			$errors['Input'] = 'missing';
 		}

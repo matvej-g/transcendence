@@ -112,6 +112,8 @@ class UserController extends BaseController
                 'games_played'   => 0,
                 'goals_scored'   => 0,
                 'goals_conceded' => 0,
+                'tournaments_played' => 0,
+                'tournaments_won' => 0,
                 'last_game_at'   => null,
             ];
         }
