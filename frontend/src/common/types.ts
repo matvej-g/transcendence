@@ -21,13 +21,16 @@ export interface UserDataPrivate {
 
 // Type for a friend request item
 export type FriendRequest = {
-	id: number;
 	friend: {
 		id: number;
 		username: string;
 		email?: string;
-		avatarUrl?: string;
+		created_at?: string;
+		avatar_filename?: string;
 		[key: string]: any;
 	};
+	friendshipId: number;
+	receiverId: number;
+	senderId: number;
 	status: string;
 };

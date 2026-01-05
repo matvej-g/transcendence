@@ -30,7 +30,9 @@ function createRequestItem(request: FriendRequest) {
 	acceptBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
-			await updateFriendStatus(String(request.id), Number(userId), { status: 'accepted' });
+			console.log('this request contains: ', request);
+			console.log('id: ', request.friendshipId);
+			await updateFriendStatus(String(request.friendshipId), Number(userId), { status: 'accepted' });
 			await reloadLists();
 		} catch (e) {
 			alert('Failed to accept request');
@@ -43,7 +45,7 @@ function createRequestItem(request: FriendRequest) {
 	refuseBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
-			await updateFriendStatus(String(request.id), Number(userId), { status: 'blocked' });
+			await updateFriendStatus(String(request.friendshipId), Number(userId), { status: 'blocked' });
 			await reloadLists();
 		} catch (e) {
 			alert('Failed to refuse request');

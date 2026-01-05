@@ -23,7 +23,7 @@ function createFriendItem(friend: FriendRequest) {
 	deleteBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
-			await updateFriendStatus(String(friend.id), Number(userId), { status: 'blocked' });
+			await updateFriendStatus(String(friend.friendshipId), Number(userId), { status: 'blocked' });
 			await populateFriendsList();
 		} catch (e) {
 			alert('Failed to delete friend');
