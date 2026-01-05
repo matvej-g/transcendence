@@ -1,49 +1,98 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify 2FA</title>
-    <!-- Tailwind CDN (dev convenience) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="min-h-screen grid place-items-center bg-white relative">
-    
-    <div class="w-[320px] bg-white border border-gray-200 rounded-xl shadow-sm p-4 space-y-3">
-      <h1 class="text-xl font-semibold">Verify 2FA Code</h1>
-      <p class="text-sm text-gray-600">Enter the 6-digit code sent to your email</p>
-
-      <form id="verify-2fa-form" class="space-y-3">
-        <label for="code" class="block text-xs text-gray-600">2FA Code</label>
-        <input 
-          id="code" 
-          type="text" 
-          maxlength="6"
-          placeholder="000000"
-          autocomplete="off"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md text-center text-2xl tracking-widest font-mono" 
-          required
-        />
-
-        <button 
-          type="submit"
-          id="verifyBtn"
-          class="w-full mt-1 px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          Verify Code
-        </button>
-
-        <div id="error-message" class="hidden text-red-600 text-sm text-center"></div>
-        <div id="success-message" class="hidden text-green-600 text-sm text-center"></div>
-      </form>
-
-      <div class="text-xs text-gray-500 text-center">
-        Didn't receive the code? 
-        <button id="resendBtn" class="text-blue-500 hover:underline">Resend</button>
-      </div>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        p {
+            color: #666;
+            margin: 0 0 20px 0;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .error {
+            background-color: #fee;
+            color: #c00;
+            border: 1px solid #fcc;
+        }
+        .success {
+            background-color: #efe;
+            color: #060;
+            border: 1px solid #cfc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Verify 2FA Code</h1>
+        <p>Enter the 6-digit code sent to your email</p>
+        
+        <form id="verify-2fa-form">
+            <input 
+                id="code" 
+                type="text" 
+                maxlength="6" 
+                placeholder="000000"
+                required
+                autofocus
+            />
+            <button type="submit">Verify</button>
+        </form>
+        
+        <div id="error-message" class="message error"></div>
+        <div id="success-message" class="message success"></div>
     </div>
 
-    <!-- Load the verification logic -->
     <script type="module" src="/dist/components/auth/verify2FA.js"></script>
-  </body>
+</body>
 </html>
