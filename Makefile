@@ -73,4 +73,4 @@ help:
 	@echo "  clean-db      - Remove SQLite DB, re-init schema, rebuild and restart backend"
 	@echo "  help          - Show this help"
 
-.PHONY: all up build down clean clean_cache help re frontend nginx php-backend re-frontend re-nginx re-php-backend
+.PHONY: all up build down clean clean_cache help re frontend nginx php-backend re-frontend re-nginx re-php-backend clean-conversations clean-db

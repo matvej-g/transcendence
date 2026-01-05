@@ -1,6 +1,5 @@
-import { clearCurrentUserId} from '../components/auth/authUtils.js';
-import { setUserOffline } from '../components/auth/api.js';
-import { onFriendsSectionShown } from '../components/friends/friendsContent.js';
+import { clearCurrentUserId, setUserOffline, clearCurrentUsername} from '../components/auth/authUtils.js';
+import { onFriendsSectionShown} from '../components/friends/friendsContent.js'
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
@@ -70,6 +69,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
   // mark user offline on server (best-effort)
   setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
   clearCurrentUserId();
+  clearCurrentUsername();
   window.location.hash = '#';
 });
 

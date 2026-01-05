@@ -112,6 +112,8 @@ class UserController extends BaseController
                 'games_played'   => 0,
                 'goals_scored'   => 0,
                 'goals_conceded' => 0,
+                'tournaments_played' => 0,
+                'tournaments_won' => 0,
                 'last_game_at'   => null,
             ];
         }
@@ -257,7 +259,7 @@ class UserController extends BaseController
         }
         $ext = $mime === 'image/png' ? 'png' : 'jpg';
         $filename = bin2hex(random_bytes(16)) . ".$ext";
-        $targetDir = '/var/www/html/uploads/avatars/'; 
+        $targetDir = '/var/www/html/uploads/avatars/';
         if (!is_dir($targetDir)) {
             mkdir($targetDir, 0755, true);
         }
@@ -266,7 +268,7 @@ class UserController extends BaseController
             return $this->jsonServerError();
         }
         $user = $this->users->getUserById((int)$id);
-        if ($user && $user['avatar_filename'] !== 'default.png') {
+        if ($user && $user['avatar_filename'] !== 'default.jpg') {
             @unlink($targetDir . $user['avatar_filename']);
         }
         $updated = $this->users->updateAvatarFilename((int)$id, $filename);
@@ -286,11 +288,11 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
-        $targetDir = '/var/www/html/uploads/avatars/'; 
-        if ($user['avatar_filename'] !== 'default.png') {
+        $targetDir = '/var/www/html/uploads/avatars/';
+        if ($user['avatar_filename'] !== 'default.jpg') {
             @unlink($targetDir . $user['avatar_filename']);
         }
-        $updated = $this->users->updateAvatarFilename((int)$id, 'default.png');
+        $updated = $this->users->updateAvatarFilename((int)$id, 'default.jpg');
         if (!$updated) {
             return $this->jsonServerError();
         }

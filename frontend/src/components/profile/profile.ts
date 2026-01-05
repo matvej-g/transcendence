@@ -1,4 +1,3 @@
-
 // initProfile is declared with async, meaning it runs asynchronously and automatically returns
 // a Promise<void>. The function body can use await to pause until async work completes.
 
@@ -32,6 +31,20 @@ async function initProfile(): Promise<void> {
 
     // insert username
     document.getElementById('username')!.textContent = `${username}`;
+
+    // insert avatar
+    const avatarImg = document.getElementById('profile-avatar') as HTMLImageElement | null;
+    if (avatarImg) {
+      const avatarFilename = data?.avatar_filename;
+      console.log('avater filename:', avatarFilename);
+
+      if (avatarFilename) {
+        avatarImg.src = `/uploads/avatars/${avatarFilename}`;
+      } else {
+        console.error('avater filename not found');
+        return;
+      }
+    }
 
     // insert stats...
     try {

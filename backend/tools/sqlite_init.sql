@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
 	username TEXT NOT NULL UNIQUE,
 	email TEXT NOT NULL UNIQUE,
 	password_hash TEXT NOT NULL,
-    avatar_filename TEXT NOT NULL DEFAULT 'default.png',
+    avatar_filename TEXT NOT NULL DEFAULT 'default.jpg',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -14,16 +14,6 @@ VALUES ('David Huss', 'dhuss42@heilbron.de', 123);
 
 INSERT INTO users(username, email, password_hash)
 VALUES ('test', 'test42@test.de', 234);
-
--- User relationships (friends)
-CREATE TABLE IF NOT EXISTS friendships (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-	friend_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-	status TEXT NOT NULL CHECK (status IN ('pending','accepted','blocked')),
-	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-	UNIQUE(user_id, friend_id)
-);
 
 -- User presence / status
 CREATE TABLE IF NOT EXISTS user_status (
@@ -99,15 +89,6 @@ CREATE TABLE IF NOT EXISTS message_read_states (
 	UNIQUE(message_id, user_id)
 );
 
--- Block list
-CREATE TABLE IF NOT EXISTS blocks (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	blocker_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-	blocked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-	UNIQUE(blocker_id, blocked_id)
-);
-
 -- Game invites for live chat
 CREATE TABLE IF NOT EXISTS game_invites (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -131,4 +112,23 @@ CREATE TABLE IF NOT EXISTS user_stats (
 	tournaments_played INTEGER NOT NULL DEFAULT 0,
 	tournaments_won INTEGER NOT NULL DEFAULT 0,
 	last_game_at DATETIME
+);
+
+-- Friendships
+CREATE TABLE IF NOT EXISTS friendships (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	friend_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	status TEXT NOT NULL CHECK (status IN ('pending','accepted','blocked')),
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE(user_id, friend_id)
+);
+
+-- Blocks
+CREATE TABLE IF NOT EXISTS blocks (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	blocker_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	blocked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE(blocker_id, blocked_id)
 );
