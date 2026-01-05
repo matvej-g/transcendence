@@ -55,7 +55,7 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
       const currentUserId = getCurrentUserId();
       const currentUser = await getUserByUserId(currentUserId);
       const currentNickname = currentUser.username;
-      const foundNickname = user.userName || user.username || user.name || username;
+      const foundNickname = user.username || username;
       if (
         (currentUserId && (user.id === currentUserId || user.userId === currentUserId)) ||
         (currentNickname && foundNickname && currentNickname === foundNickname)
@@ -67,11 +67,8 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
       }
       searchResultNickname.textContent = foundNickname;
       searchInput.value = "";
-      if (user.avatarUrl && searchResultAvatar) {
-        searchResultAvatar.src = user.avatarUrl;
-      } else {
-        searchResultAvatar.src = 'profile_avatar.jpg';
-      }
+      if (user.avatar_filename && searchResultAvatar)
+        searchResultAvatar.src = `/uploads/avatars/${user.avatar_filename}`;
       searchResultUser.classList.remove('hidden');
       addFriendBtn.classList.remove('hidden');
     } catch (err) {

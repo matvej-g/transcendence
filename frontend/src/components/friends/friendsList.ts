@@ -10,7 +10,7 @@ function createFriendItem(friend: FriendRequest) {
 
 	const img = document.createElement('img');
 	img.className = 'avatar text-white h-8 w-auto';
-	img.src = friend.friend.avatarUrl || 'profile_avatar.jpg';
+	img.src = `/uploads/avatars/${friend.friend.avatar_filename}`;
 	img.alt = 'Avatar image';
 
 	const h2 = document.createElement('h2');

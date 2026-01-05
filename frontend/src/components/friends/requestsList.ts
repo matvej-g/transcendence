@@ -12,7 +12,7 @@ function createRequestItem(request: FriendRequest) {
 
 	const img = document.createElement('img');
 	img.className = 'avatar text-white h-8 w-auto';
-	img.src = request.friend.avatarUrl || 'profile_avatar.jpg';
+	img.src = `/uploads/avatars/${request.friend.avatar_filename}`;
 	img.alt = 'Avatar image';
 
 	const h2 = document.createElement('h2');
