@@ -3,7 +3,8 @@
 namespace src\Controllers;
 
 use src\Database;
-use src\Models\UserModels;
+use src\Models\UserModel;
+use src\http\Request;
 use src\http\Response;
 use src\http\HttpStatusCode;
 
@@ -13,10 +14,10 @@ class AuthController
 
     public function __construct(Database $db)
     {
-        $this->userModel = new UserModels($db);
+        $this->userModel = new UserModel($db);
     }
 
-    public function sendTwoFactorCode()
+    public function sendTwoFactorCode(Request $request, $parameters)
     {
         // require a valid JWT
         $token = getJWTFromRequest();
@@ -60,7 +61,7 @@ class AuthController
         );
     }
 
-    public function verifyTwoFactorCode()
+    public function verifyTwoFactorCode(Request $request, $parameters)
     {
         // require a valid JWT
         $token = getJWTFromRequest();
