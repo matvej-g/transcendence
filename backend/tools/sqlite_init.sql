@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS users (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	username TEXT NOT NULL UNIQUE,
+	displayname TEXT NOT NULL UNIQUE,
 	email TEXT NOT NULL UNIQUE,
 	password_hash TEXT NOT NULL,
     avatar_filename TEXT NOT NULL DEFAULT 'default.jpg',
@@ -9,11 +10,11 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- remove these users later on because of password hash
-INSERT INTO users(username, email, password_hash)
-VALUES ('David Huss', 'dhuss42@heilbron.de', 123);
+INSERT INTO users(username, displayname, email, password_hash)
+VALUES ('david', 'David', 'dhuss42@heilbron.de', 123);
 
-INSERT INTO users(username, email, password_hash)
-VALUES ('test', 'test42@test.de', 234);
+INSERT INTO users(username, displayname, email, password_hash)
+VALUES ('test', 'TEST', 'test42@test.de', 234);
 
 -- User presence / status
 CREATE TABLE IF NOT EXISTS user_status (
