@@ -10,6 +10,8 @@ export async function fetchUserWinsAndLosses() {
   const data = stats.data || stats;
   return {
     wins: data.wins ?? 0,
-    losses: data.losses ?? 0
+    losses: data.losses ?? 0,
+    tournaments_played: data.tournaments_played ?? 0,
+	  tournaments_won: data.tournaments_won ?? 0
   };
 }
