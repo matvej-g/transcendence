@@ -13,17 +13,19 @@ function sendTwoFactorEmail($email, $code) {
 	$mail = new PHPMailer(true);
     
     try {
-        // Server settings
+        // Server settings from environment
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'mertcode55@gmail.com'; // TODO: Replace with your email
-        $mail->Password = 'hgzl wozx jhgc msnu';     // TODO: Replace with your app password
+        $mail->Username = getenv('SMTP_USERNAME') ?: 'mertcode55@gmail.com';
+        $mail->Password = getenv('SMTP_PASSWORD') ?: 'hgzl wozx jhgc msnu';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
+        $mail->Port = (int)(getenv('SMTP_PORT') ?: 587);
 
         // Recipients
-        $mail->setFrom('mertcode55@gmail.com', 'Transcendence 2FA'); // TODO: Replace
+        $fromEmail = getenv('SMTP_FROM_EMAIL') ?: 'mertcode55@gmail.com';
+        $fromName = getenv('SMTP_FROM_NAME') ?: 'Transcendence 2FA';
+        $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($email);
 
         // Content
