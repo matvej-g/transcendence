@@ -1,5 +1,5 @@
 <?php
-namespace App;
+namespace Pong;
 
 class GameEngine {
 	private string $gameID;

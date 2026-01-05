@@ -11,6 +11,7 @@ export class NetworkManager {
 	private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 	private keyupHandler: ((e: KeyboardEvent) => void) | null = null;
 	private gameMode: 'local' | 'remote' | null = null;
+	private userId: number | null = null;
 
 	constructor(canvas: GameCanvas) {
 		this.canvas = canvas;
@@ -40,9 +41,10 @@ export class NetworkManager {
 		};
 	}
 
-	public connect(url: string, mode: 'local' | 'remote'): void {
+	public connect(url: string, mode: 'local' | 'remote', userId: number): void {
 		console.log(`Connecting to ${url}...`);
 		this.gameMode = mode;
+		this.userId = userId;
 		if (mode == 'local') {
 			this.canvas.show();
 		} else if (mode == 'remote') {
@@ -57,6 +59,16 @@ export class NetworkManager {
 
 	private onConnected(): void {
 		console.log('Connected to server!');
+		
+		// send authenticate message to server
+		this.send({
+			type: 'authenticate',
+			data: { 
+				userID: this.userId
+			}
+		});
+		
+		// Then join the game
 		this.send({
 			type: 'join',
 			data: { gameMode: this.gameMode }

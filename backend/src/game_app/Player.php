@@ -1,5 +1,5 @@
 <?php
-namespace App;
+namespace Pong;
 
 use Ratchet\ConnectionInterface;
 
@@ -7,13 +7,12 @@ class Player {
     public ConnectionInterface $conn;
     public ?string $paddle = null;
     public ?string $gameID = null;
-    public string $username = '';
-    public string $userID;
+    public ?string $username = null;
+    public ?string $userID = null;
     public int $score = 0;
     
     public function __construct(ConnectionInterface $conn) {
         $this->conn = $conn;
-        $this->userID = uniqid('player_');
     }
     
     public function send(array $data): void {

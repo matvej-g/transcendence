@@ -48,6 +48,8 @@ services:
       dockerfile: websocket/Dockerfile
     ports:
       - "8081:8080"
+    volumes:
+      - sqlite_data:/var/www/html/database
     networks:
       - transcendence
   nginx:

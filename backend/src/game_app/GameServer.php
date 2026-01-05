@@ -1,8 +1,13 @@
 <?php
-namespace App;
+namespace Pong;
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
+//Database Models
+use src\Database;
+use src\Models\UserModel;
+use src\Models\MatchesModel;
+
 
 class GameServer implements MessageComponentInterface {
     protected $players;
@@ -10,9 +15,17 @@ class GameServer implements MessageComponentInterface {
     private array $games = [];
     private $loop;
 
+    private Database $db;
+    private UserModel $userModel;
+    private MatchesModel $matchesModel;
+
     public function __construct($loop = null) {
         $this->players = new \SplObjectStorage;
         $this->loop = $loop;
+
+        $this->db = new Database('sqlite:/var/www/html/database/transcendence.db');
+        $this->userModel = new UserModel($this->db);
+        $this->matchesModel = new MatchesModel($this->db);
         echo "GameServer initialized\n";
 
         //start game loop at ~60 FPS (every 16ms)
@@ -45,6 +58,22 @@ class GameServer implements MessageComponentInterface {
         $data = json_decode($msg, true);
         //echo "Message from {$player->userID}: {$msg}\n";
 
+        if ($data['type'] === 'authenticate') {
+            $userID = $data['data']['userID'] ?? null;
+            echo "DEBUG: Received authenticate request with userID: " . var_export($userID, true) . "\n";
+            if ($userID) {
+                $user = $this->userModel->getUserById($userID);
+                echo "DEBUG: getUserById returned: " . var_export($user, true) . "\n";
+                if ($user) {
+                    $player->userID = $user['id'];
+                    $player->username = $user['username'];
+                } else {
+                    echo "DEBUG: User not found in database for userID={$userID}\n";
+                }
+            } else {
+            echo "DEBUG: No userID provided in authenticate message\n";
+            }
+        }
         //handle join players
         if ($data['type'] === 'join') {
             $gameMode = $data['data']['gameMode'] ?? 'remote';
@@ -119,6 +148,10 @@ class GameServer implements MessageComponentInterface {
                         'winner' => $opponent->paddle
                     ]
                 ]);
+
+                if ($game['mode'] === 'remote') {
+                    $this->matchesModel->endMatch($gameID, $opponent->userID);
+                }
                 $opponent->gameID = null;
                 $opponent->paddle = null;
             }
@@ -138,14 +171,21 @@ class GameServer implements MessageComponentInterface {
             $opponent = array_shift($this->waitingPlayers);
             echo "Match found! {$player->userID} vs {$opponent->userID}\n";
 
-            $gameID = uniqid('game_');
+            // Create match in database and use matchId as gameID
+            $matchId = $this->matchesModel->createMatch($player->userID, $opponent->userID);
+            if (!$matchId) {
+                echo "ERROR: Failed to create match in database!\n";
+                return;
+            }
+            
+            $gameID = $matchId;
             $player->gameID = $gameID;
             $player->paddle = 'left';
 
             $opponent->gameID = $gameID;
             $opponent->paddle = 'right';
 
-            echo "GameID created: { $gameID }, playergameID: { $player->gameID }, oppennent gameID { $opponent->gameID }.\n";
+            echo "Match created in DB with ID: {$matchId}\n";
 
             $player->send([
                 'type' => 'matchFound',
@@ -169,6 +209,7 @@ class GameServer implements MessageComponentInterface {
                 'player1' => $player,
                 'player2' => $opponent,
                 'mode' => 'remote',
+                'matchId' => $matchId,
                 'started' => time(),
                 'engine' => $engine,
                 'lastLeftScore' => 0,
@@ -211,7 +252,7 @@ class GameServer implements MessageComponentInterface {
         // if (count($this->games) > 0) {
         //     echo "Tick: " . count($this->games) . " active games\n";
         // }
-        foreach ($this->games as $gameID => $game) {
+        foreach ($this->games as $gameID => $_) {
             $this->updateGame($gameID);
         }
     }
@@ -220,8 +261,6 @@ class GameServer implements MessageComponentInterface {
         if (!isset($this->games[$gameID])) return;
 
         $game = $this->games[$gameID];
-        $lastLeftScore = $game['lastLeftScore'];
-        $lastRightScore = $game['lastRightScore'];
         $newState = $game['engine']->update();
         //message for Paddle and Ball positions
         $message = [
@@ -239,7 +278,12 @@ class GameServer implements MessageComponentInterface {
             $newState['rightPaddle']['score'] != $game['lastRightScore']) {
                 $message['data']['leftScore'] = $newState['leftPaddle']['score'];
                 $message['data']['rightScore'] = $newState['rightPaddle']['score'];
-
+                if ($game['mode'] === 'remote') {
+                    $this->matchesModel->updateScore(
+                        $gameID,
+                        $newState['leftPaddle']['score'],
+                        $newState['rightPaddle']['score']);
+                }
                 $this->games[$gameID]['lastLeftScore'] = $newState['leftPaddle']['score'];
                 $this->games[$gameID]['lastRightScore'] = $newState['rightPaddle']['score'];
             }
@@ -263,6 +307,10 @@ class GameServer implements MessageComponentInterface {
             if ($game['mode'] === 'local') {
                 $game['player1']->send($msgGameOver);
             } else {
+                $winnerId = ($newState['winner'] === 'left')
+                    ? $game['player1']->userID
+                    : $game['player2']->userID;
+                $this->matchesModel->endMatch($gameID, $winnerId);
                 $game['player1']->send($msgGameOver);
                 $game['player2']->send($msgGameOver);
             }
