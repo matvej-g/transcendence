@@ -56,7 +56,7 @@ class Validator
 
 	public static function validateTournamentName($value): bool
 	{
-		return self::validateUserName($value);
+		return self::validateString($value, 1, 50);
 	}
 
 	public static function validateMessageText($value): bool
