@@ -2,8 +2,10 @@ import { getFriends, updateFriendStatus } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type { FriendRequest } from '../../common/types.js';
 
-// Helper to create a friend list item with delete button
-function createFriendItem(friend: FriendRequest) {
+// Helper to create a friend list item with block button
+import { getUserStatus } from './api.js';
+
+async function createFriendItem(friend: FriendRequest) {
 	const li = document.createElement('li');
 	li.className = 'friend-item my-3 flex flex-wrap items-center gap-5';
 	li.dataset.nickname = friend.friend.username || '';
@@ -17,22 +19,40 @@ function createFriendItem(friend: FriendRequest) {
 	h2.className = 'text-emerald-400';
 	h2.textContent = friend.friend.username || '';
 
-	const deleteBtn = document.createElement('button');
-	deleteBtn.className = 'delete-friend rounded bg-red-600 hover:bg-red-700 px-3';
-	deleteBtn.textContent = 'delete';
-	deleteBtn.onclick = async () => {
+	// Online status span
+	const statusSpan = document.createElement('span');
+	statusSpan.className = 'online-status ml-2';
+	try {
+		const status = await getUserStatus(String(friend.friend.id));
+		if (status && status.online) {
+			statusSpan.textContent = 'online';
+			statusSpan.classList.add('text-green-600');
+		} else {
+			statusSpan.textContent = 'offline';
+			statusSpan.classList.add('text-gray-400');
+		}
+	} catch (e) {
+		statusSpan.textContent = 'unknown';
+		statusSpan.classList.add('text-gray-400');
+	}
+
+	const blockBtn = document.createElement('button');
+	blockBtn.className = 'block-friend rounded bg-red-600 hover:bg-red-700 px-3';
+	blockBtn.textContent = 'block user';
+	blockBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
 			await updateFriendStatus(String(friend.friendshipId), Number(userId), { status: 'blocked' });
 			await populateFriendsList();
 		} catch (e) {
-			alert('Failed to delete friend');
+			alert('Failed to block friend');
 		}
 	};
 
 	li.appendChild(img);
 	li.appendChild(h2);
-	li.appendChild(deleteBtn);
+	li.appendChild(statusSpan);
+	li.appendChild(blockBtn);
 	return li;
 }
 
@@ -51,7 +71,7 @@ export async function populateFriendsList() {
 		// Only show friends where status is 'accepted'
 		const accepted = friends.filter((f: FriendRequest) => f.status === 'accepted');
 		for (const fr of accepted) {
-			ul.appendChild(createFriendItem(fr));
+			createFriendItem(fr).then(item => ul.appendChild(item));
 		}
 		if (accepted.length === 0) {
 			const li = document.createElement('li');
