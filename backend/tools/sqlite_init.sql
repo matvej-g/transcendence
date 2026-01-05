@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
 	username TEXT NOT NULL UNIQUE,
 	email TEXT NOT NULL UNIQUE,
 	password_hash TEXT NOT NULL,
-    avatar_filename TEXT NOT NULL DEFAULT 'default.png',
+    avatar_filename TEXT NOT NULL DEFAULT 'default.jpg',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
