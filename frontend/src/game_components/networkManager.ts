@@ -64,7 +64,7 @@ export class NetworkManager {
 		this.send({
 			type: 'authenticate',
 			data: { 
-				userId: this.userId
+				userID: this.userId
 			}
 		});
 		

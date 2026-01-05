@@ -42,6 +42,7 @@ class GameManager {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
         const userId = getCurrentUserIdNumber() || 1;
+        console.log(userId);
         this.networkManager.connect('ws://localhost:8080/ws', 'local', userId);
     }
 
@@ -49,6 +50,7 @@ class GameManager {
         console.log('Starting remote game...');
         this.gameModeMenu?.classList.add('hidden');
         const userId = getCurrentUserIdNumber() || 1;
+        console.log(userId);
         this.networkManager.connect('ws://localhost:8080/ws', 'remote', userId);
     }
 

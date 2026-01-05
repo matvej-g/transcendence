@@ -1,5 +1,5 @@
 <?php
-namespace App;
+namespace Pong;
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
@@ -23,7 +23,7 @@ class GameServer implements MessageComponentInterface {
         $this->players = new \SplObjectStorage;
         $this->loop = $loop;
 
-        $this->db = new Database('sqlite:' . __DIR__ . '/../../database/transcendence.db');
+        $this->db = new Database('sqlite:/var/www/html/database/transcendence.db');
         $this->userModel = new UserModel($this->db);
         $this->matchesModel = new MatchesModel($this->db);
         echo "GameServer initialized\n";
@@ -59,13 +59,19 @@ class GameServer implements MessageComponentInterface {
         //echo "Message from {$player->userID}: {$msg}\n";
 
         if ($data['type'] === 'authenticate') {
-            $userId = $data['data']['userId'] ?? null;
-            if ($userId) {
-                $user = $this->userModel->getUserById($userId);
+            $userID = $data['data']['userID'] ?? null;
+            echo "DEBUG: Received authenticate request with userID: " . var_export($userID, true) . "\n";
+            if ($userID) {
+                $user = $this->userModel->getUserById($userID);
+                echo "DEBUG: getUserById returned: " . var_export($user, true) . "\n";
                 if ($user) {
-                    $player->userId = $user['id'];
+                    $player->userID = $user['id'];
                     $player->username = $user['username'];
+                } else {
+                    echo "DEBUG: User not found in database for userID={$userID}\n";
                 }
+            } else {
+            echo "DEBUG: No userID provided in authenticate message\n";
             }
         }
         //handle join players

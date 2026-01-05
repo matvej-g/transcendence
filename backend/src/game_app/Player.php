@@ -1,5 +1,5 @@
 <?php
-namespace App;
+namespace Pong;
 
 use Ratchet\ConnectionInterface;
 
