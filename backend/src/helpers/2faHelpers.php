@@ -17,8 +17,8 @@ function sendTwoFactorEmail($email, $code) {
         $mail->isSMTP();
         $mail->Host = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = getenv('SMTP_USERNAME') ?: 'mertcode55@gmail.com';
-        $mail->Password = getenv('SMTP_PASSWORD') ?: 'hgzl wozx jhgc msnu';
+        $mail->Username = getenv('SMTP_USERNAME') ?: 'mertcode55@gmail.com'; // change later
+        $mail->Password = getenv('SMTP_PASSWORD') ?: 'hgzl wozx jhgc msnu';  //change later
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = (int)(getenv('SMTP_PORT') ?: 587);
 

@@ -58,6 +58,10 @@ $this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController
 
 //mert
 
+// 2FA authentication routes
+$this->router->post('/api/auth/send-2fa', [AuthController::class, 'sendTwoFactorCode'], [AuthMiddleware::class]);
+$this->router->post('/api/auth/verify-2fa', [AuthController::class, 'verifyTwoFactorCode'], [AuthMiddleware::class]);
+
 // ===== MIDDLEWARE USAGE GUIDE FOR TEAMMATES =====
 // 
 // To protect your routes, add [Require2FAMiddleware::class] as third parameter:
