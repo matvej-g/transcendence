@@ -1,6 +1,6 @@
 // Shared API utility functions
 
-export const API_BASE = 'http://localhost:8080';
+export const API_BASE = ''; // Use relative URLs - nginx will proxy /api to backend
 
 export async function apiCall(endpoint: string, options: RequestInit = {}) {
     try {
