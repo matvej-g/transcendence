@@ -24,6 +24,31 @@ class TournamentPlayerModel
         }
     }
 
+    public function isTournamentPlayer($tournamentId, $playerId): ?bool
+    {
+        try {
+            $row = $this->db->query(
+                "SELECT 1 FROM tournament_players WHERE tournament_id = ? AND user_id = ?",
+                [$tournamentId, $playerId]
+            )->fetch(PDO::FETCH_ASSOC);
+            return $row !== false;
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+
+    public function countTournamentPlayers($tournamentId): ?int
+    {
+        try {
+            return $count = $this->db->query(
+                "SELECT COUNT(user_id) FROM tournament_players WHERE tournament_id = ?",
+                [$tournamentId]
+            )->fetchColumn();
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+
     public function getAllTournamentPlayers()
     {
         try {
