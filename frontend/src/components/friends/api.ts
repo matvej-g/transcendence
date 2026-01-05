@@ -1,3 +1,16 @@
+// Block a user
+export async function blockUser(blockedId: number, blockerId: number) {
+  const res = await fetch('/api/friends/block', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-USER-ID': String(blockerId)
+    },
+    body: JSON.stringify({ blockedId })
+  });
+  if (!res.ok) throw new Error('Failed to block user');
+  return await res.json();
+}
 // API functions for friends feature
 
 // encodeURIComponent is used to safely include user input (like usernames or IDs)
@@ -44,7 +57,7 @@ export async function sendFriendRequest(friendId: number, userId: number) {
   return await res.json();
 }
 
-// Update friend request status (accept/refuse/delete)
+// Update friend request status (accepting or pending )
 export async function updateFriendStatus(friendshipId: string, userId: number, payload: { status: string }) {
   const res = await fetch(`/api/friends/${encodeURIComponent(friendshipId)}`, {
     method: 'PATCH',

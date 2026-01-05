@@ -30,8 +30,6 @@ function createRequestItem(request: FriendRequest) {
 	acceptBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
-			console.log('this request contains: ', request);
-			console.log('id: ', request.friendshipId);
 			await updateFriendStatus(String(request.friendshipId), Number(userId), { status: 'accepted' });
 			await reloadLists();
 		} catch (e) {
@@ -73,11 +71,11 @@ export async function populateRequestsList() {
 		console.log("user Id: ", userId);
 		const friends: FriendRequest[] = await getFriends(Number(userId));
 		// Only show requests where status is 'pending' and the current user is the recipient
-		const pending = friends.filter((f: FriendRequest) => f.status === 'pending');
-		for (const req of pending) {
+		const pendingToMe = friends.filter((f: FriendRequest) => f.status === 'pending' && Number(userId) === f.receiverId);
+		for (const req of pendingToMe) {
 			ul.appendChild(createRequestItem(req));
 		}
-		if (pending.length === 0) {
+		if (pendingToMe.length === 0) {
 			const li = document.createElement('li');
 			li.textContent = 'No friend requests.';
 			li.className = 'text-gray-400';

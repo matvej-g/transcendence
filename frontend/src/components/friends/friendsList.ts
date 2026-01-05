@@ -1,4 +1,4 @@
-import { getFriends, updateFriendStatus } from './api.js';
+import { getFriends, blockUser } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type { FriendRequest } from '../../common/types.js';
 
@@ -42,7 +42,7 @@ async function createFriendItem(friend: FriendRequest) {
 	blockBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
-			await updateFriendStatus(String(friend.friendshipId), Number(userId), { status: 'blocked' });
+			await blockUser(friend.friend.id, Number(userId));
 			await populateFriendsList();
 		} catch (e) {
 			alert('Failed to block friend');
