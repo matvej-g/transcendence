@@ -198,13 +198,50 @@
       </div>
       </section>
 
-      <!-- CHAT SECTION (hidden by default) -->
-      <section id="chat-section" class="hidden w-full h-full flex items-center justify-center text-white text-2xl">
-        <div class="text-center">
-          <h2 class="mb-4">Chat Section</h2>
-          <p>Chat content goes here</p>
-        </div>
-      </section>
+	<!-- CHAT SECTION (hidden by default) -->
+	<section id="chat-section" class="hidden w-full h-full flex text-white">
+
+	<aside class="w-1/3 max-w-sm border-r border-white/10 overflow-y-auto">
+		<!-- LEFT: CHAT SEARCH -->
+		<div class="p-3 border-b border-white/10 sticky top-0 bg-black/80 backdrop-blur">
+			<input
+			id="chat-search"
+			type="text"
+			placeholder="Search chats..."
+			class="w-full bg-white/10 rounded px-3 py-2 outline-none text-sm"
+			/>
+		</div>
+		<!-- LEFT: CHAT LIST -->
+		<ul id="chat-list" class="divide-y divide-white/10"></ul>
+	</aside>
+
+	<!-- RIGHT: ACTIVE CHAT -->
+	<div class="flex flex-col flex-1">
+		<!-- Chat header -->
+		<header id="chat-header" class="p-4 border-b border-white/10 font-semibold">
+		Select a chat
+		</header>
+
+		<div
+		id="chat-messages"
+		class="flex-1 overflow-y-auto p-4 space-y-3"
+		></div>
+
+		<form id="chat-form" class="flex gap-2">
+		<input
+			id="chat-input"
+			type="text"
+			placeholder="Type a message…"
+			class="flex-1 bg-white/10 rounded px-3 py-2 outline-none"
+		/>
+		<button type="submit" class="bg-blue-600 px-4 py-2 rounded">
+			Send
+		</button>
+		</form>
+		</footer>
+	</div>
+	</section>
+	<!-- CHAT SECTION END-->
 
       <!-- NOTFOUND SECTION (hidden by default) -->
       <section id="notfound-section" class="hidden w-full h-full flex items-center justify-center text-white">
