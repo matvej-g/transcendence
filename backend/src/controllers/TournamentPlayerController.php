@@ -43,6 +43,7 @@ class TournamentPlayerController extends BaseController
         return $this->jsonSuccess($all);
     }
 
+    // check if tournament has not finished yet ?
     public function newTournamentPlayer(Request $request, $parameters)
     {
         $tournamentId = $parameters['id'] ?? null;
@@ -52,6 +53,21 @@ class TournamentPlayerController extends BaseController
         }
         $tournamentId = (int)$tournamentId;
         $userId = (int)$userId;
+
+        $isPlayer = $this->tournamentPlayers->isTournamentPlayer($tournamentId, $userId);
+        if ($isPlayer) {
+            return $this->jsonBadRequest('Player is already participating');
+        } else if ($isPlayer === null) {
+            return $this->jsonServerError();
+        }
+
+        $playerCount = $this->tournamentPlayers->countTournamentPlayers($tournamentId);
+        if ($playerCount > 8) {
+            return $this->jsonBadRequest('Maximum amount of players is 8');
+        } else if ($isPlayer === null) {
+            return $this->jsonServerError();
+        }
+
         $id = $this->tournamentPlayers->createTournamentPlayer($tournamentId, $userId);
         if ($id === null) {
             return $this->jsonServerError();
