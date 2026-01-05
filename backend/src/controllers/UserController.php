@@ -8,6 +8,7 @@ use src\http\Request;
 use src\controllers\BaseController;
 use src\Models\UserModel;
 use src\Models\UserStatsModel;
+use src\Sanitiser;
 use src\Validator;
 
 class UserController extends BaseController
@@ -41,11 +42,12 @@ class UserController extends BaseController
 
     public function getUserByUsername(Request $request, $parameters)
     {
-        $username = $parameters['userName'] ?? null;
-        if ($username === null || !is_string($username)) {
+        $userName = $parameters['userName'] ?? null;
+        if ($userName === null || !is_string($userName)) {
             return $this->jsonBadRequest("Invalid username");
         }
-        $user = $this->users->getUserByUsername($username);
+        [$userName] = Sanitiser::normaliseStrings([$userName]);
+        $user = $this->users->getUserByUsername($userName);
         if ($user === null) {
             return $this->jsonServerError();
         }
@@ -62,6 +64,8 @@ class UserController extends BaseController
         if ($email === null || !is_string($email)) {
             return $this->jsonBadRequest("Invalid email");
         }
+        
+        [$email] = Sanitiser::normaliseStrings([$email]);
         $user = $this->users->getUserByEmail($email);
         if ($user === null) {
             return $this->jsonServerError();
@@ -128,6 +132,8 @@ class UserController extends BaseController
         if ($credential === null || $password === null) {
             return $this->jsonBadRequest("Username/email and password required");
         }
+
+        [$credential] = Sanitiser::normaliseStrings([$credential]);
         $user = $this->users->getUserByUsernameOrEmail($credential);
         if ($user === null) {
             return $this->jsonServerError();
@@ -144,16 +150,19 @@ class UserController extends BaseController
 
     public function newUser(Request $request, $parameters)
     {
-        $username = $request->postParams['userName']  ?? null;
+        $userName = $request->postParams['userName']  ?? null;
         $email    = $request->postParams['email']     ?? null;
         $password = $request->postParams['password']  ?? null;
 
-        $errors = Validator::validateNewUserData($username, $email, $password);
+        $errors = Validator::validateNewUserData($userName, $email, $password);
         if ($errors) {
             return $this->jsonBadRequest(json_encode($errors));
         }
+        $displayName = $userName;
+        [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
+
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $id = $this->users->createUser($username, $email, $hash);
+        $id = $this->users->createUser($userName, $displayName, $email, $hash);
         if ($id === null) {
             return $this->jsonConflict("Conflicting user info");
         }
@@ -223,15 +232,20 @@ class UserController extends BaseController
         if (!$existing) {
             return $this->jsonNotFound("User not found");
         }
-        $username = $request->postParams['userName'] ?? $existing['username'];
+        $userName = $request->postParams['userName'] ?? $existing['username'];
         $email    = $request->postParams['email']    ?? $existing['email'];
         $password = $request->postParams['password'] ?? null;
-        $errors = Validator::validateUpdateUserData($username, $email, $password);
+
+        $errors = Validator::validateUpdateUserData($userName, $email, $password);
         if ($errors) {
             return $this->jsonBadRequest(json_encode($errors));
         }
+        
+        $displayName = $userName;
+        [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
+
         $hash = $password ? password_hash($password, PASSWORD_DEFAULT) : $existing['password_hash'];
-        $updated = $this->users->updateUserInfo((int)$id, $username, $email, $hash);
+        $updated = $this->users->updateUserInfo((int)$id, $userName, $displayName, $email, $hash);
         if ($updated === null) {
             return $this->jsonServerError();
         }
