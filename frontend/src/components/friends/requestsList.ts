@@ -1,4 +1,4 @@
-import { getFriends, updateFriendStatus } from './api.js';
+import { getFriends, updateFriendStatus, blockUser } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type {FriendRequest} from '../../common/types.js'
 
@@ -37,23 +37,23 @@ function createRequestItem(request: FriendRequest) {
 		}
 	};
 
-	const refuseBtn = document.createElement('button');
-	refuseBtn.className = 'refuse-request rounded bg-red-600 hover:bg-red-700 px-3';
-	refuseBtn.textContent = 'refuse';
-	refuseBtn.onclick = async () => {
+	const blockBtn = document.createElement('button');
+	blockBtn.className = 'block-request rounded bg-red-600 hover:bg-red-700 px-3';
+	blockBtn.textContent = 'block';
+	blockBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
-			await updateFriendStatus(String(request.friendshipId), Number(userId), { status: 'blocked' });
+			await blockUser(request.friend.id, Number(userId));
 			await reloadLists();
 		} catch (e) {
-			alert('Failed to refuse request');
+			alert('Failed to block user');
 		}
 	};
 
 	li.appendChild(img);
 	li.appendChild(h2);
 	li.appendChild(acceptBtn);
-	li.appendChild(refuseBtn);
+	li.appendChild(blockBtn);
 	return li;
 }
 
