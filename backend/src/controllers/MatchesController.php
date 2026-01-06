@@ -8,6 +8,7 @@ use src\controllers\BaseController;
 use src\Models\UserModel;
 use src\Models\MatchesModel;
 use src\Models\UserStatsModel;
+use src\Models\UserStatusModel;
 use src\Validator;
 
 class MatchesController extends BaseController
@@ -15,12 +16,14 @@ class MatchesController extends BaseController
     private MatchesModel $matches;
     private UserModel $users;
     private UserStatsModel $stats;
+    private UserStatusModel $status;
 
     public function __construct(Database $db)
     {
         $this->matches = new MatchesModel($db);
         $this->users   = new UserModel($db);
         $this->stats   = new UserStatsModel($db);
+        $this->status  = new UserStatusModel($db);
     }
 
     public function getMatch(Request $request, $parameters)
@@ -81,10 +84,28 @@ class MatchesController extends BaseController
             return $this->jsonNotFound('User two not found');
         }
 
+
         $id = $this->matches->createMatch($playerOneId, $playerTwoId);
         if ($id === null) {
             return $this->jsonServerError();
         }
+
+        $inMatch = $this->status->isInMatch($playerOneId);
+        var_dump($inMatch);
+
+        $statusPlayerOne = $this->status->setCurrentMatch($playerOneId, $id);
+        if ($statusPlayerOne === null) {
+            return $this->jsonServerError();
+        }
+
+        $statusPlayerTwo = $this->status->setCurrentMatch($playerTwoId, $id);
+        if ($statusPlayerTwo === null) {
+            return $this->jsonServerError();
+        }
+
+        $inMatch = $this->status->isInMatch($playerOneId);
+        var_dump($inMatch);
+
         return $this->jsonCreated(['id' => $id]);
     }
 
@@ -106,6 +127,7 @@ class MatchesController extends BaseController
         if ($match['finished_at'] !== null) {
             return $this->jsonBadRequest('Match already finished');
         }
+        var_dump($request->postParams);
         $scoreOne = $request->postParams['scorePlayerOne'] ?? null;
         $scoreTwo = $request->postParams['scorePlayerTwo'] ?? null;
         if ($scoreOne === null|| $scoreTwo === null || !ctype_digit($scoreOne) || !ctype_digit($scoreTwo)) {
@@ -158,6 +180,16 @@ class MatchesController extends BaseController
         } else {
             // draw
             $this->stats->recordDraw($playerOneId, $playerTwoId, $scoreOne, $scoreTwo);
+        }
+
+        $statusPlayerOne = $this->status->setCurrentMatch($match['player_one_id'], null);
+        if ($statusPlayerOne === null) {
+            return $this->jsonServerError();
+        }
+
+        $statusPlayerTwo = $this->status->setCurrentMatch($match['player_two_id'], null);
+        if ($statusPlayerTwo === null) {
+            return $this->jsonServerError();
         }
 
         $finished = $this->matches->endMatch((int)$id, $winnerId);
