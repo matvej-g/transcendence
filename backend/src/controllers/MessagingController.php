@@ -202,7 +202,6 @@ class MessagingController extends BaseController
         ]);
     }
 
-
     public function createConversation(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
