@@ -48,19 +48,29 @@ async function initProfile(): Promise<void> {
 
     // insert stats...
     try {
-      const { wins, losses } = await fetchUserWinsAndLosses();
+      const { wins, losses, tournaments_played, tournaments_won } = await fetchUserWinsAndLosses();
       document.getElementById('match-wins')!.textContent = `${wins}`;
       document.getElementById('match-losses')!.textContent = `${losses}`;
-      const total = wins + losses;
-      let rate = '0%';
-      if (total > 0) {
-        rate = ((wins / total) * 100).toFixed(1) + '%';
+      document.getElementById('tourn-wins')!.textContent = `${tournaments_won}`;
+      document.getElementById('tourn-losses')!.textContent = `${tournaments_played - tournaments_won}`;
+      const matchTotal = wins + losses;
+      let matchRate = '0%';
+      if (matchTotal > 0) {
+        matchRate = ((wins / matchTotal) * 100).toFixed(1) + '%';
       }
-      document.getElementById('match-winning-rate')!.textContent = rate;
+      document.getElementById('match-winning-rate')!.textContent = matchRate;
+      let tournRate = '0%';
+      if (tournaments_played > 0) {
+        tournRate = ((tournaments_won / tournaments_played) * 100).toFixed(1) + '%';
+      }
+      document.getElementById('tourn-winning-rate')!.textContent = tournRate;
     } catch (e) {
       document.getElementById('match-wins')!.textContent = '?';
       document.getElementById('match-losses')!.textContent = '?';
       document.getElementById('match-winning-rate')!.textContent = '?';
+      document.getElementById('tourn-wins')!.textContent = '?';
+      document.getElementById('tourn-losses')!.textContent = '?';
+      document.getElementById('tourn-winning-rate')!.textContent = '?';
       console.warn('[profile] Could not fetch user stats', e);
     }
 

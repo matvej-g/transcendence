@@ -25,9 +25,6 @@ class ConversationModel
         }
     }
 
-    /**
-     * Return all conversations a user participates in.
-     */
     public function getConversationsForUser(int $userId): ?array
     {
         try {

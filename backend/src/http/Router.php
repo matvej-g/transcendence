@@ -43,7 +43,7 @@ class Router {
     // Convert a route URI with placeholders into a regex pattern,
     // handling multiple placeholders and restricting {id} to digits.
     // Returns an array of matches (named and numeric) or false.
-    public function convert($route, $uri)
+    private function convert($route, $uri)
     {
         $pattern = preg_replace_callback('/\{(\w+)\}/', function ($m) {
             $name = $m[1];
@@ -71,11 +71,6 @@ class Router {
         foreach ($this->routes as $route) {
             $matches = $this->convert($route, $uri);
             if ($matches !== false && $matches[0] === $uri && $route['method'] === strtoupper($method)) {
-                // static page controllers
-                if (is_string($route['controller'])) {
-                    return require base_path($route['controller']);
-                }
-                // dynamic controller classes
                 if (is_array($route['controller'])) {
                     [$class, $methodName] = $route['controller'];
                     $controllerInstance = new $class($db);
@@ -83,13 +78,6 @@ class Router {
                 }
             }
         }
-        $this->abort();
-    }
-
-    protected function abort()
-    {
-        http_response_code(404);
-        echo "Sorry, Not found.";
-        die(0);
+        return new Response(HttpStatusCode::NotFound, 'Requested Endpoint does not exist', ['Content-Type' => 'application/json']);
     }
 }

@@ -78,6 +78,19 @@ class FriendshipModel
         }
     }
 
+    public function deleteRequest(int $friendshipId, int $receiverId)
+    {
+        try {
+            $this->db->query(
+                'DELETE FROM friendships WHERE id = ? AND friend_id = ?',
+                [$friendshipId, $receiverId]
+            );
+            return true;
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+
     public function unblockUserFriendships(int $blockerId, int $blockedId): ?bool
     {
         try {

@@ -7,7 +7,11 @@ use Ratchet\ConnectionInterface;
 use src\Database;
 use src\Models\UserModel;
 use src\Models\MatchesModel;
+<<<<<<< HEAD
 use src\Models\UserStatsModel;
+=======
+
+>>>>>>> origin/main
 
 class GameServer implements MessageComponentInterface {
     protected $players;
@@ -18,7 +22,10 @@ class GameServer implements MessageComponentInterface {
     private Database $db;
     private UserModel $userModel;
     private MatchesModel $matchesModel;
+<<<<<<< HEAD
     private UserStatsModel $userStatsModel;
+=======
+>>>>>>> origin/main
 
     public function __construct($loop = null) {
         $this->players = new \SplObjectStorage;
@@ -27,7 +34,10 @@ class GameServer implements MessageComponentInterface {
         $this->db = new Database('sqlite:/var/www/html/database/transcendence.db');
         $this->userModel = new UserModel($this->db);
         $this->matchesModel = new MatchesModel($this->db);
+<<<<<<< HEAD
         $this->userStatsModel = new UserStatsModel($this->db);
+=======
+>>>>>>> origin/main
         echo "GameServer initialized\n";
 
         //start game loop at ~60 FPS (every 16ms)
@@ -61,6 +71,7 @@ class GameServer implements MessageComponentInterface {
                 if ($user) {
                     $player->userID = $user['id'];
                     $player->username = $user['username'];
+<<<<<<< HEAD
                     $player->send([
                         'type' => 'connected',
                         'data' => [
@@ -86,6 +97,13 @@ class GameServer implements MessageComponentInterface {
                     'errorMessage' => 'Authentication failed: No userID provided'
                 ]
                 ]);
+=======
+                } else {
+                    echo "DEBUG: User not found in database for userID={$userID}\n";
+                }
+            } else {
+            echo "DEBUG: No userID provided in authenticate message\n";
+>>>>>>> origin/main
             }
         }
         //handle join players
@@ -164,6 +182,7 @@ class GameServer implements MessageComponentInterface {
                 ]);
 
                 if ($game['mode'] === 'remote') {
+<<<<<<< HEAD
                     $currentState = $game['engine']->update();
                     //disconnected player automatacly loses
                     $winnerId = $opponent->userID;
@@ -179,6 +198,9 @@ class GameServer implements MessageComponentInterface {
                     // Match beenden und Stats aufzeichnen
                     $this->matchesModel->endMatch($gameID, $winnerId);
                     $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
+=======
+                    $this->matchesModel->endMatch($gameID, $opponent->userID);
+>>>>>>> origin/main
                 }
                 $opponent->gameID = null;
                 $opponent->paddle = null;
@@ -390,6 +412,7 @@ class GameServer implements MessageComponentInterface {
                 $winnerId = ($newState['winner'] === 'left')
                     ? $game['player1']->userID
                     : $game['player2']->userID;
+<<<<<<< HEAD
                 $loserId = ($newState['winner'] === 'left')
                     ? $game['player2']->userID
                     : $game['player1']->userID;
@@ -403,6 +426,9 @@ class GameServer implements MessageComponentInterface {
                     : $newState['leftPaddle']['score'];
                 $this->matchesModel->endMatch($gameID, $winnerId);
                 $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
+=======
+                $this->matchesModel->endMatch($gameID, $winnerId);
+>>>>>>> origin/main
                 $game['player1']->send($msgGameOver);
                 $game['player2']->send($msgGameOver);
             }
