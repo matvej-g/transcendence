@@ -53,8 +53,20 @@ export async function sendFriendRequest(friendId: number, userId: number) {
     },
     body: JSON.stringify({ friendId })
   });
-  if (!res.ok) throw new Error('Failed to send friend request');
-  return await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new Error('Invalid server response');
+  }
+  if (!res.ok) {
+    // Use 'error' or 'message' property from backend response for error messages
+    const errorMsg = data?.error || data?.message || 'Failed to send friend request';
+    const error = new Error(errorMsg);
+    (error as any).code = res.status;
+    throw error;
+  }
+  return data;
 }
 
 // Update friend request status (accepting or pending )

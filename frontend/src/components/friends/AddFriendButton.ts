@@ -23,7 +23,8 @@ export function setupAddFriendButton(addFriendBtn: HTMLElement, searchResultUser
       addFriendBtn.classList.add('hidden');
       searchResultUser.classList.add('hidden');
     } catch (err) {
-      showMessage('Friend request already exists or invalid', 'text-red-400');
+      const errorMsg = (err as any)?.message || 'Friend request already exists or invalid';
+      showMessage(errorMsg, 'text-red-400');
       searchResultUser.classList.add('hidden');
     }
   });
