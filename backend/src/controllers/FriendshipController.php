@@ -125,7 +125,6 @@ class FriendshipController extends BaseController
         // retrieve user based on friendId
         $friend = $this->users->getUserById($friendId);
         if ($friend === null) {
-            var_dump('server error 0,5');
             return $this->jsonServerError();
         }
         if (!$friend) {
@@ -135,7 +134,6 @@ class FriendshipController extends BaseController
         // retrieve friendship status
         $existing = $this->friendships->getFriendshipBetween($userId, $friendId);
         if ($existing === null) {
-            var_dump('server error 0');
             return $this->jsonServerError();
         }
         if ($existing) {
@@ -144,7 +142,6 @@ class FriendshipController extends BaseController
             if ($status === 'pending' && $friendId === (int)$existing['user_id'] && $userId === (int)$existing['friend_id']) {
                 $accepted = $this->friendships->updateStatus((int)$existing['id'], 'accepted');
                 if ($accepted === null) {
-                    var_dump('server error 1');
                     return $this->jsonServerError();
                 }
                 return $this->jsonCreated(['id' => (int)$accepted['id']]);
@@ -156,7 +153,6 @@ class FriendshipController extends BaseController
                 $blockedByMe   = $this->blocks->isBlocked($userId, $friendId);
                 $blockedByThem = $this->blocks->isBlocked($friendId, $userId);
                 if ($blockedByMe === null || $blockedByThem === null) {
-                    var_dump('server error 2');
                     return $this->jsonServerError();
                 }
                 if ($blockedByThem) {
@@ -165,12 +161,10 @@ class FriendshipController extends BaseController
                 if ($blockedByMe) {
                     $unblocked = $this->blocks->unblockUser($userId, $friendId);
                     if ($unblocked === null) {
-                        var_dump('server error 3');
                         return $this->jsonServerError();
                     }
                     $pending = $this->friendships->setPendingRequest((int)$existing['id'], $userId, $friendId);
                     if ($pending === null) {
-                        var_dump('server error 4');
                         return $this->jsonServerError();
                     }
                     return $this->jsonCreated(['id' => (int)$pending['id']]);
@@ -180,14 +174,12 @@ class FriendshipController extends BaseController
 
         $id = $this->friendships->createRelation($userId, $friendId, 'pending');
         if ($id === null) {
-            var_dump('server error 5');
             return $this->jsonServerError();
         }
 
         return $this->jsonCreated(['id' => (int)$id]);
     }
 
-    // what about updating status with self?
     public function updateStatus(Request $request, $parameters)
     {
         // get current user id
@@ -213,7 +205,6 @@ class FriendshipController extends BaseController
         // retrieve exisiting friendship
         $existing = $this->friendships->getById($id);
         if ($existing === null) {
-            var_dump('server error 6');
             return $this->jsonServerError();
         }
         if (!$existing) {
@@ -228,11 +219,48 @@ class FriendshipController extends BaseController
         // update status
         $updated = $this->friendships->updateStatus($id, $status);
         if ($updated === null) {
-            var_dump('server error 7');
             return $this->jsonServerError();
         }
 
         return $this->jsonSuccess($updated);
+    }
+
+    // the passed user_id needs to be the receiver of the request
+    public function declineRequest(Request $request, $parameters)
+    {
+        // get current user id
+        $userId = $this->getCurrentUserId($request);
+        if ($userId === null) {
+            return $this->jsonBadRequest('Missing or invalid current user id');
+        }
+
+        // retrieve friendship id
+        $idParam = $request->postParams['id'] ?? null;
+        if (!Validator::validateId($idParam)) {
+            return $this->jsonBadRequest('Invalid friendship id');
+        }
+        $id = (int)$idParam;
+
+        // retrieve exisiting friendship
+        $existing = $this->friendships->getById($id);
+        if ($existing === null) {
+            return $this->jsonServerError();
+        }
+        if (!$existing) {
+            return $this->jsonNotFound('Friendship not found');
+        }
+
+        // check if user is receiver of initial request
+        if ($userId !== (int)$existing['friend_id'] && $userId === (int)$existing['user_id']) {
+            return $this->jsonBadRequest('declining user must be receiver of request');
+        }
+
+        $deleted = $this->friendships->deleteRequest($id, $userId);
+        if ($deleted === null) {
+            return $this->jsonServerError();
+        } else {
+            return $this->jsonSuccess('Friend Request declined');
+        }
     }
 
     public function blockUser(Request $request, $parameters)
@@ -304,13 +332,11 @@ class FriendshipController extends BaseController
         // check if actually blocked
         $isBlocked = $this->blocks->isBlocked($blockerId, $blockedId);
         if (!$isBlocked) {
-            var_dump('error 1');
             return $this->jsonBadRequest('User is not blocked');
         }
 
         $blockedRelation = $this->blocks->unblockUser($blockerId, $blockedId);
         if ($blockedRelation === null) {
-            var_dump('error 2');
             return $this->jsonServerError();
         } else {
             // unblock user in friendships table
@@ -318,19 +344,15 @@ class FriendshipController extends BaseController
             if ($friendshipRelation === false) {
                 return $this->jsonBadRequest('User is not blocked');
             } else if ($friendshipRelation === null) {
-                var_dump('error 3');
                 return $this->jsonServerError();
             } else {
-                var_dump($friendshipRelation['id']);
                 $frndsTblUblc = $this->friendships->unblockUserFriendships($blockerId, $blockedId);
-                var_dump($frndsTblUblc);
                 if ($frndsTblUblc === null) {
-                    var_dump('error 4');
                     return $this->jsonServerError();
                 }
             }
         }
-        return $this->jsonCreated(['id' => (int)$blockedRelation]);
+        return $this->jsonSuccess('User unblocked');
     }
 
     public function getBlocks(Request $request, $parameters)
