@@ -6,10 +6,10 @@ class GameEngine {
 	private array $gameState;
 	private float $lastUpdate;
 
-	private const CANVAS_WIDTH = 1400;
-	private const CANVAS_HEIGHT = 700;
-	private const PADDLE_WIDTH = 15;
-	private const PADDLE_HEIGHT = 100;
+	private const CANVAS_WIDTH = 800;
+	private const CANVAS_HEIGHT = 400;
+	private const PADDLE_WIDTH = 12;
+	private const PADDLE_HEIGHT = 60;
 	private const PADDLE_SPEED = 550;
 	private const BALL_RADIUS = 10;
 	private const BALL_INITIAL_SPEED = 60;

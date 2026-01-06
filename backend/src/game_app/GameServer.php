@@ -7,7 +7,7 @@ use Ratchet\ConnectionInterface;
 use src\Database;
 use src\Models\UserModel;
 use src\Models\MatchesModel;
-
+use src\Models\UserStatsModel;
 
 class GameServer implements MessageComponentInterface {
     protected $players;
@@ -18,6 +18,7 @@ class GameServer implements MessageComponentInterface {
     private Database $db;
     private UserModel $userModel;
     private MatchesModel $matchesModel;
+    private UserStatsModel $userStatsModel;
 
     public function __construct($loop = null) {
         $this->players = new \SplObjectStorage;
@@ -26,6 +27,7 @@ class GameServer implements MessageComponentInterface {
         $this->db = new Database('sqlite:/var/www/html/database/transcendence.db');
         $this->userModel = new UserModel($this->db);
         $this->matchesModel = new MatchesModel($this->db);
+        $this->userStatsModel = new UserStatsModel($this->db);
         echo "GameServer initialized\n";
 
         //start game loop at ~60 FPS (every 16ms)
@@ -310,7 +312,19 @@ class GameServer implements MessageComponentInterface {
                 $winnerId = ($newState['winner'] === 'left')
                     ? $game['player1']->userID
                     : $game['player2']->userID;
+                $loserId = ($newState['winner'] === 'left')
+                    ? $game['player2']->userID
+                    : $game['player1']->userID;
+                
+                $goalsWinner = ($newState['winner'] === 'left')
+                    ? $newState['leftPaddle']['score']
+                    : $newState['rightPaddle']['score'];
+                
+                $goalsLoser = ($newState['winner'] === 'left')
+                    ? $newState['rightPaddle']['score']
+                    : $newState['leftPaddle']['score'];
                 $this->matchesModel->endMatch($gameID, $winnerId);
+                $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
                 $game['player1']->send($msgGameOver);
                 $game['player2']->send($msgGameOver);
             }
