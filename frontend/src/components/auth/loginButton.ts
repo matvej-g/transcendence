@@ -3,7 +3,7 @@ import { $, log } from "../../utils/utils.js";
 import { msg } from "../languages/auth/stringsMsgsHandlers.js";
 import { loginHandle } from "./login.js";
 import { apiCall } from "../../utils/api.js";
-import { navigateToLandingPage } from "../landing/navigation.js";
+//import { navigateToLandingPage } from "../landing/navigation.js";
 
 function wireLoginButton() {
   const btn = document.getElementById("loginBtn") as HTMLButtonElement | null;
