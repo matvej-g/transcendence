@@ -89,3 +89,28 @@ export async function getUserStatus(id: string) {
   if (!res.ok) throw new Error('Failed to fetch user status');
   return await res.json();
 }
+
+// Decline a friend request
+export async function declineFriendRequest(friendshipId: number, userId: number) {
+  const res = await fetch('/api/friends/decline', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-USER-ID': String(userId)
+    },
+    body: JSON.stringify({ id: friendshipId })
+  });
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new Error('Invalid server response');
+  }
+  if (!res.ok) {
+    const errorMsg = data?.error || data?.message || 'Failed to decline friend request';
+    const error = new Error(errorMsg);
+    (error as any).code = res.status;
+    throw error;
+  }
+  return data;
+}
