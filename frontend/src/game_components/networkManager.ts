@@ -109,6 +109,8 @@ export class NetworkManager {
 				console.log('Winner received:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
+				this.localGameState.leftPaddle.score = 0;
+				this.localGameState.rightPaddle.score = 0;
 				break;
 
 			case 'opponentDisconnected':
