@@ -1,11 +1,10 @@
 <?php
 
-// load from base path
 function base_path($path) {
 	return BASE_PATH . $path;
 }
 
-// load view paths
+// remove later
 function view($path)
 {
 	require base_path('views/' . $path);
@@ -21,4 +20,12 @@ function getCurrentUserId($request): ?int
 function getCurrentUser($request): ?array
 {
 	return $request->user ?? null;
+}
+function user_to_public(array $user): array
+{
+	if (array_key_exists('password_hash', $user)) {
+		unset($user['password_hash']);
+	}
+
+	return $user;
 }

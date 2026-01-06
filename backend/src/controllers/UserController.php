@@ -2,25 +2,30 @@
 
 namespace src\controllers;
 
+use finfo;
 use src\Database;
 use src\http\Request;
 use src\controllers\BaseController;
 use src\Models\UserModel;
+use src\Models\UserStatsModel;
+use src\Sanitiser;
 use src\Validator;
 
 class UserController extends BaseController
 {
     private UserModel $users;
+    private UserStatsModel $stats;
 
     public function __construct(Database $db)
     {
         $this->users = new UserModel($db);
+        $this->stats = new UserStatsModel($db);
     }
 
     public function getUser(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
         $id = (int)$id;
@@ -31,22 +36,25 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+        $user = user_to_public($user);
         return $this->jsonSuccess($user);
     }
 
     public function getUserByUsername(Request $request, $parameters)
     {
-        $username = $parameters['userName'] ?? null;
-        if ($username === null || !is_string($username)) {
+        $userName = $parameters['userName'] ?? null;
+        if ($userName === null || !is_string($userName)) {
             return $this->jsonBadRequest("Invalid username");
         }
-        $user = $this->users->getUserByUsername($username);
+        [$userName] = Sanitiser::normaliseStrings([$userName]);
+        $user = $this->users->getUserByUsername($userName);
         if ($user === null) {
             return $this->jsonServerError();
         }
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+        $user = user_to_public($user);
         return $this->jsonSuccess($user);
     }
 
@@ -56,6 +64,8 @@ class UserController extends BaseController
         if ($email === null || !is_string($email)) {
             return $this->jsonBadRequest("Invalid email");
         }
+        
+        [$email] = Sanitiser::normaliseStrings([$email]);
         $user = $this->users->getUserByEmail($email);
         if ($user === null) {
             return $this->jsonServerError();
@@ -63,6 +73,7 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+        $user = user_to_public($user);
         return $this->jsonSuccess($user);
     }
 
@@ -72,7 +83,46 @@ class UserController extends BaseController
         if ($allUsers === null) {
             return $this->jsonServerError();
         }
+        $allUsers = array_map('user_to_public', $allUsers);
         return $this->jsonSuccess($allUsers);
+    }
+
+    public function getUserStats(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if (!Validator::validateId($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $id = (int) $id;
+
+        $user = $this->users->getUserById($id);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+
+        $stats = $this->stats->getStatsForUser($id);
+        if ($stats === null) {
+            return $this->jsonServerError();
+        }
+
+        if (!$stats) {
+            $stats = [
+                'user_id'        => $id,
+                'wins'           => 0,
+                'losses'         => 0,
+                'games_played'   => 0,
+                'goals_scored'   => 0,
+                'goals_conceded' => 0,
+                'tournaments_played' => 0,
+                'tournaments_won' => 0,
+                'last_game_at'   => null,
+            ];
+        }
+
+        return $this->jsonSuccess($stats);
     }
 
     public function userLogin(Request $request, $parameters)
@@ -82,6 +132,8 @@ class UserController extends BaseController
         if ($credential === null || $password === null) {
             return $this->jsonBadRequest("Username/email and password required");
         }
+
+        [$credential] = Sanitiser::normaliseStrings([$credential]);
         $user = $this->users->getUserByUsernameOrEmail($credential);
         if ($user === null) {
             return $this->jsonServerError();
@@ -106,22 +158,25 @@ class UserController extends BaseController
             ],
             'token' => $token
         ]);
+        $user = user_to_public($user);
+        return $this->jsonSuccess($user);
     }
 
     public function newUser(Request $request, $parameters)
     {
-        $username = $request->postParams['userName']  ?? null;
+        $userName = $request->postParams['userName']  ?? null;
         $email    = $request->postParams['email']     ?? null;
         $password = $request->postParams['password']  ?? null;
-        // if ($email === null) {
-        //     $email = "hard@code.de";
-        // }
-        $errors = Validator::validateNewUserData($username, $email, $password);
+
+        $errors = Validator::validateNewUserData($userName, $email, $password);
         if ($errors) {
             return $this->jsonBadRequest(json_encode($errors));
         }
+        $displayName = $userName;
+        [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
+
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $id = $this->users->createUser($username, $email, $hash);
+        $id = $this->users->createUser($userName, $displayName, $email, $hash);
         if ($id === null) {
             return $this->jsonConflict("Conflicting user info");
         }
@@ -131,7 +186,7 @@ class UserController extends BaseController
     public function deleteUser(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
         $deleted = $this->users->deleteUser((int)$id);
@@ -147,7 +202,7 @@ class UserController extends BaseController
     public function changePassword(Request $request, $parameters)
     {
         $id = $request->postParams['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
         $user = $this->users->getUserById((int)$id);
@@ -176,10 +231,12 @@ class UserController extends BaseController
         return $this->jsonSuccess(['message' => 'Password changed']);
     }
 
+    // needs more validation (username email)
+    // needs old password
     public function updateUser(Request $request, $parameters)
     {
         $id = $request->postParams['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
         $existing = $this->users->getUserById((int)$id);
@@ -189,38 +246,106 @@ class UserController extends BaseController
         if (!$existing) {
             return $this->jsonNotFound("User not found");
         }
-        $username = $request->postParams['userName'] ?? $existing['username'];
+        $userName = $request->postParams['userName'] ?? $existing['username'];
         $email    = $request->postParams['email']    ?? $existing['email'];
         $password = $request->postParams['password'] ?? null;
-        $errors = Validator::validateUpdateUserData($username, $email, $password);
+
+        $errors = Validator::validateUpdateUserData($userName, $email, $password);
         if ($errors) {
             return $this->jsonBadRequest(json_encode($errors));
         }
+        
+        $displayName = $userName;
+        [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
+
         $hash = $password ? password_hash($password, PASSWORD_DEFAULT) : $existing['password_hash'];
-        $updated = $this->users->updateUserInfo((int)$id, $username, $email, $hash);
+        $updated = $this->users->updateUserInfo((int)$id, $userName, $displayName, $email, $hash);
         if ($updated === null) {
             return $this->jsonServerError();
         }
+        $updated = user_to_public($updated);
         return $this->jsonSuccess($updated);
     }
 
-	//removes the jwt cookie when logging out (mert)
-    public function logout(Request $request, $parameters)
+	
+    public function uploadAvatar(Request $request, $parameters)
     {
-        setcookie(
-            'jwt',
-            '',
-            [
-                'expires' => time() - 3600,
-                'path' => '/',
-                'httponly' => true,
-                'samesite' => 'Lax'
-            ]
-        );
-        
-        return $this->jsonSuccess(['message' => 'Logged out successfully']);
+        $id = $parameters['id'] ?? null;
+        if (!Validator::validateId($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $file = $request->files['avatar'] ?? null;
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            return $this->jsonBadRequest("No file uploaded or upload error");
+        }
+        if ($file['size'] > 1000000) {
+            return $this->jsonBadRequest("File too large");
+        }
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']);
+        if (!in_array($mime, ['image/png','image/jpeg'])) {
+            return $this->jsonBadRequest("Invalid file type");
+        }
+        $ext = $mime === 'image/png' ? 'png' : 'jpg';
+        $filename = bin2hex(random_bytes(16)) . ".$ext";
+        $targetDir = '/var/www/html/uploads/avatars/';
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+        $target = $targetDir . $filename;
+        if (!move_uploaded_file($file['tmp_name'], $target)) {
+            return $this->jsonServerError();
+        }
+        $user = $this->users->getUserById((int)$id);
+        if ($user && $user['avatar_filename'] !== 'default.jpg') {
+            @unlink($targetDir . $user['avatar_filename']);
+        }
+        $updated = $this->users->updateAvatarFilename((int)$id, $filename);
+        if (!$updated) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess(user_to_public($updated));
     }
 
+    public function deleteAvatar(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if (!Validator::validateId($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $user = $this->users->getUserById((int)$id);
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+        $targetDir = '/var/www/html/uploads/avatars/';
+        if ($user['avatar_filename'] !== 'default.jpg') {
+            @unlink($targetDir . $user['avatar_filename']);
+        }
+        $updated = $this->users->updateAvatarFilename((int)$id, 'default.jpg');
+        if (!$updated) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess(user_to_public($updated));
+    }
+	
+	
+	//removes the jwt cookie when logging out (mert)
+	public function logout(Request $request, $parameters)
+	{
+		setcookie(
+			'jwt',
+			'',
+			[
+				'expires' => time() - 3600,
+				'path' => '/',
+				'httponly' => true,
+				'samesite' => 'Lax'
+			]
+		);
+		
+		return $this->jsonSuccess(['message' => 'Logged out successfully']);
+	}
+	
 	//for testing (mert)
 	public function getProtectedData(Request $request, $parameters)
 	{

@@ -57,13 +57,20 @@ class TournamentsModel {
 		}
 	}
 
-	public function endTournament($id)
+	public function endTournament($id, $winnerId = null)
 	{
 		try {
-			$this->db->query(
-				"UPDATE tournaments SET finished_at = CURRENT_TIMESTAMP WHERE id = ?",
-				[$id]
-			);
+			if ($winnerId === null) {
+				$this->db->query(
+					"UPDATE tournaments SET finished_at = CURRENT_TIMESTAMP WHERE id = ?",
+					[$id]
+				);
+			} else {
+				$this->db->query(
+					"UPDATE tournaments SET finished_at = CURRENT_TIMESTAMP, winner_id = ? WHERE id = ?",
+					[$winnerId, $id]
+				);
+			}
 			return $this->getTournamentById($id);
 		}
 		catch (\PDOException $e) {

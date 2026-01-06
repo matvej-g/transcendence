@@ -6,6 +6,7 @@ use src\Database;
 use src\http\Request;
 use src\controllers\BaseController;
 use src\Models\TournamentPlayerModel;
+use src\Validator;
 
 class TournamentPlayerController extends BaseController
 {
@@ -19,7 +20,7 @@ class TournamentPlayerController extends BaseController
     public function getTournamentPlayer(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $id = (int)$id;
@@ -42,17 +43,31 @@ class TournamentPlayerController extends BaseController
         return $this->jsonSuccess($all);
     }
 
+    // check if tournament has not finished yet ?
     public function newTournamentPlayer(Request $request, $parameters)
     {
-        $tournamentId = $request->postParams['tournamentId'] ?? null;
+        $tournamentId = $parameters['id'] ?? null;
         $userId = $request->postParams['userId'] ?? null;
-        if ($tournamentId === null || $userId === null 
-            || !ctype_digit((string)$tournamentId) 
-            || !ctype_digit((string)$userId)) {
+        if (!Validator::validateId($tournamentId) || !Validator::validateId($userId)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $tournamentId = (int)$tournamentId;
         $userId = (int)$userId;
+
+        $isPlayer = $this->tournamentPlayers->isTournamentPlayer($tournamentId, $userId);
+        if ($isPlayer) {
+            return $this->jsonBadRequest('Player is already participating');
+        } else if ($isPlayer === null) {
+            return $this->jsonServerError();
+        }
+
+        $playerCount = $this->tournamentPlayers->countTournamentPlayers($tournamentId);
+        if ($playerCount > 8) {
+            return $this->jsonBadRequest('Maximum amount of players is 8');
+        } else if ($isPlayer === null) {
+            return $this->jsonServerError();
+        }
+
         $id = $this->tournamentPlayers->createTournamentPlayer($tournamentId, $userId);
         if ($id === null) {
             return $this->jsonServerError();
@@ -63,7 +78,7 @@ class TournamentPlayerController extends BaseController
     public function updateTournamentPlayer(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $id = (int)$id;
@@ -76,7 +91,7 @@ class TournamentPlayerController extends BaseController
         }
         $tournamentId = $request->postParams['tournamentId'] ?? $existing['tournament_id'];
         $userId = $request->postParams['userId'] ?? $existing['user_id'];
-        if (!ctype_digit((string)$tournamentId) || !ctype_digit((string)$userId)) {
+        if (!Validator::validateId($tournamentId) || !Validator::validateId($userId)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $tournamentId = (int)$tournamentId;
@@ -91,7 +106,7 @@ class TournamentPlayerController extends BaseController
     public function deleteTournamentPlayer(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $deleted = $this->tournamentPlayers->deleteTournamentPlayer((int)$id);

@@ -1,19 +1,7 @@
 // Compiles to /site/public/js/user/auth/pretendLoginButton.js
 
-import { navigateToLandingPage } from "../landing/navigation.js";
-
-// import { $, log } from "../../utils/utils.js";
-//
-// function wirePretendLoginButton() {
-//   const btn = $<HTMLButtonElement>("pretendLoginBtn");
-//   if (!btn) { console.warn("[pretendLoginButton] #pretendLoginBtn not found"); return; }
-//
-//   btn.addEventListener("click", () => {
-//     log("[UI] pretendLogin → navigating to /userLanding.html");
-//     window.location.assign("/userLanding.html");
-//   });
-// }
-// wirePretendLoginButton();
+import { setCurrentUserId, setUserOnline } from './authUtils.js';
+import { initProfile } from "../profile/profile.js";
 
 function wirePretendLoginButton() {
 	const btn = document.getElementById('pretendLoginBtn') as HTMLButtonElement | null;
@@ -38,7 +26,11 @@ function wirePretendLoginButton() {
 			console.error('Logout failed:', error);
 		}
 
-		navigateToLandingPage(null);
+		// Now do the pretend login
+		setCurrentUserId(2);
+		setUserOnline().catch(e => console.warn('[auth] setUserOnline failed', e));
+		window.location.hash = '#profile';
+		initProfile().catch((e) => console.warn('[profile] init after register failed', e));
 	});
 }
 

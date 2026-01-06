@@ -42,6 +42,17 @@ re-php-backend: ## Rebuild and restart only the PHP backend container
 	$(DC) build --no-cache php-backend
 	$(DC) up -d php-backend
 
+clean-conversations: ## Delete all conversations/messages and restart backend
+	$(DC) exec php-backend sh -lc 'sqlite3 /var/www/html/database/transcendence.db "PRAGMA foreign_keys=ON; DELETE FROM message_read_states; DELETE FROM messages; DELETE FROM conversation_participants; DELETE FROM conversations; DELETE FROM sqlite_sequence WHERE name IN (\"message_read_states\",\"messages\",\"conversation_participants\",\"conversations\");"'
+	$(DC) up -d php-backend
+
+clean-db: ## Remove SQLite DB, re-init schema, rebuild and restart backend
+	$(DC) exec php-backend sh -lc "\
+	rm -f /var/www/html/database/transcendence.db && \
+	sqlite3 /var/www/html/database/transcendence.db < /var/www/html/tools/sqlite_init.sql \
+	"
+	$(DC) build --no-cache php-backend
+	$(DC) up -d php-backend
 
 help:
 	@echo "Available targets:"
@@ -58,6 +69,8 @@ help:
 	@echo "  re-frontend   - Rebuild and restart only the frontend container"
 	@echo "  re-nginx      - Rebuild and restart only the nginx container"
 	@echo "  re-php-backend- Rebuild and restart only the PHP backend container"
+	@echo "  clean-conversations - Delete all conversations/messages and restart backend"
+	@echo "  clean-db      - Remove SQLite DB, re-init schema, rebuild and restart backend"
 	@echo "  help          - Show this help"
 
-.PHONY: all up build down clean clean_cache help re frontend nginx php-backend re-frontend re-nginx re-php-backend
+.PHONY: all up build down clean clean_cache help re frontend nginx php-backend re-frontend re-nginx re-php-backend clean-conversations clean-db

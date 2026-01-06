@@ -68,13 +68,11 @@ class UserModel {
 		}
 	}
 
-	// adds a new user
-	// catches error for unique fields etc.
-	public function createUser($userName, $email, $password_hash): ?int {
+	public function createUser($userName, $displayName, $email, $password_hash): ?int {
 		try {
 			$this->db->query(
-					"INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)", 
-					[$userName, $email, $password_hash]
+					"INSERT INTO users (username, displayname, email, password_hash) VALUES (?, ?, ?, ?)", 
+					[$userName, $displayName, $email, $password_hash]
 			);
 			return $this->db->connection->lastInsertId();
 		}
@@ -123,6 +121,32 @@ class UserModel {
         	return null;
 		}
 	}
+
+    public function updateUserInfo($id, $userName, $displayName, $email, $password) {
+		try {
+            $this->db->query(
+                "UPDATE users SET username = ?, displayname = ?, email = ?, password_hash = ? WHERE id = ?",
+                [$userName, $displayName, $email, $password, $id]
+            );
+            return $this->getUserById($id);
+        }
+        catch (\PDOException $e) {
+			return null;
+        }
+    }
+
+    public function updateAvatarFilename(int $id, string $filename): ?array {
+        try {
+            $this->db->query(
+                "UPDATE users SET avatar_filename = ? WHERE id = ?",
+                [$filename, $id]
+            );
+            return $this->getUserById($id);
+        }
+        catch (\PDOException $e) {
+            return null;
+        }
+    }
 
 	// 2FA functions (added for JWT + 2FA authentication) (mert)
 	public function saveTwoFactorCode($userId, $code, $expiresAt)

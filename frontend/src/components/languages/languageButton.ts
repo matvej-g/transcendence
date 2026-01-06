@@ -17,15 +17,15 @@ function switchMenu() {
 }
 
 
-// creates the element structure 
+// creates the element structure
 // does not add anything to DOM itself
 function createSwitcherElement(): HTMLElement {
   const wrapper = document.createElement("div");
-  wrapper.className = "absolute top-3 right-3";
+  wrapper.className = "absolute top-16 right-3";
   wrapper.innerHTML = `
     <button id="languageButton"
             type="button"
-            class="flex items-center gap-1 px-2 py-1 rounded-md border border-gray-300 text-xs hover:bg-gray-50 active:bg-gray-100">
+            class="flex items-center gap-1 px-2 py-1 rounded-md border border-gray-300 text-xs text-white hover:bg-emerald-400 active:bg-gray-100">
       <span data-lang-label>🇬🇧 EN</span>
       <span class="text-[10px]">▼</span>
     </button>

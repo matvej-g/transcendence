@@ -7,22 +7,26 @@ use src\http\Request;
 use src\controllers\BaseController;
 use src\Models\UserModel;
 use src\Models\MatchesModel;
+use src\Models\UserStatsModel;
+use src\Validator;
 
 class MatchesController extends BaseController
 {
     private MatchesModel $matches;
     private UserModel $users;
+    private UserStatsModel $stats;
 
     public function __construct(Database $db)
     {
         $this->matches = new MatchesModel($db);
-        $this->users = new UserModel($db);
+        $this->users   = new UserModel($db);
+        $this->stats   = new UserStatsModel($db);
     }
 
     public function getMatch(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Invalid match id');
         }
         $id = (int)$id;
@@ -50,12 +54,16 @@ class MatchesController extends BaseController
         $playerOneId = $request->postParams['idPlayerOne'] ?? null;
         $playerTwoId = $request->postParams['idPlayerTwo'] ?? null;
 
-        if ($playerOneId === null || $playerTwoId === null || !ctype_digit((string)$playerOneId) || !ctype_digit((string)$playerTwoId)) {
+        if (!Validator::validateId($playerOneId) || !Validator::validateId($playerTwoId)) {
             return $this->jsonBadRequest('Invalid user id');
         }
 
         $playerOneId = (int)$playerOneId;
         $playerTwoId = (int)$playerTwoId;
+
+        if ($playerOneId === $playerTwoId) {
+            return $this->jsonBadRequest('Players must be different');
+        }
 
         $userOne = $this->users->getUserById($playerOneId);
         if ($userOne === null) {
@@ -83,7 +91,7 @@ class MatchesController extends BaseController
     public function updateScore(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Invalid match id');
         }
 
@@ -98,7 +106,6 @@ class MatchesController extends BaseController
         if ($match['finished_at'] !== null) {
             return $this->jsonBadRequest('Match already finished');
         }
-
         $scoreOne = $request->postParams['scorePlayerOne'] ?? null;
         $scoreTwo = $request->postParams['scorePlayerTwo'] ?? null;
         if ($scoreOne === null|| $scoreTwo === null || !ctype_digit($scoreOne) || !ctype_digit($scoreTwo)) {
@@ -121,10 +128,9 @@ class MatchesController extends BaseController
     public function endMatch(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Invalid match id');
         }
-
         $match = $this->matches->getMatchById((int)$id);
         if ($match === null) {
             return $this->jsonServerError();
@@ -137,11 +143,21 @@ class MatchesController extends BaseController
             return $this->jsonBadRequest('Match already finished');
         }
 
+        $playerOneId = (int) $match['player_one_id'];
+        $playerTwoId = (int) $match['player_two_id'];
+        $scoreOne    = (int) $match['score_player_one'];
+        $scoreTwo    = (int) $match['score_player_two'];
+
         $winnerId = 0;
-        if ($match['score_player_one'] > $match['score_player_two']) {
-            $winnerId = $match['player_one_id'];
-        } elseif ($match['score_player_one'] < $match['score_player_two']) {
-            $winnerId = $match['player_two_id'];
+        if ($scoreOne > $scoreTwo) {
+            $winnerId = $playerOneId;
+            $this->stats->recordMatchResult($playerOneId, $playerTwoId, $scoreOne, $scoreTwo);
+        } elseif ($scoreOne < $scoreTwo) {
+            $winnerId = $playerTwoId;
+            $this->stats->recordMatchResult($playerTwoId, $playerOneId, $scoreTwo, $scoreOne);
+        } else {
+            // draw
+            $this->stats->recordDraw($playerOneId, $playerTwoId, $scoreOne, $scoreTwo);
         }
 
         $finished = $this->matches->endMatch((int)$id, $winnerId);
@@ -154,7 +170,7 @@ class MatchesController extends BaseController
     public function deleteMatch(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Invalid match id');
         }
         $deleted = $this->matches->deleteMatch((int)$id);

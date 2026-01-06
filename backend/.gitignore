@@ -1,13 +1,13 @@
 
 # right now, symfony dumper and monolog (unused)
 /vendor
-composer.json
-composer.lock
+#composer.json
+#composer.lock
 
 # Documentation
 notes_david1.md
 progress_david1.md
+/database
 
 # logfile
 /tmp
-

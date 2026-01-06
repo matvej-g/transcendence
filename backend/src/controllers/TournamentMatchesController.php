@@ -6,6 +6,7 @@ use src\Database;
 use src\http\Request;
 use src\controllers\BaseController;
 use src\Models\TournamentMatchesModel;
+use src\Validator;
 
 class TournamentMatchesController extends BaseController
 {
@@ -19,7 +20,7 @@ class TournamentMatchesController extends BaseController
     public function getTournamentMatch(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $id = (int)$id;
@@ -46,7 +47,7 @@ class TournamentMatchesController extends BaseController
     {
         $tournamentId = $request->postParams['tournamentId'] ?? null;
         $matchId = $request->postParams['matchId'] ?? null;
-        if ($tournamentId === null || $matchId === null || !ctype_digit((string)$tournamentId) || !ctype_digit((string)$matchId)) {
+        if (!Validator::validateId($tournamentId) || !Validator::validateId($matchId)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $tournamentId = (int)$tournamentId;
@@ -61,7 +62,7 @@ class TournamentMatchesController extends BaseController
     public function updateTournamentMatch(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $id = (int)$id;
@@ -74,7 +75,7 @@ class TournamentMatchesController extends BaseController
         }
         $tournamentId = $request->postParams['tournamentId'] ?? $existing['tournament_id'];
         $matchId = $request->postParams['matchId'] ?? $existing['match_id'];
-        if (!ctype_digit((string)$tournamentId) || !ctype_digit((string)$matchId)) {
+        if (!Validator::validateId($tournamentId) || !Validator::validateId($matchId)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $tournamentId = (int)$tournamentId;
@@ -89,7 +90,7 @@ class TournamentMatchesController extends BaseController
     public function deleteTournamentMatch(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
-        if ($id === null || !ctype_digit($id)) {
+        if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Bad Input');
         }
         $deleted = $this->tournamentMatches->deleteTournamentMatch((int)$id);

@@ -13,7 +13,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# COPY php app files
 COPY . /var/www/html/
 
 RUN chmod +x /var/www/html/tools/database_init.sh
