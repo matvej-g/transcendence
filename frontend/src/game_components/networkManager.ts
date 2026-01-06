@@ -61,17 +61,6 @@ export class NetworkManager {
 		console.log('Connected to server!');
 		
 		// send authenticate message to server
-<<<<<<< HEAD
-=======
-		this.send({
-			type: 'authenticate',
-			data: { 
-				userID: this.userId
-			}
-		});
-		
-		// Then join the game
->>>>>>> origin/main
 		this.send({
 			type: 'authenticate',
 			data: { 

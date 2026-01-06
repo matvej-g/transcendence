@@ -8,7 +8,7 @@ class GameEngine {
 
 	private const CANVAS_WIDTH = 800;
 	private const CANVAS_HEIGHT = 400;
-	private const PADDLE_WIDTH = 12;
+	private const PADDLE_WIDTH = 1;
 	private const PADDLE_HEIGHT = 60;
 	private const PADDLE_SPEED = 550;
 	private const BALL_RADIUS = 10;

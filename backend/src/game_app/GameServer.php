@@ -7,11 +7,8 @@ use Ratchet\ConnectionInterface;
 use src\Database;
 use src\Models\UserModel;
 use src\Models\MatchesModel;
-<<<<<<< HEAD
 use src\Models\UserStatsModel;
-=======
-
->>>>>>> origin/main
+use src\Models\UserStatusModel;
 
 class GameServer implements MessageComponentInterface {
     protected $players;
@@ -22,10 +19,8 @@ class GameServer implements MessageComponentInterface {
     private Database $db;
     private UserModel $userModel;
     private MatchesModel $matchesModel;
-<<<<<<< HEAD
     private UserStatsModel $userStatsModel;
-=======
->>>>>>> origin/main
+    private UserStatusModel $userStatus;
 
     public function __construct($loop = null) {
         $this->players = new \SplObjectStorage;
@@ -34,10 +29,8 @@ class GameServer implements MessageComponentInterface {
         $this->db = new Database('sqlite:/var/www/html/database/transcendence.db');
         $this->userModel = new UserModel($this->db);
         $this->matchesModel = new MatchesModel($this->db);
-<<<<<<< HEAD
         $this->userStatsModel = new UserStatsModel($this->db);
-=======
->>>>>>> origin/main
+        $this->userStatus = new UserStatusModel($this->db);
         echo "GameServer initialized\n";
 
         //start game loop at ~60 FPS (every 16ms)
@@ -71,7 +64,6 @@ class GameServer implements MessageComponentInterface {
                 if ($user) {
                     $player->userID = $user['id'];
                     $player->username = $user['username'];
-<<<<<<< HEAD
                     $player->send([
                         'type' => 'connected',
                         'data' => [
@@ -97,13 +89,6 @@ class GameServer implements MessageComponentInterface {
                     'errorMessage' => 'Authentication failed: No userID provided'
                 ]
                 ]);
-=======
-                } else {
-                    echo "DEBUG: User not found in database for userID={$userID}\n";
-                }
-            } else {
-            echo "DEBUG: No userID provided in authenticate message\n";
->>>>>>> origin/main
             }
         }
         //handle join players
@@ -182,7 +167,6 @@ class GameServer implements MessageComponentInterface {
                 ]);
 
                 if ($game['mode'] === 'remote') {
-<<<<<<< HEAD
                     $currentState = $game['engine']->update();
                     //disconnected player automatacly loses
                     $winnerId = $opponent->userID;
@@ -198,12 +182,18 @@ class GameServer implements MessageComponentInterface {
                     // Match beenden und Stats aufzeichnen
                     $this->matchesModel->endMatch($gameID, $winnerId);
                     $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
-=======
-                    $this->matchesModel->endMatch($gameID, $opponent->userID);
->>>>>>> origin/main
+
+                    $this->userStatus->setCurrentMatch($winnerId, null);
+                    $this->userStatus->setCurrentMatch($loserId, null);
+                } else { //maybe needed for AI
+                    $this->userStatus->setCurrentMatch($player->userID, null);
                 }
                 $opponent->gameID = null;
                 $opponent->paddle = null;
+            } else {
+                if ($game['mode'] === 'local') {
+                    $this->userStatus->setCurrentMatch($player->userID, null);    
+                }
             }
             unset($this->games[$gameID]);
         }
@@ -218,46 +208,36 @@ class GameServer implements MessageComponentInterface {
     private function startRemoteGame(Player $player): void {
         echo "Player {$player->userID} searching for match...\n";
         //check if Player is in game
-        if ($this->isPlayerInGame($player->userID)) {
+        if ($this->userStatus->isInMatch($player->userID)) {
             $player->send([
                 'type' => 'error',
                 'data' => [
-                    'errorMessage' => 'You are already in a game. Please finish or leave current game first.'
+                    'errorMessage' => 'You are already in a game.'
                 ]
             ]);
             return;
         }
-        //check if Player is in queue
-        if ($this->isPlayerinQueue($player->userID)) {
-            $player->send([
-                'type' => 'error',
-                'data' => [
-                    'errorMessage' => 'You are already searching for a match.'
-                ]
-            ]);
-            return;
-        }
-
         if (count($this->waitingPlayers) > 0) {
             $opponent = array_shift($this->waitingPlayers);
             echo "Match found! {$player->userID} vs {$opponent->userID}\n";
 
             // Create match in database and use matchId as gameID
-            $matchId = $this->matchesModel->createMatch($player->userID, $opponent->userID);
-            if (!$matchId) {
-                echo "ERROR: Failed to create match in database!\n";
+            $gameID = $this->matchesModel->createMatch($player->userID, $opponent->userID);
+            if (!$gameID) {
+                echo "ERROR: Failed to create match in database!\n";//david said maybe return 500
                 return;
             }
             
-            $gameID = $matchId;
             $player->gameID = $gameID;
             $player->paddle = 'left';
 
             $opponent->gameID = $gameID;
             $opponent->paddle = 'right';
 
-            echo "Match created in DB with ID: {$matchId}\n";
-
+            echo "Match created in DB with ID: {$gameID}\n";
+            //set user Status in match
+            $this->userStatus->setCurrentMatch($player->userID, $gameID);
+            $this->userStatus->setCurrentMatch($opponent->userID, $gameID);
             $player->send([
                 'type' => 'matchFound',
                 'data' => [
@@ -280,7 +260,7 @@ class GameServer implements MessageComponentInterface {
                 'player1' => $player,
                 'player2' => $opponent,
                 'mode' => 'remote',
-                'matchId' => $matchId,
+                'matchId' => $gameID,
                 'started' => time(),
                 'engine' => $engine,
                 'lastLeftScore' => 0,
@@ -295,41 +275,22 @@ class GameServer implements MessageComponentInterface {
 
     private function startLocalGame(Player $player): void {
         echo "Player {$player->userID} starting local game...\n";
-        if ($player->userID === null) {
-            echo "ERROR: User tried to start game without authentication!\n";
-            $player->send([
-                'type' => 'error',
-                'data' => [
-                    'errorMessage' => 'Please authenticate first.'
-                    ]
-                ]);
-            return;
-        }
         //check if Player is in game
-        if ($this->isPlayerInGame($player->userID)) {
+        if ($this->userStatus->isInMatch($player->userID)) {
             $player->send([
                 'type' => 'error',
                 'data' => [
-                    'message' => 'You are already in a game. Please finish or leave current game first.'
+                    'errorMessage' => 'You are already in a game.'
                 ]
             ]);
             return;
         }
-        //check if Player is in queue
-        if ($this->isPlayerinQueue($player->userID)) {
-            $player->send([
-                'type' => 'error',
-                'data' => [
-                    'message' => 'You are already searching for a match.'
-                ]
-            ]);
-            return;
-        }
-
-        $gameID = uniqid('local_');
+        $gameID = (int)(microtime(true) * 1000);
         $player->gameID = $gameID;
         $player->paddle = 'both';
 
+        //set user Status in match
+        $this->userStatus->setCurrentMatch($player->userID, $gameID);
         $player->send([
             'type' => 'matchFound',
             'data' => [
@@ -408,11 +369,11 @@ class GameServer implements MessageComponentInterface {
 
             if ($game['mode'] === 'local') {
                 $game['player1']->send($msgGameOver);
+                $this->userStatus->setCurrentMatch($game['player1']->userID, null);
             } else {
                 $winnerId = ($newState['winner'] === 'left')
                     ? $game['player1']->userID
                     : $game['player2']->userID;
-<<<<<<< HEAD
                 $loserId = ($newState['winner'] === 'left')
                     ? $game['player2']->userID
                     : $game['player1']->userID;
@@ -426,9 +387,10 @@ class GameServer implements MessageComponentInterface {
                     : $newState['leftPaddle']['score'];
                 $this->matchesModel->endMatch($gameID, $winnerId);
                 $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
-=======
-                $this->matchesModel->endMatch($gameID, $winnerId);
->>>>>>> origin/main
+
+                $this->userStatus->setCurrentMatch($game['player1']->userID, null);
+                $this->userStatus->setCurrentMatch($game['player2']->userID, null);
+
                 $game['player1']->send($msgGameOver);
                 $game['player2']->send($msgGameOver);
             }
@@ -442,33 +404,5 @@ class GameServer implements MessageComponentInterface {
 
             unset($this->games[$gameID]);
         }
-    }
-
-
-    //helper checks
-    private function isPlayerInGame(int $userID): bool {
-        //echo "DEBUG: Checking if userID {$userID} is in game...\n";
-        foreach ($this->games as $gameID => $game) {
-            //echo "  - Game {$gameID}: player1={$game['player1']->userID}, player2=" . ($game['player2']->userID ?? 'null') . "\n";
-            if ((int)$game['player1']->userID === $userID) {
-                //echo "  ✅ Found in game as player1!\n";
-                return true;
-            }
-            if ($game['player2'] !== null && (int)$game['player2']->userID === $userID) {
-                //echo "  ✅ Found in game as player2!\n";
-                return true;
-            }
-        }
-        //echo "  ❌ Not found in any game\n";
-        return false;
-    }
-
-    private function isPlayerinQueue(int $userID): bool {
-        foreach ($this->waitingPlayers as $waitingPlayer) {
-            if ($waitingPlayer->userID === $userID) {
-                return true;
-            }
-        }
-        return false;
     }
 }

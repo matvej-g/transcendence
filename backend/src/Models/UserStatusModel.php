@@ -41,6 +41,7 @@ class UserStatusModel
 
             return $this->getStatusByUserId($userId);
         } catch (\PDOException $e) {
+            error_log("Error in upsertRow: " . $e->getMessage());
             return null;
         }
     }
@@ -71,7 +72,13 @@ class UserStatusModel
                 [$userId]
             )->fetch(PDO::FETCH_ASSOC);
 
-            return $row !== false;
+            // Prüfe ob Row existiert UND current_match_id einen Wert hat
+            if ($row === false) {
+                return false; // User hat keinen Status-Eintrag
+            }
+            
+            // Prüfe ob current_match_id gesetzt ist (nicht NULL und nicht leer)
+            return !empty($row['current_match_id']);
         } catch (\PDOException $e) {
             return null;
         }
