@@ -152,7 +152,21 @@ class GameServer implements MessageComponentInterface {
                 ]);
 
                 if ($game['mode'] === 'remote') {
-                    $this->matchesModel->endMatch($gameID, $opponent->userID);
+                    $currentState = $game['engine']->update();
+                    //disconnected player automatacly loses
+                    $winnerId = $opponent->userID;
+                    $loserId = $player->userID;
+
+                    $goalsWinner = ($opponent->paddle === 'left')
+                        ? $currentState['leftPaddle']['score']
+                        : $currentState['rightPaddle']['score'];
+                    
+                    $goalsLoser = ($opponent->paddle === 'left')
+                        ? $currentState['rightPaddle']['score']
+                        : $currentState['leftPaddle']['score'];
+                    // Match beenden und Stats aufzeichnen
+                    $this->matchesModel->endMatch($gameID, $winnerId);
+                    $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
                 }
                 $opponent->gameID = null;
                 $opponent->paddle = null;
