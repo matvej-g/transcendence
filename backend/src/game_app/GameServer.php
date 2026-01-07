@@ -12,8 +12,6 @@ use src\Models\UserStatusModel;
 
 class GameServer implements MessageComponentInterface {
     private const GAME_TICK = 0.016;
-    private const COUNTDOWN = 4;
-    private const MAX_SCORE = 5;
 
     protected \SplObjectStorage $players;
     private array $waitingPlayers = [];
@@ -75,68 +73,10 @@ class GameServer implements MessageComponentInterface {
         if (!isset($this->players[$conn])) return;
 
         $player = $this->players[$conn];
-        echo "Connection closed: {$player->userID}\n";
-        
-        //remove player from waiting list
-        $this->waitingPlayers = array_filter(
-            $this->waitingPlayers,
-            fn($p) => $p->userID !== $player->userID
-        );
-
-        //send player message that opponent disconnected/left
-        if ($player->gameID && isset($this->games[$player->gameID])) {
-            $gameID = $player->gameID;
-            $game = $this->games[$gameID];
-
-            //find opponent
-            $opponent = null;
-            if ($game['player1']->userID === $player->userID) {
-                $opponent = $game['player2'];
-            } elseif ($game['player2']->userID === $player->userID) {
-                $opponent = $game['player1'];
-            }
-
-            if ($opponent && isset($this->players[$opponent->conn])) {
-                $opponent->send([
-                    'type' => 'opponentDisconnected',
-                    'data' => [
-                        'message' => 'Opponend disconnected. You win!',
-                        'winner' => $opponent->paddle
-                    ]
-                ]);
-
-                if ($game['mode'] === 'remote') {
-                    $currentState = $game['engine']->update();
-                    //disconnected player automatacly loses
-                    $winnerId = $opponent->userID;
-                    $loserId = $player->userID;
-
-                    $goalsWinner = ($opponent->paddle === 'left')
-                        ? $currentState['leftPaddle']['score']
-                        : $currentState['rightPaddle']['score'];
-                    
-                    $goalsLoser = ($opponent->paddle === 'left')
-                        ? $currentState['rightPaddle']['score']
-                        : $currentState['leftPaddle']['score'];
-                    // Match beenden und Stats aufzeichnen
-                    $this->matchesModel->endMatch($gameID, $winnerId);
-                    $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
-
-                    $this->userStatus->setCurrentMatch($winnerId, null);
-                    $this->userStatus->setCurrentMatch($loserId, null);
-                } else { //maybe needed for AI
-                    $this->userStatus->setCurrentMatch($player->userID, null);
-                }
-                $opponent->gameID = null;
-                $opponent->paddle = null;
-            } else {
-                if ($game['mode'] === 'local') {
-                    $this->userStatus->setCurrentMatch($player->userID, null);    
-                }
-            }
-            unset($this->games[$gameID]);
-        }
+        $this->removePlayerFromQueue($player);
+        $this->handlePlayerDisconnect($player);
         unset($this->players[$conn]);
+        echo "Connection closed: {$player->userID}\n";
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
@@ -144,7 +84,7 @@ class GameServer implements MessageComponentInterface {
         $conn->close();
     }
 
-    private function handleAuthentication(Player $player, array $data): void {
+        private function handleAuthentication(Player $player, array $data): void {
         $userID = $data['userID'] ?? null;
         if (!$userID) {
             $this->sendError($player, 'No userID povided');
@@ -202,6 +142,86 @@ class GameServer implements MessageComponentInterface {
             }
         } elseif ($action === 'keyup') {
             $engine->setPaddleVelocity($paddle, 0);
+        }
+    }
+
+    private function removePlayerFromQueue(Player $player): void {
+        $this->waitingPlayers = array_filter(
+            $this->waitingPlayers,
+            fn($p) => $p->userID !== $player->userID
+        );
+    }
+
+    private function handlePlayerDisconnect(Player $player): void {
+        if (!$player->gameID || !isset($this->games[$player->gameID])) return;
+
+        $game = $this->games[$player->gameID];
+        $opponent = $this->getOpponent($player, $game);
+
+        if ($opponent) {
+            $this->notifyOpponentDisconnect($opponent, $player, $game);
+        }
+
+        $this->endGame($player->gameID, $opponent?->userID, true);
+    }
+
+    private function getOpponent(Player $player, array $game): ?Player {
+        if ($game['player1']->userID === $player->userID) {
+            return $game['player2'];
+        }
+        if ($game['player2'] && $game['player2']->userID === $player->userID) {
+            return $game['player1'];
+        }
+        return null;
+    }
+
+    private function notifyOpponentDisconnect(Player $opponent, Player $disconnectedPlayer, array $game): void {
+        $opponent->send([
+            'type' => 'opponentDisconnected',
+            'data' => [
+                'message' => 'Opponent disconnected. You win!',
+                'winner' => $opponent->paddle
+            ]
+        ]);
+    }
+
+    private function endGame(string $gameID, ?string $winnerId = null, bool $isDisconnect = false): void {
+        if (!isset($this->games[$gameID])) return;
+
+        $game = $this->games[$gameID];
+        
+        if ($game['mode'] === 'remote' && $winnerId) {
+            $this->recordMatchResults($gameID, $game, $winnerId);
+        }
+
+        $this->cleanupGame($game);
+        unset($this->games[$gameID]);
+    }
+
+    private function recordMatchResults(string $gameID, array $game, string $winnerId): void {
+        $state = $game['engine']->update();
+        
+        $loserId = ($winnerId === $game['player1']->userID) 
+            ? $game['player2']->userID 
+            : $game['player1']->userID;
+
+        $isLeftWinner = ($game['player1']->userID === $winnerId);
+        $goalsWinner = $isLeftWinner ? $state['leftPaddle']['score'] : $state['rightPaddle']['score'];
+        $goalsLoser = $isLeftWinner ? $state['rightPaddle']['score'] : $state['leftPaddle']['score'];
+
+        $this->matchesModel->endMatch($gameID, $winnerId);
+        $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
+    }
+
+    private function cleanupGame(array $game): void {
+        $game['player1']->gameID = null;
+        $game['player1']->paddle = null;
+        $this->userStatus->setCurrentMatch($game['player1']->userID, null);
+
+        if ($game['player2']) {
+            $game['player2']->gameID = null;
+            $game['player2']->paddle = null;
+            $this->userStatus->setCurrentMatch($game['player2']->userID, null);
         }
     }
 
