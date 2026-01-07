@@ -12,6 +12,7 @@ use src\Models\UserStatusModel;
 
 class GameServer implements MessageComponentInterface {
     private const GAME_TICK = 0.016;
+    private const COUNTDOWN_DURATION = 4;
 
     protected \SplObjectStorage $players;
     private array $waitingPlayers = [];
@@ -331,10 +332,10 @@ class GameServer implements MessageComponentInterface {
         echo "Local game started for player {$player->userID}\n";
     }
 
+    /*
+    Server Update/Loop logic
+    */
     private function updateAllGames(): void {
-        // if (count($this->games) > 0) {
-        //     echo "Tick: " . count($this->games) . " active games\n";
-        // }
         foreach ($this->games as $gameID => $_) {
             $this->updateGame($gameID);
         }
@@ -343,99 +344,96 @@ class GameServer implements MessageComponentInterface {
     private function updateGame(string $gameID): void {
         if (!isset($this->games[$gameID])) return;
 
-        $game = $this->games[$gameID];
-        //wait for countdown
-        if (!$game['countdownFinished']) {
-            if (time() - $game['started'] >= 4) {
-                $this->games[$gameID]['countdownFinished'] = true;
-                $this->games[$gameID]['engine'] = new GameEngine($gameID);
-                echo "countdown completed\n";
-            }
+        $game = &$this->games[$gameID];
+
+        if (!$this->checkCountdown($gameID, $game)) {
             return;
         }
-        
+
         $newState = $game['engine']->update();
-        //message for Paddle and Ball positions
+        $this->broadcastGameState($game, $newState);
+        $this->checkGameEnd($gameID, $game, $newState);
+    }
+
+    private function checkCountdown(string $gameID, array $game): bool {
+        if ($game['countdownFinished']) {
+            return true;
+        }
+
+        if (time() - $game['started'] >= self::COUNTDOWN_DURATION) {
+            $this->games[$gameID]['countdownFinished'] = true;
+            $this->games[$gameID]['engine'] = new GameEngine($gameID);
+            echo "Countdown completed for game {$gameID}\n";
+            return true;
+        }
+        return false;
+    }
+
+    private function broadcastGameState(array $game, array $state): void {
         $message = [
             'type' => 'gameUpdate',
             'data' => [
-                'leftPaddleY' => $newState['leftPaddle']['y'],
-                'rightPaddleY' => $newState['rightPaddle']['y'],
-                'ballX' => $newState['ball']['x'],
-                'ballY' => $newState['ball']['y'],
+                'leftPaddleY' => $state['leftPaddle']['y'],
+                'rightPaddleY' => $state['rightPaddle']['y'],
+                'ballX' => $state['ball']['x'],
+                'ballY' => $state['ball']['y'],
             ]
         ];
 
-        //message for score change
-        if ($newState['leftPaddle']['score'] != $game['lastLeftScore'] ||
-            $newState['rightPaddle']['score'] != $game['lastRightScore']) {
-                $message['data']['leftScore'] = $newState['leftPaddle']['score'];
-                $message['data']['rightScore'] = $newState['rightPaddle']['score'];
-                if ($game['mode'] === 'remote') {
-                    $this->matchesModel->updateScore(
-                        $gameID,
-                        $newState['leftPaddle']['score'],
-                        $newState['rightPaddle']['score']);
-                }
-                $this->games[$gameID]['lastLeftScore'] = $newState['leftPaddle']['score'];
-                $this->games[$gameID]['lastRightScore'] = $newState['rightPaddle']['score'];
-            }
+        $this->updateScoreIfChanged($game, $state, $message);
 
-        if ($game['mode'] === 'local') {
-            $game['player1']->send($message);
-        } else {
-            $game['player1']->send($message);
+        $game['player1']->send($message);
+        if ($game['player2']) {
             $game['player2']->send($message);
-        }
-        //clean up game if someone won
-        if ($newState['winner'] !== null) {
-            echo "Game {$gameID} finished! Winner: {$newState['winner']}\n";
-            $msgGameOver = [
-                'type' => 'gameOver',
-                'data' => [
-                    'winner' => $newState['winner']
-                ]
-            ];
-
-            if ($game['mode'] === 'local') {
-                $game['player1']->send($msgGameOver);
-                $this->userStatus->setCurrentMatch($game['player1']->userID, null);
-            } else {
-                $winnerId = ($newState['winner'] === 'left')
-                    ? $game['player1']->userID
-                    : $game['player2']->userID;
-                $loserId = ($newState['winner'] === 'left')
-                    ? $game['player2']->userID
-                    : $game['player1']->userID;
-                
-                $goalsWinner = ($newState['winner'] === 'left')
-                    ? $newState['leftPaddle']['score']
-                    : $newState['rightPaddle']['score'];
-                
-                $goalsLoser = ($newState['winner'] === 'left')
-                    ? $newState['rightPaddle']['score']
-                    : $newState['leftPaddle']['score'];
-                $this->matchesModel->endMatch($gameID, $winnerId);
-                $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
-
-                $this->userStatus->setCurrentMatch($game['player1']->userID, null);
-                $this->userStatus->setCurrentMatch($game['player2']->userID, null);
-
-                $game['player1']->send($msgGameOver);
-                $game['player2']->send($msgGameOver);
-            }
-
-            $game['player1']->gameID = null;
-            $game['player1']->paddle = null;
-            if ($game['player2']) {
-                $game['player2']->gameID = null;
-                $game['player2']->paddle = null;
-            }
-
-            unset($this->games[$gameID]);
         }
     }
 
+    private function updateScoreIfChanged(array &$game, array $state, array &$message): void {
+        $leftScore = $state['leftPaddle']['score'];
+        $rightScore = $state['rightPaddle']['score'];
+
+        if ($leftScore !== $game['lastLeftScore'] || $rightScore !== $game['lastRightScore']) {
+            $message['data']['leftScore'] = $leftScore;
+            $message['data']['rightScore'] = $rightScore;
+
+            if ($game['mode'] === 'remote') {
+                $this->matchesModel->updateScore($game['matchId'], $leftScore, $rightScore);
+            }
+
+            $game['lastLeftScore'] = $leftScore;
+            $game['lastRightScore'] = $rightScore;
+        }
+    }
+
+    private function checkGameEnd(string $gameID, array $game, array $state): void {
+        if ($state['winner'] === null) return;
+
+        echo "Game {$gameID} finished! Winner: {$state['winner']}\n";
+
+        $this->broadcastGameOver($game, $state['winner']);
+
+        $winnerId = ($state['winner'] === 'left') 
+            ? $game['player1']->userID 
+            : $game['player2']?->userID;
+
+        $this->endGame($gameID, $winnerId);
+    }
+
+    private function broadcastGameOver(array $game, string $winner): void {
+        $message = [
+            'type' => 'gameOver',
+            'data' => ['winner' => $winner]
+        ];
+
+        $game['player1']->send($message);
+        if ($game['player2']) {
+            $game['player2']->send($message);
+        }
+    }
+
+    /*
+    Helper Functions
+    */
     private function sendError(Player $player, string $message): void {
         $player->send([
             'type' => 'error',
