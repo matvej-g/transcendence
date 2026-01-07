@@ -9,6 +9,23 @@
     <title>ft_transcendence</title>
     <!-- Tailwind CDN (dev convenience) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Styles -->
+    <style>
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: crisp-edges;
+        }
+        
+        #gameContainer {
+            max-height: calc(100vh - 150px);
+        }
+
+        #gameContainer canvas {
+          max-height: calc(100% - 60px);
+        }
+    </style>
   </head>
   <body class="min-h-screen bg-gradient-to-br from-gray-900 to-black flex flex-col justify-between">
     <!-- Language switcher mount point -->
@@ -134,16 +151,11 @@
           </div>
         </div>
         <!-- Game Canvas (hidden initially) -->
-        <div id="gameContainer" class="hidden flex flex-col items-center justify-center">
-          <canvas
-            id="gameCanvas"
-            width="800"
-            height="600"
-            class="border-4 border-white rounded-lg shadow-2xl bg-gray-900">
-          </canvas>
+        <div id="gameContainer" class="hidden w-full flex-1 flex flex-col items-center justify-start gap-4 p-4 pt-16">
+          <canvas id="gameCanvas" class="max-w-full max-h-full"></canvas>
           <button
             id="exitGameButton"
-            class="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
             Exit Game
           </button>
         </div>
@@ -160,7 +172,7 @@
           <!-- Search Result Display (shown when a user is found) -->
           <div id="search-result-user" class="hidden flex flex-col items-center gap-2 mt-2">
             <div class="flex items-center gap-3">
-              <img id="search-result-avatar" src="profile_avatar.jpg" alt="Avatar image" class="avatar h-8 w-8 rounded-full border border-emerald-400">
+              <img id="search-result-avatar" src="" alt="Avatar image" class="avatar h-8 w-8 rounded-full border border-emerald-400">
               <span id="search-result-nickname" class="font-semibold text-emerald-300"></span>
             </div>
             <button id="add-friend-btn" class="bg-blue-500 text-white px-3 py-1 rounded">Send Friend Request</button>
@@ -172,25 +184,13 @@
           <div class="flex flex-col border border-emerald-400 rounded-xl">
             <h1 class="text-black font-bold m-4 text-emerald-400">Your Friends</h1>
             <ul id="friends-list" class="flex flex-col m-4">
-              <!-- Example friend item -->
-              <li class="friend-item my-3 flex flex-wrap items-center gap-5" data-nickname="Nickname">
-                <img class="avatar h-8 w-8 rounded-full border border-emerald-400" src="profile_avatar.jpg" alt="Avatar image">
-                <h2 class="text-emerald-400">Nickname</h2>
-                <span class="online-status text-green-600">online status</span>
-                <button class="block-friend rounded bg-red-600 hover:bg-red-700 px-3">block user</button>
-              </li>
+              <!-- Friend items rendered by JS -->
             </ul>
           </div>
           <div class="flex flex-col border border-emerald-400 rounded-xl">
             <h2 class="text-black font-bold m-4 text-emerald-400">Friend Requests</h2>
             <ul id="requests-list" class="flex flex-col m-4">
-              <!-- Example request item -->
-              <li class="friend-request-item my-3 flex flex-wrap items-center gap-5" data-nickname="RequesterNickname">
-                <img class="avatar h-8 w-8 rounded-full border border-emerald-400" src="profile_avatar.jpg" alt="Avatar image">
-                <h2 class="text-emerald-400">RequesterNickname</h2>
-                <button class="accept-request rounded bg-green-600 hover:bg-green-700 px-3">accept</button>
-                <button class="refuse-request rounded bg-red-600 hover:bg-red-700 px-3">refuse</button>
-              </li>
+              <!-- Request items rendered by JS -->
             </ul>
           </div>
           </div>

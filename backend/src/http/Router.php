@@ -44,7 +44,7 @@ class Router {
     // Convert a route URI with placeholders into a regex pattern,
     // handling multiple placeholders and restricting {id} to digits.
     // Returns an array of matches (named and numeric) or false.
-    public function convert($route, $uri)
+    private function convert($route, $uri)
     {
         $pattern = preg_replace_callback('/\{(\w+)\}/', function ($m) {
             $name = $m[1];
