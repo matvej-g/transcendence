@@ -3,19 +3,6 @@
 import { setCurrentUserId, setUserOnline } from './authUtils.js';
 import { initProfile } from "../profile/profile.js";
 
-// import { $, log } from "../../utils/utils.js";
-//
-// function wirePretendLoginButton() {
-//   const btn = $<HTMLButtonElement>("pretendLoginBtn");
-//   if (!btn) { console.warn("[pretendLoginButton] #pretendLoginBtn not found"); return; }
-//
-//   btn.addEventListener("click", () => {
-//     log("[UI] pretendLogin → navigating to /userLanding.html");
-//     window.location.assign("/userLanding.html");
-//   });
-// }
-// wirePretendLoginButton();
-
 function wirePretendLoginButton() {
 	const btn = document.getElementById('pretendLoginBtn') as HTMLButtonElement | null;
 	if (!btn) {
@@ -23,14 +10,27 @@ function wirePretendLoginButton() {
 		return;
 	}
 
-	btn.addEventListener('click', () => {
-		console.log('[UI] pretendLogin → navigating to #profile');
+	btn.addEventListener('click', async () => {
+		console.log('[UI] pretendLogin → clearing JWT and navigating to #profile');
+		
+		// Clear JWT cookie before pretend login
+		try {
+			const response = await fetch('/api/user/logout', {
+				method: 'POST',
+				credentials: 'include'
+			});
+			if (!response.ok) {
+				console.warn('Logout endpoint returned error, but continuing');
+			}
+		} catch (error) {
+			console.error('Logout failed:', error);
+		}
+
+		// Now do the pretend login
 		setCurrentUserId(2);
 		setUserOnline().catch(e => console.warn('[auth] setUserOnline failed', e));
-		// console.log('User data stored: id = 2');
 		window.location.hash = '#profile';
 		initProfile().catch((e) => console.warn('[profile] init after register failed', e));
-
 	});
 }
 

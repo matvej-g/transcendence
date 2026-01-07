@@ -2,6 +2,8 @@
 import { $, log } from "../../utils/utils.js";
 import { msg } from "../languages/auth/stringsMsgsHandlers.js";
 import { loginHandle } from "./login.js";
+import { apiCall } from "../../utils/api.js";
+//import { navigateToLandingPage } from "../landing/navigation.js";
 
 function wireLoginButton() {
   const btn = document.getElementById("loginBtn") as HTMLButtonElement | null;
@@ -14,11 +16,25 @@ function wireLoginButton() {
 
     const res = await loginHandle(u, p);
     log(`[UI] login result: ${JSON.stringify(res)}`);
-    alert(res.ok ? msg("loginOkPrefix") + `${res.user.username}` : msg("loginFailedGeneric") + ` (${res.error})`);
-	if (res.ok) {
-		window.location.hash = '#profile';;
-	}
-
+    
+    if (res.ok) {   //changes for 2fa and jwt (mert)
+      // Login successful - now trigger 2FA
+      log(`[UI] Login successful, sending 2FA code...`);
+      
+      const twoFAResult = await apiCall('/api/auth/send-2fa', {
+        method: 'POST'
+      });
+      
+      if (twoFAResult.ok && twoFAResult.data.success) {
+        alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to your email!`);
+        // Redirect to 2FA verification page
+        window.location.href = '/verify-2fa.html';
+      } else {
+        alert('Login successful but 2FA failed: ' + (twoFAResult.data.error || 'Unknown error'));
+      }
+    } else {
+      alert(msg("loginFailedGeneric") + ` (${res.error})`);
+    }
   });
 }
 wireLoginButton();
