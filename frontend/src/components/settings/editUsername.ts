@@ -55,6 +55,8 @@ if (form) {
 				}, 100);
 			} else if (res && res.message) {
 				if (errorDiv) errorDiv.textContent = res.message;
+			} else if (res && res.error) {
+				if (errorDiv) errorDiv.textContent = res.error;
 			} else {
 				if (errorDiv) errorDiv.textContent = 'Failed to update username.';
 			}
