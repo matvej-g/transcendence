@@ -118,12 +118,16 @@ class GameServer implements MessageComponentInterface {
     private function cleanupGame(array $game): void {
         $game['player1']->gameID = null;
         $game['player1']->paddle = null;
-        $this->userStatus->setCurrentMatch($game['player1']->userID, null);
+        if ($game['mode'] !== 'local') {
+            $this->userStatus->setCurrentMatch($game['player1']->userID, null);
+        }
 
         if ($game['player2']) {
             $game['player2']->gameID = null;
             $game['player2']->paddle = null;
-            $this->userStatus->setCurrentMatch($game['player2']->userID, null);
+            if ($game['mode'] !== 'local') {
+                $this->userStatus->setCurrentMatch($game['player1']->userID, null);
+            }
         }
     }
 
@@ -144,20 +148,25 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function isPlayerBusy(Player $player): bool {
-        if ($player->gameID !== null) {
+    foreach ($this->games as $game) {
+        if ($game['player1']->userID === $player->userID) {
             $this->sendError($player, 'You are already in a game.');
             return true;
         }
-
-        foreach ($this->waitingPlayers as $waitingPlayer) {
-            if ($waitingPlayer->userID === $player->userID) {
-                $this->sendError($player, 'You are already searching for a game.');
-                return true;
-            }
+        if ($game['player2'] && $game['player2']->userID === $player->userID) {
+            $this->sendError($player, 'You are already in a game.');
+            return true;
         }
-
-        return false;
     }
+    foreach ($this->waitingPlayers as $waitingPlayer) {
+        if ($waitingPlayer->userID === $player->userID) {
+            $this->sendError($player, 'You are already searching for a game.');
+            return true;
+        }
+    }
+
+    return false;
+}
 
     private function createRemoteMatch(Player $player1, Player $player2): void {
         $gameID = $this->matchesModel->createMatch($player1->userID, $player2->userID);
@@ -179,9 +188,13 @@ class GameServer implements MessageComponentInterface {
             $player2->gameID = $gameID;
             $player2->paddle = 'right';
             $this->userStatus->setCurrentMatch($player2->userID, $gameID);
+            if ($mode !== 'local') {
+                $this->userStatus->setCurrentMatch($player2->userID, $gameID);
+            }
         }
-
-        $this->userStatus->setCurrentMatch($player1->userID, $gameID);
+        if ($mode !== 'local') {
+            $this->userStatus->setCurrentMatch($player1->userID, $gameID);
+        }
 
         $this->games[$gameID] = [
             'player1' => $player1,
@@ -225,6 +238,9 @@ class GameServer implements MessageComponentInterface {
     Local server logic
     */
     private function startLocalGame(Player $player): void {
+        if ($this->isPlayerBusy($player)) {
+            return;
+        }
         $gameID = (int)(microtime(true) * 1000);
         $this->initializeGame($gameID, $player, null, 'local');
         echo "Local game started for player {$player->userID}\n";
