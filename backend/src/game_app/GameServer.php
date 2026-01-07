@@ -52,7 +52,9 @@ class GameServer implements MessageComponentInterface {
         }
     }
 
-
+    /*
+    Websocket Ratchet functions
+    */
     public function onOpen(ConnectionInterface $conn) {
         $this->players[$conn] = new Player($conn);
         echo "New connection: {$conn->resourceId}\n";
@@ -84,7 +86,8 @@ class GameServer implements MessageComponentInterface {
         $conn->close();
     }
 
-        private function handleAuthentication(Player $player, array $data): void {
+    //helper functions for websocket functions
+    private function handleAuthentication(Player $player, array $data): void {
         $userID = $data['userID'] ?? null;
         if (!$userID) {
             $this->sendError($player, 'No userID povided');
@@ -225,148 +228,107 @@ class GameServer implements MessageComponentInterface {
         }
     }
 
-    private function sendError(Player $player, string $message): void {
-        $player->send([
-            'type' => 'error',
-            'data' => ['errorMessage' => "Authentication failed: {$message}"]
-        ]);
-    }
-    
+    /*
+    Remote server logic
+    */
     private function startRemoteGame(Player $player): void {
-        echo "Player {$player->userID} searching for match...\n";
-        //check if Player is in game
-        // if ($this->userStatus->isInMatch($player->userID)) {
-        //     $player->send([
-        //         'type' => 'error',
-        //         'data' => [
-        //             'errorMessage' => 'You are already in a game.'
-        //         ]
-        //     ]);
-        //     return;
-        // }
-        if ($player->gameID !== null) {
-            $player->send([
-                'type' => 'error',
-                'data' => [
-                    'errorMessage' => 'You are already in a game.'
-                ]
-            ]);
+        if ($this->isPlayerBusy($player)) {
             return;
         }
-        //check if Player is in waiting queue
-        foreach ($this->waitingPlayers as $waitingPlayer) {
-            if ($waitingPlayer->userID === $player->userID) {
-                $player->send([
-                    'type' => 'error',
-                    'data' => [
-                        'errorMessage' => 'You are already searching for a game.'
-                    ]
-                ]);
-                //rework need routing to go back to game window
-                return;
-            }
-        }
+
         if (count($this->waitingPlayers) > 0) {
-            $opponent = array_shift($this->waitingPlayers);
-            echo "Match found! {$player->userID} vs {$opponent->userID}\n";
-
-            // Create match in database and use matchId as gameID
-            $gameID = $this->matchesModel->createMatch($player->userID, $opponent->userID);
-            if (!$gameID) {
-                echo "ERROR: Failed to create match in database!\n";//david said maybe return 500
-                return;
-            }
-            
-            $player->gameID = $gameID;
-            $player->paddle = 'left';
-
-            $opponent->gameID = $gameID;
-            $opponent->paddle = 'right';
-
-            echo "Match created in DB with ID: {$gameID}\n";
-            //set user Status in match
-            $this->userStatus->setCurrentMatch($player->userID, $gameID);
-            $this->userStatus->setCurrentMatch($opponent->userID, $gameID);
-            $player->send([
-                'type' => 'matchFound',
-                'data' => [
-                    'message' => 'Match found! Starting game.',
-                    'paddle' => 'left',
-                    'gameID' => $gameID
-                ]
-            ]);
-            $opponent->send([
-                'type' => 'matchFound',
-                'data' => [
-                    'message' => 'Match found! Starting game.',
-                    'paddle' => 'right',
-                    'gameID' => $gameID    
-                ]
-            ]);
-
-            $engine = new GameEngine($gameID);
-            $this->games[$gameID] = [
-                'player1' => $player,
-                'player2' => $opponent,
-                'mode' => 'remote',
-                'matchId' => $gameID,
-                'started' => time(),
-                'engine' => null,
-                'lastLeftScore' => 0,
-                'lastRightScore' => 0,
-                'countdownFinished' => false
-            ];
+            $this->createRemoteMatch($player, array_shift($this->waitingPlayers));
         } else {
-            //no opponent found yet
             $this->waitingPlayers[] = $player;
             echo "Player {$player->userID} added to waiting queue.\n";
         }
     }
 
-    private function startLocalGame(Player $player): void {
-        echo "Player {$player->userID} starting local game...\n";
-        //need rework not working coz isInMatch function checks has Foreign Key constrain with matches table
-        //check if Player is in game
-        foreach ($this->games as $gameID => $game) {
-            if (($game['isLocalGame'] ?? false) === true) {
-                if ($game['player1']->userID === $player->userID) {
-                    $player->send([
-                        'type' => 'error',
-                        'data' => [
-                            'errorMessage' => 'You are already in a local game.'
-                        ]
-                    ]);
-                    return;
-                }
+    private function isPlayerBusy(Player $player): bool {
+        if ($player->gameID !== null) {
+            $this->sendError($player, 'You are already in a game.');
+            return true;
+        }
+
+        foreach ($this->waitingPlayers as $waitingPlayer) {
+            if ($waitingPlayer->userID === $player->userID) {
+                $this->sendError($player, 'You are already searching for a game.');
+                return true;
             }
         }
-        $gameID = (int)(microtime(true) * 1000);
-        echo "Local GameID: {$gameID}\n";
-        $player->gameID = $gameID;
-        $player->paddle = 'both';
 
-        //reowrk set user Status in match
-        //$this->userStatus->setCurrentMatch($player->userID, $gameID);
-        $player->send([
-            'type' => 'matchFound',
-            'data' => [
-            'message' => 'Local game started!',
-            'paddle' => 'both',
-            'gameID' => $gameID
-            ]
-        ]);
-        $engine = new GameEngine($gameID);
+        return false;
+    }
+
+    private function createRemoteMatch(Player $player1, Player $player2): void {
+        $gameID = $this->matchesModel->createMatch($player1->userID, $player2->userID);
+        
+        if (!$gameID) {
+            echo "ERROR: Failed to create match in database!\n";
+            return;
+        }
+
+        $this->initializeGame($gameID, $player1, $player2, 'remote');
+        echo "Match created: {$player1->userID} vs {$player2->userID} (ID: {$gameID})\n";
+    }
+
+    private function initializeGame(string $gameID, Player $player1, ?Player $player2, string $mode): void {
+        $player1->gameID = $gameID;
+        $player1->paddle = $mode === 'local' ? 'both' : 'left';
+        
+        if ($player2) {
+            $player2->gameID = $gameID;
+            $player2->paddle = 'right';
+            $this->userStatus->setCurrentMatch($player2->userID, $gameID);
+        }
+
+        $this->userStatus->setCurrentMatch($player1->userID, $gameID);
+
         $this->games[$gameID] = [
-            'player1' => $player,
-            'player2' => null,
-            'mode' => 'local',
+            'player1' => $player1,
+            'player2' => $player2,
+            'mode' => $mode,
+            'matchId' => $gameID,
             'started' => time(),
             'engine' => null,
             'lastLeftScore' => 0,
             'lastRightScore' => 0,
-            'isLocalGame' => true,
-            'countdownFinished' => false
+            'countdownFinished' => false,
+            'isLocalGame' => $mode === 'local'
         ];
+
+        $this->notifyMatchStart($player1, $player2, $gameID, $mode);
+    }
+
+    private function notifyMatchStart(Player $player1, ?Player $player2, string $gameID, string $mode): void {
+        $player1->send([
+            'type' => 'matchFound',
+            'data' => [
+                'message' => $mode === 'local' ? 'Local game started!' : 'Match found! Starting game.',
+                'paddle' => $mode === 'local' ? 'both' : 'left',
+                'gameID' => $gameID
+            ]
+        ]);
+
+        if ($player2) {
+            $player2->send([
+                'type' => 'matchFound',
+                'data' => [
+                    'message' => 'Match found! Starting game.',
+                    'paddle' => 'right',
+                    'gameID' => $gameID
+                ]
+            ]);
+        }
+    }
+
+    /*
+    Local server logic
+    */
+    private function startLocalGame(Player $player): void {
+        $gameID = (int)(microtime(true) * 1000);
+        $this->initializeGame($gameID, $player, null, 'local');
+        echo "Local game started for player {$player->userID}\n";
     }
 
     private function updateAllGames(): void {
@@ -472,5 +434,12 @@ class GameServer implements MessageComponentInterface {
 
             unset($this->games[$gameID]);
         }
+    }
+
+    private function sendError(Player $player, string $message): void {
+        $player->send([
+            'type' => 'error',
+            'data' => ['errorMessage' => "Authentication failed: {$message}"]
+        ]);
     }
 }
