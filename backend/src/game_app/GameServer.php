@@ -87,108 +87,6 @@ class GameServer implements MessageComponentInterface {
         $conn->close();
     }
 
-    //helper functions for websocket functions
-    private function handleAuthentication(Player $player, array $data): void {
-        $userID = $data['userID'] ?? null;
-        if (!$userID) {
-            $this->sendError($player, 'No userID povided');
-            return;
-        }
-        $user = $this->userModel->getUserById($userID);
-        if (!$user) {
-            $this->sendError($player, 'User not found');
-            return;
-        }
-        $player->userID = $user['id'];
-        $player->username = $user['username'];
-        $player->send([
-            'type' => 'connected',
-                'data' => [
-                    'playerID' => $player->userID,
-                    'username' => $player->username,
-                    'message' => 'Successfully connected!'
-                ]
-        ]);
-    }
-
-    private function handleJoin(Player $player, array $data): void {
-        $gameMode = $data['gameMode'] ?? 'remote';
-        if ($gameMode === 'local') {
-            $this->startLocalGame($player);
-        } elseif ($gameMode === 'remote') {
-            $this->startRemoteGame($player);
-        }
-    }
-
-    private function handleInput(Player $player, array $data): void {
-        if (!$player->gameID || !isset($this->games[$player->gameID])) {
-            return;
-        }
-        $game = $this->games[$player->gameID];
-        $engine = $game['engine'];
-        $action = $data['action'] ?? null;
-        //check which paddle to control for local mode
-        if ($game['mode'] === 'local') {
-            $paddle = $data['paddle'] ?? null;
-            if (!$paddle) {
-                return;
-            }
-        } else {
-            $paddle = $player->paddle;
-        }
-        //set movement direction for paddle when buttom pressed / released
-        if ($action === 'keydown') {
-            $direction = $data['direction'] ?? null;
-            if ($direction === 'up') {
-                $engine->setPaddleVelocity($paddle, -1);
-            } elseif ($direction === 'down') {
-                $engine->setPaddleVelocity($paddle, 1);
-            }
-        } elseif ($action === 'keyup') {
-            $engine->setPaddleVelocity($paddle, 0);
-        }
-    }
-
-    private function removePlayerFromQueue(Player $player): void {
-        $this->waitingPlayers = array_filter(
-            $this->waitingPlayers,
-            fn($p) => $p->userID !== $player->userID
-        );
-    }
-
-    private function handlePlayerDisconnect(Player $player): void {
-        if (!$player->gameID || !isset($this->games[$player->gameID])) return;
-
-        $game = $this->games[$player->gameID];
-        $opponent = $this->getOpponent($player, $game);
-
-        if ($opponent) {
-            $this->notifyOpponentDisconnect($opponent, $player, $game);
-        }
-
-        $this->endGame($player->gameID, $opponent?->userID, true);
-    }
-
-    private function getOpponent(Player $player, array $game): ?Player {
-        if ($game['player1']->userID === $player->userID) {
-            return $game['player2'];
-        }
-        if ($game['player2'] && $game['player2']->userID === $player->userID) {
-            return $game['player1'];
-        }
-        return null;
-    }
-
-    private function notifyOpponentDisconnect(Player $opponent, Player $disconnectedPlayer, array $game): void {
-        $opponent->send([
-            'type' => 'opponentDisconnected',
-            'data' => [
-                'message' => 'Opponent disconnected. You win!',
-                'winner' => $opponent->paddle
-            ]
-        ]);
-    }
-
     private function endGame(string $gameID, ?string $winnerId = null, bool $isDisconnect = false): void {
         if (!isset($this->games[$gameID])) return;
 
@@ -438,6 +336,108 @@ class GameServer implements MessageComponentInterface {
         $player->send([
             'type' => 'error',
             'data' => ['errorMessage' => "Authentication failed: {$message}"]
+        ]);
+    }
+
+    //helper functions for websocket functions
+    private function handleAuthentication(Player $player, array $data): void {
+        $userID = $data['userID'] ?? null;
+        if (!$userID) {
+            $this->sendError($player, 'No userID povided');
+            return;
+        }
+        $user = $this->userModel->getUserById($userID);
+        if (!$user) {
+            $this->sendError($player, 'User not found');
+            return;
+        }
+        $player->userID = $user['id'];
+        $player->username = $user['username'];
+        $player->send([
+            'type' => 'connected',
+                'data' => [
+                    'playerID' => $player->userID,
+                    'username' => $player->username,
+                    'message' => 'Successfully connected!'
+                ]
+        ]);
+    }
+
+    private function handleJoin(Player $player, array $data): void {
+        $gameMode = $data['gameMode'] ?? 'remote';
+        if ($gameMode === 'local') {
+            $this->startLocalGame($player);
+        } elseif ($gameMode === 'remote') {
+            $this->startRemoteGame($player);
+        }
+    }
+
+    private function handleInput(Player $player, array $data): void {
+        if (!$player->gameID || !isset($this->games[$player->gameID])) {
+            return;
+        }
+        $game = $this->games[$player->gameID];
+        $engine = $game['engine'];
+        $action = $data['action'] ?? null;
+        //check which paddle to control for local mode
+        if ($game['mode'] === 'local') {
+            $paddle = $data['paddle'] ?? null;
+            if (!$paddle) {
+                return;
+            }
+        } else {
+            $paddle = $player->paddle;
+        }
+        //set movement direction for paddle when buttom pressed / released
+        if ($action === 'keydown') {
+            $direction = $data['direction'] ?? null;
+            if ($direction === 'up') {
+                $engine->setPaddleVelocity($paddle, -1);
+            } elseif ($direction === 'down') {
+                $engine->setPaddleVelocity($paddle, 1);
+            }
+        } elseif ($action === 'keyup') {
+            $engine->setPaddleVelocity($paddle, 0);
+        }
+    }
+
+    private function removePlayerFromQueue(Player $player): void {
+        $this->waitingPlayers = array_filter(
+            $this->waitingPlayers,
+            fn($p) => $p->userID !== $player->userID
+        );
+    }
+
+    private function handlePlayerDisconnect(Player $player): void {
+        if (!$player->gameID || !isset($this->games[$player->gameID])) return;
+
+        $game = $this->games[$player->gameID];
+        $opponent = $this->getOpponent($player, $game);
+
+        if ($opponent) {
+            $this->notifyOpponentDisconnect($opponent, $player, $game);
+        }
+
+        $this->endGame($player->gameID, $opponent?->userID, true);
+    }
+
+    private function getOpponent(Player $player, array $game): ?Player {
+        if ($game['player1']->userID === $player->userID) {
+            return $game['player2'];
+        }
+        if ($game['player2'] && $game['player2']->userID === $player->userID) {
+            return $game['player1'];
+        }
+        return null;
+    }
+
+    private function notifyOpponentDisconnect(Player $opponent, Player $disconnectedPlayer, array $game): void {
+        $opponent->send([
+            'type' => 'opponentDisconnected',
+            'data' => [
+                'message' => 'Opponent disconnected. You win!',
+                'winner' => $opponent->paddle
+            ]
         ]);
     }
 }
