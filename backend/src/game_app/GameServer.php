@@ -12,6 +12,8 @@ use src\Models\UserStatusModel;
 
 class GameServer implements MessageComponentInterface {
     private const GAME_TICK = 0.016;
+    private const COUNTDOWN = 4;
+    private const MAX_SCORE = 5;
 
     protected \SplObjectStorage $players;
     private array $waitingPlayers = [];
@@ -61,83 +63,12 @@ class GameServer implements MessageComponentInterface {
     public function onMessage(ConnectionInterface $from, $msg) {
         $player = $this->players[$from];
         $data = json_decode($msg, true);
-        //echo "Message from {$player->userID}: {$msg}\n";
-
-        if ($data['type'] === 'authenticate') {
-            $userID = $data['data']['userID'] ?? null;
-            echo "DEBUG: Received authenticate request with userID: " . var_export($userID, true) . "\n";
-            if ($userID) {
-                $user = $this->userModel->getUserById($userID);
-                echo "DEBUG: getUserById returned: " . var_export($user, true) . "\n";
-                if ($user) {
-                    $player->userID = $user['id'];
-                    $player->username = $user['username'];
-                    $player->send([
-                        'type' => 'connected',
-                        'data' => [
-                            'playerID' => $player->userID,
-                            'username' => $player->username,
-                            'message' => 'Successfully connected!'
-                    ]
-                    ]);
-                } else {
-                    echo "DEBUG: User not found in database for userID={$userID}\n";
-                    $player->send([
-                    'type' => 'error',
-                    'data' => [
-                        'errorMessage' => 'Authentication failed: User not found'
-                    ]
-                    ]);
-                }
-            } else {
-            echo "DEBUG: No userID provided in authenticate message\n";
-            $player->send([
-                'type' => 'error',
-                'data' => [
-                    'errorMessage' => 'Authentication failed: No userID provided'
-                ]
-                ]);
-            }
-        }
-        //handle join players
-        if ($data['type'] === 'join') {
-            $gameMode = $data['data']['gameMode'] ?? 'remote';
-
-            if ($gameMode === 'local') {
-                $this->startLocalGame($player);
-            } elseif ($gameMode === 'remote') {
-                $this->startRemoteGame($player);
-            }
-        }
-        //handle input from players(paddle movement)
-        if ($data['type'] === 'input') {
-            if (!$player->gameID || !isset($this->games[$player->gameID])) {
-                return;
-            }
-            $game = $this->games[$player->gameID];
-            $engine = $game['engine'];
-            $action = $data['data']['action'] ?? null;
-            //check which paddle to control for local mode
-            if ($game['mode'] === 'local') {
-                $paddle = $data['data']['paddle'] ?? null;
-                if (!$paddle) {
-                    return;
-                }
-            } else {
-                $paddle = $player->paddle;
-            }
-            //set movement direction for paddle when buttom pressed / released
-            if ($action === 'keydown') {
-                $direction = $data['data']['direction'] ?? null;
-                if ($direction === 'up') {
-                    $engine->setPaddleVelocity($paddle, -1);
-                } elseif ($direction === 'down') {
-                    $engine->setPaddleVelocity($paddle, 1);
-                }
-            } elseif ($action === 'keyup') {
-                $engine->setPaddleVelocity($paddle, 0);
-            }
-        }
+        match($data['type'] ?? null) {
+            'authenticate' => $this->handleAuthentication($player, $data['data'] ?? []),
+            'join' => $this->handleJoin($player, $data['data'] ?? []),
+            'input' => $this->handleInput($player, $data['data'] ?? []),
+            default => null
+        };
     }
 
     public function onClose(ConnectionInterface $conn) {
@@ -211,6 +142,74 @@ class GameServer implements MessageComponentInterface {
     public function onError(ConnectionInterface $conn, \Exception $e) {
         echo "Error: {$e->getMessage()}\n";
         $conn->close();
+    }
+
+    private function handleAuthentication(Player $player, array $data): void {
+        $userID = $data['userID'] ?? null;
+        if (!$userID) {
+            $this->sendError($player, 'No userID povided');
+            return;
+        }
+        $user = $this->userModel->getUserById($userID);
+        if (!$user) {
+            $this->sendError($player, 'User not found');
+            return;
+        }
+        $player->userID = $user['id'];
+        $player->username = $user['username'];
+        $player->send([
+            'type' => 'connected',
+                'data' => [
+                    'playerID' => $player->userID,
+                    'username' => $player->username,
+                    'message' => 'Successfully connected!'
+                ]
+        ]);
+    }
+
+    private function handleJoin(Player $player, array $data): void {
+        $gameMode = $data['gameMode'] ?? 'remote';
+        if ($gameMode === 'local') {
+            $this->startLocalGame($player);
+        } elseif ($gameMode === 'remote') {
+            $this->startRemoteGame($player);
+        }
+    }
+
+    private function handleInput(Player $player, array $data): void {
+        if (!$player->gameID || !isset($this->games[$player->gameID])) {
+            return;
+        }
+        $game = $this->games[$player->gameID];
+        $engine = $game['engine'];
+        $action = $data['action'] ?? null;
+        //check which paddle to control for local mode
+        if ($game['mode'] === 'local') {
+            $paddle = $data['paddle'] ?? null;
+            if (!$paddle) {
+                return;
+            }
+        } else {
+            $paddle = $player->paddle;
+        }
+        //set movement direction for paddle when buttom pressed / released
+        if ($action === 'keydown') {
+            $direction = $data['direction'] ?? null;
+            if ($direction === 'up') {
+                $engine->setPaddleVelocity($paddle, -1);
+            } elseif ($direction === 'down') {
+                $engine->setPaddleVelocity($paddle, 1);
+            }
+        } elseif ($action === 'keyup') {
+            $engine->setPaddleVelocity($paddle, 0);
+        }
+    }
+
+    private function sendError(Player $player, string $message): void {
+        $player->send([
+            'type' => 'error',
+            'data' => ['errorMessage' => "Authentication failed: {$message}"]
+        ]);
     }
     
     private function startRemoteGame(Player $player): void {
