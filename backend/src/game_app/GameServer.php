@@ -11,7 +11,9 @@ use src\Models\UserStatsModel;
 use src\Models\UserStatusModel;
 
 class GameServer implements MessageComponentInterface {
-    protected $players;
+    private const GAME_TICK = 0.016;
+
+    protected \SplObjectStorage $players;
     private array $waitingPlayers = [];
     private array $games = [];
     private $loop;
@@ -25,28 +27,34 @@ class GameServer implements MessageComponentInterface {
     public function __construct($loop = null) {
         $this->players = new \SplObjectStorage;
         $this->loop = $loop;
+        $this->initializeDatabase();
+        $this->setupGameLoop();
+    }
 
+    private function initializeDatabase(): void {
         $this->db = new Database('sqlite:/var/www/html/database/transcendence.db');
         $this->userModel = new UserModel($this->db);
         $this->matchesModel = new MatchesModel($this->db);
         $this->userStatsModel = new UserStatsModel($this->db);
         $this->userStatus = new UserStatusModel($this->db);
         echo "GameServer initialized\n";
+    }
 
-        //start game loop at ~60 FPS (every 16ms)
+    private function setupGameLoop(): void {
         if ($this->loop) {
-            $this->loop->addPeriodicTimer(0.016, function() {
+            $this->loop->addPeriodicTimer(self::GAME_TICK, function() {
                 $this->updateAllGames();
-            });
+            }
+        );
             echo "Game loop timer registered\n";
         } else {
             echo "WARNING: No event loop provided!\n";
         }
     }
 
+
     public function onOpen(ConnectionInterface $conn) {
-        $player = new Player($conn);
-        $this->players[$conn] = $player;
+        $this->players[$conn] = new Player($conn);
         echo "New connection: {$conn->resourceId}\n";
     }
 
