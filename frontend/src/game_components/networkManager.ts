@@ -86,7 +86,10 @@ export class NetworkManager {
 			case 'matchFound':
 				console.log('Match found!');
 				this.canvas.clear();
-				this.setupInputHandlers();
+				//show countdown
+				this.canvas.showCountdown(() => {
+					this.setupInputHandlers();
+				});
 				break;
 
 			case 'gameUpdate':
