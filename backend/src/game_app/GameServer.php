@@ -284,7 +284,7 @@ class GameServer implements MessageComponentInterface {
                 'mode' => 'remote',
                 'matchId' => $gameID,
                 'started' => time(),
-                'engine' => $engine,
+                'engine' => null,
                 'lastLeftScore' => 0,
                 'lastRightScore' => 0,
                 'countdownFinished' => false
@@ -334,7 +334,7 @@ class GameServer implements MessageComponentInterface {
             'player2' => null,
             'mode' => 'local',
             'started' => time(),
-            'engine' => $engine,
+            'engine' => null,
             'lastLeftScore' => 0,
             'lastRightScore' => 0,
             'isLocalGame' => true,
@@ -359,11 +359,12 @@ class GameServer implements MessageComponentInterface {
         if (!$game['countdownFinished']) {
             if (time() - $game['started'] >= 4) {
                 $this->games[$gameID]['countdownFinished'] = true;
-            } else {
-                return; // Don't update game physics yet
+                $this->games[$gameID]['engine'] = new GameEngine($gameID);
+                echo "countdown completed\n";
             }
+            return;
         }
-
+        
         $newState = $game['engine']->update();
         //message for Paddle and Ball positions
         $message = [
