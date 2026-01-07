@@ -109,19 +109,6 @@ class UserModel {
 		}
 	}
 
-	public function updateUserInfo($id, $userName, $email, $password) {
-		try {
-			$this->db->query(
-				"UPDATE users SET username = ?, email = ?, password_hash = ? WHERE id = ?",
-				[$userName, $email, $password, $id]
-			);
-			return $this->getUserById($id);
-		}
-		catch (\PDOException $e) {
-        	return null;
-		}
-	}
-
     public function updateUserInfo($id, $userName, $displayName, $email, $password) {
 		try {
             $this->db->query(
