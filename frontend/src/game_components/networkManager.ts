@@ -108,8 +108,6 @@ export class NetworkManager {
 				console.log('Winner received:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
-				this.localGameState.leftPaddle.score = 0;
-				this.localGameState.rightPaddle.score = 0;
 				break;
 
 			case 'opponentDisconnected':
@@ -133,6 +131,8 @@ export class NetworkManager {
         console.log('Connection closed');
         this.canvas.hide();
         this.removeInputHandlers();
+		this.localGameState.leftPaddle.score = 0;
+		this.localGameState.rightPaddle.score = 0;
     }
 
 	private send(data: any): void {

@@ -11,7 +11,7 @@ class GameEngine {
 	private const PADDLE_WIDTH = 1;
 	private const PADDLE_HEIGHT = 60;
 	private const PADDLE_SPEED = 550;
-	private const BALL_RADIUS = 10;
+	private const BALL_RADIUS = 8;
 	private const BALL_INITIAL_SPEED = 60;
 	private const BALL_MAX_SPEED = 300;
 	private const MAX_SCORE = 5;

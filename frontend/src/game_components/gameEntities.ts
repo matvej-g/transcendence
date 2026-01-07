@@ -33,5 +33,5 @@ export const DEFAULT_CONFIG: GameConfig = {
     canvasHeight: 400, // set max height here
     paddleWidth: 12,
     paddleHeight: 60,
-    ballRadius: 10,
+    ballRadius: 8,
 };
