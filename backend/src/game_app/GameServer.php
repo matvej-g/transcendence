@@ -208,7 +208,16 @@ class GameServer implements MessageComponentInterface {
     private function startRemoteGame(Player $player): void {
         echo "Player {$player->userID} searching for match...\n";
         //check if Player is in game
-        if ($this->userStatus->isInMatch($player->userID)) {
+        // if ($this->userStatus->isInMatch($player->userID)) {
+        //     $player->send([
+        //         'type' => 'error',
+        //         'data' => [
+        //             'errorMessage' => 'You are already in a game.'
+        //         ]
+        //     ]);
+        //     return;
+        // }
+        if ($player->gameID !== null) {
             $player->send([
                 'type' => 'error',
                 'data' => [
@@ -216,6 +225,19 @@ class GameServer implements MessageComponentInterface {
                 ]
             ]);
             return;
+        }
+        //check if Player is in waiting queue
+        foreach ($this->waitingPlayers as $waitingPlayer) {
+            if ($waitingPlayer->userID === $player->userID) {
+                $player->send([
+                    'type' => 'error',
+                    'data' => [
+                        'errorMessage' => 'You are already searching for a game.'
+                    ]
+                ]);
+                //rework need routing to go back to game window
+                return;
+            }
         }
         if (count($this->waitingPlayers) > 0) {
             $opponent = array_shift($this->waitingPlayers);
@@ -275,22 +297,28 @@ class GameServer implements MessageComponentInterface {
 
     private function startLocalGame(Player $player): void {
         echo "Player {$player->userID} starting local game...\n";
+        //need rework not working coz isInMatch function checks has Foreign Key constrain with matches table
         //check if Player is in game
-        if ($this->userStatus->isInMatch($player->userID)) {
-            $player->send([
-                'type' => 'error',
-                'data' => [
-                    'errorMessage' => 'You are already in a game.'
-                ]
-            ]);
-            return;
+        foreach ($this->games as $gameID => $game) {
+            if (($game['isLocalGame'] ?? false) === true) {
+                if ($game['player1']->userID === $player->userID) {
+                    $player->send([
+                        'type' => 'error',
+                        'data' => [
+                            'errorMessage' => 'You are already in a local game.'
+                        ]
+                    ]);
+                    return;
+                }
+            }
         }
         $gameID = (int)(microtime(true) * 1000);
+        echo "Local GameID: {$gameID}\n";
         $player->gameID = $gameID;
         $player->paddle = 'both';
 
-        //set user Status in match
-        $this->userStatus->setCurrentMatch($player->userID, $gameID);
+        //reowrk set user Status in match
+        //$this->userStatus->setCurrentMatch($player->userID, $gameID);
         $player->send([
             'type' => 'matchFound',
             'data' => [
@@ -307,7 +335,8 @@ class GameServer implements MessageComponentInterface {
             'started' => time(),
             'engine' => $engine,
             'lastLeftScore' => 0,
-            'lastRightScore' => 0
+            'lastRightScore' => 0,
+            'isLocalGame' => true
         ];
     }
 
