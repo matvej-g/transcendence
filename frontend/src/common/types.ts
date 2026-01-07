@@ -38,6 +38,7 @@ export type FriendRequest = {
 // Settings API parameter types
 export interface UpdateUserParams {
   id: UserId | number;
+  displayName?: string;
   userName?: string;
   email?: string;
   password?: string;

@@ -1,6 +1,6 @@
 
 import { updateUser } from "./api.js";
-import { getCurrentUserId, getCurrentUsername, setCurrentUsername } from '../auth/authUtils.js';
+import { getCurrentUserId, setCurrentUsername } from '../auth/authUtils.js';
 import { initProfile } from "../profile/profile.js";
 
 // Elements
@@ -44,14 +44,15 @@ if (form) {
 		}
 		try {
 			const res = await updateUser({ id: userId, userName: newUsername });
-			if (res && res.username === newUsername) {
+			console.log(res);
+			if (res && res.displayname === newUsername) {
 				setCurrentUsername(newUsername);
 				alert("OK: Username set to " + newUsername);
 				window.location.hash = '#profile';
 				// Wait for hash navigation, then refresh profile
 				setTimeout(() => {
 					initProfile();
-				}, 150);
+				}, 100);
 			} else if (res && res.message) {
 				if (errorDiv) errorDiv.textContent = res.message;
 			} else {
