@@ -61,7 +61,13 @@
                     <a href="#settings/change-password" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_password">Change Password</a>
                     <a href="#settings/change-email" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_email">Change Email</a>
                     <a href="#settings/upload-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_avatar">Upload Avatar</a>
-                    <a href="#settings/2fa" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-b-lg transition-colors" data-i18n="navbarDom.two_fa">2-Factor Auth</a>
+                    <div class="block px-4 py-2 rounded-b-lg transition-colors flex items-center gap-3">
+                      <span class="text-white" data-i18n="navbarDom.two_fa">2-Factor Auth</span>
+                      <button id="dropdown-toggle-2fa" type="button" class="relative inline-flex items-center h-6 w-12 rounded-full transition-colors focus:outline-none bg-gray-400" aria-pressed="false">
+                        <span class="sr-only">Enable 2FA</span>
+                        <span class="inline-block h-5 w-5 transform bg-white rounded-full shadow transition-transform translate-x-0"></span>
+                      </button>
+                    </div>
                 </div>
             </li>
             <button id="logoutBtn" class="bg-gradient-to-r from-green-400 to-green-500 hover:bg-gradient-to-r hover:from-green-500 hover:to-green-400 border-none rounded-3xl px-4 py-1.5 my-1 text-white font-bold cursor-pointer transition-all duration-300 shadow-md hover:-translate-y-1 hover:shadow-lg" data-i18n="navbarDom.logout">
@@ -315,6 +321,7 @@
     <!-- settings -->
     <script type="module" src="/dist/components/settings/editUsername.js"></script>
     <script type="module" src="/dist/components/settings/uploadAvatar.js"></script>
+    <script type="module" src="/dist/components/settings/twoFactorAuth.js"></script>
 
     <!-- SPA Router -->
     <script type="module" src="/dist/common/router.js"></script>
