@@ -38,7 +38,7 @@ async function initProfile(): Promise<void> {
       const avatarFilename = data?.avatar_filename;
       console.log('avater filename:', avatarFilename);
 
-      if (avatarFilename) {
+    if (avatarFilename) {
         avatarImg.src = `/uploads/avatars/${avatarFilename}`;
       } else {
         console.error('avater filename not found');
