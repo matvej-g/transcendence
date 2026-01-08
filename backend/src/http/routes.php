@@ -19,7 +19,7 @@ $this->router->get('/game', 'src/controllers/game.php');
 
 // users
 $this->router->get('/api/users', [UserController::class, 'getUsers']);
-$this->router->get('/api/user/{id}', [UserController::class, 'getUser']);
+$this->router->get('/api/user/{id}', [UserController::class, 'getUser'], [Require2FAMiddleware::class]);
 $this->router->get('/api/user/{id}/stats', [UserController::class, 'getUserStats']);
 $this->router->get('/api/user/{email}', [UserController::class, 'getUserByEmail']);
 $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByUsername']);

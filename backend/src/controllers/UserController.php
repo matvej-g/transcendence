@@ -29,6 +29,13 @@ class UserController extends BaseController
             return $this->jsonBadRequest("Invalid id");
         }
         $id = (int)$id;
+        
+        // Security: Only allow users to access their own data
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only access your own user data");
+        }
+        
         $user = $this->users->getUserById($id);
         if ($user === null) {
             return $this->jsonServerError();
