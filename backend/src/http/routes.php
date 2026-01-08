@@ -9,6 +9,11 @@ use src\controllers\MessagingController;
 use src\controllers\FriendshipController;
 use src\controllers\UserStatusController;
 
+//mert
+use src\controllers\AuthController;
+use src\middleware\AuthMiddleware;
+use src\middleware\Require2FAMiddleware;
+
 // pages
 $this->router->get('/game', 'src/controllers/game.php');
 
@@ -20,6 +25,7 @@ $this->router->get('/api/user/{email}', [UserController::class, 'getUserByEmail'
 $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByUsername']);
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
 $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
+$this->router->post('/api/user/logout', [UserController::class, 'logout']); //mert
 $this->router->post('/api/user/{id}/uploadAvatar', [UserController::class, 'uploadAvatar']);
 $this->router->patch('/api/user/update', [UserController::class, 'updateUser']);
 $this->router->patch('/api/user/changePassword', [UserController::class, 'changePassword']);
@@ -57,7 +63,10 @@ $this->router->post('/api/tournament/match/new', [TournamentMatchesController::c
 $this->router->patch('/api/tournament/match/{id}', [TournamentMatchesController::class, 'updateTournamentMatch']);
 $this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController::class, 'deleteTournamentMatch']);
 
-// messaging
+// 2FA authentication routes
+$this->router->post('/api/auth/send-2fa', [AuthController::class, 'sendTwoFactorCode'], [AuthMiddleware::class]);
+$this->router->post('/api/auth/verify-2fa', [AuthController::class, 'verifyTwoFactorCode'], [AuthMiddleware::class]);
+
 $this->router->get('/api/conversations', [MessagingController::class, 'getConversations']);
 $this->router->get('/api/conversations/{id}', [MessagingController::class, 'getConversation']);
 $this->router->post('/api/conversations', [MessagingController::class, 'createConversation']);
@@ -77,3 +86,28 @@ $this->router->post('/api/friends/unblock', [FriendshipController::class, 'unblo
 $this->router->get('/api/status/{id}', [UserStatusController::class, 'getStatus']);
 $this->router->patch('/api/status/online', [UserStatusController::class, 'setOnline']);
 $this->router->patch('/api/status/offline', [UserStatusController::class, 'setOffline']);
+
+
+
+//mert
+// ===== MIDDLEWARE USAGE GUIDE FOR TEAMMATES =====
+// 
+// To protect your routes, add [Require2FAMiddleware::class] as third parameter:
+// Example: $this->router->get('/api/users', [UserController::class, 'getUsers'], [Require2FAMiddleware::class]);
+//
+// This checks:
+// - User has valid JWT token
+// - User completed 2FA verification
+//
+// Routes that should be PROTECTED (add middleware):
+// - Any route accessing user data (get users, get user by ID, update user, etc.)
+// - Any route accessing matches/tournaments
+// - Any route modifying data (POST, PATCH, DELETE)
+//
+// Routes that must stay PUBLIC (NO middleware):
+// - /api/user/new (register) 
+// - /api/user/login
+//
+// ⚠️ WARNING: Routes defined above are currently UNPROTECTED!
+// ⚠️ Add [Require2FAMiddleware::class] to routes handling sensitive data.
+// messaging

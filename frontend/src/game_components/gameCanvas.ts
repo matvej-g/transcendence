@@ -186,7 +186,6 @@ export class GameCanvas {
                     this.canvas!.height / 2
                 );
             } else {
-                this.renderingContext!.fillStyle = '#00ff00';
                 this.renderingContext!.fillText(
                     'GO!',
                     this.canvas!.width / 2,

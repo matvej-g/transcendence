@@ -67,12 +67,6 @@ export class NetworkManager {
 				userID: this.userId
 			}
 		});
-		
-		// Then join the game
-		this.send({
-			type: 'join',
-			data: { gameMode: this.gameMode }
-		});
 	}
 
 	private onMessage(event: MessageEvent): void {
@@ -81,13 +75,21 @@ export class NetworkManager {
 		switch (message.type) {
 			case 'connected':
 				console.log('Server confirmed:', message.data);
+				//send join after authentication
+				this.send({
+					type: 'join',
+					data: { gameMode: this.gameMode }
+				});
 				this.canvas.show();
 				break;
 			
 			case 'matchFound':
 				console.log('Match found!');
 				this.canvas.clear();
-				this.setupInputHandlers();
+				//show countdown
+				this.canvas.showCountdown(() => {
+					this.setupInputHandlers();
+				});
 				break;
 
 			case 'gameUpdate':
@@ -116,6 +118,11 @@ export class NetworkManager {
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
 				break;
+			case 'error':
+				console.error('Server error:', message.data.errorMessage);
+				alert(message.data.errorMessage);
+				this.disconnect();
+				break;
 		}
 	}
 
@@ -127,6 +134,8 @@ export class NetworkManager {
         console.log('Connection closed');
         this.canvas.hide();
         this.removeInputHandlers();
+		this.localGameState.leftPaddle.score = 0;
+		this.localGameState.rightPaddle.score = 0;
     }
 
 	private send(data: any): void {

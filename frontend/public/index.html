@@ -9,6 +9,23 @@
     <title>ft_transcendence</title>
     <!-- Tailwind CDN (dev convenience) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Styles -->
+    <style>
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: crisp-edges;
+        }
+        
+        #gameContainer {
+            max-height: calc(100vh - 150px);
+        }
+
+        #gameContainer canvas {
+          max-height: calc(100% - 60px);
+        }
+    </style>
   </head>
   <body class="min-h-screen bg-gradient-to-br from-gray-900 to-black flex flex-col justify-between">
     <!-- Language switcher mount point -->
@@ -42,7 +59,8 @@
                 <div class="absolute left-0 mt-0 w-48 bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                     <a href="#settings/edit-username" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-t-lg transition-colors" data-i18n="navbarDom.edit_username">Edit Username</a>
                     <a href="#settings/change-password" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_password">Change Password</a>
-                    <a href="#settings/change-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_avatar">Change Avatar</a>
+                    <a href="#settings/change-email" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_email">Change Email</a>
+                    <a href="#settings/upload-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_avatar">Upload Avatar</a>
                     <a href="#settings/2fa" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-b-lg transition-colors" data-i18n="navbarDom.two_fa">2-Factor Auth</a>
                 </div>
             </li>
@@ -51,6 +69,23 @@
             </button>
         </ul>
     </nav>
+
+
+    <!-- SETTINGS: EDIT USERNAME SECTION (hidden by default) -->
+    <section id="settings-edit-username" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
+        <h2 class="text-2xl font-bold text-emerald-400 mb-4">Edit Username</h2>
+        <form id="edit-username-form" class="w-full flex flex-col gap-4">
+          <label for="new-username" class="text-emerald-200 text-sm">New Username</label>
+          <input id="new-username" name="new-username" type="text" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="Enter new username" required />
+          <div id="edit-username-error" class="text-red-400 text-sm min-h-[1.5em]"></div>
+          <div class="flex gap-4 justify-end">
+            <button type="button" id="cancel-edit-username" class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 transition">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition">Save</button>
+          </div>
+        </form>
+      </div>
+    </section>
 
     <!-- MAIN CONTENT AREA -->
     <div id="content" class="flex-1 flex flex-col justify-start items-center max-w-[1960px] mx-auto w-full">
@@ -134,16 +169,11 @@
           </div>
         </div>
         <!-- Game Canvas (hidden initially) -->
-        <div id="gameContainer" class="hidden flex flex-col items-center justify-center">
-          <canvas
-            id="gameCanvas"
-            width="800"
-            height="600"
-            class="border-4 border-white rounded-lg shadow-2xl bg-gray-900">
-          </canvas>
+        <div id="gameContainer" class="hidden w-full flex-1 flex flex-col items-center justify-start gap-4 p-4 pt-16">
+          <canvas id="gameCanvas" class="max-w-full max-h-full"></canvas>
           <button
             id="exitGameButton"
-            class="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
             Exit Game
           </button>
         </div>
@@ -160,7 +190,7 @@
           <!-- Search Result Display (shown when a user is found) -->
           <div id="search-result-user" class="hidden flex flex-col items-center gap-2 mt-2">
             <div class="flex items-center gap-3">
-              <img id="search-result-avatar" src="profile_avatar.jpg" alt="Avatar image" class="avatar h-8 w-8 rounded-full border border-emerald-400">
+              <img id="search-result-avatar" src="" alt="Avatar image" class="avatar h-8 w-8 rounded-full border border-emerald-400">
               <span id="search-result-nickname" class="font-semibold text-emerald-300"></span>
             </div>
             <button id="add-friend-btn" class="bg-blue-500 text-white px-3 py-1 rounded">Send Friend Request</button>
@@ -172,25 +202,13 @@
           <div class="flex flex-col border border-emerald-400 rounded-xl">
             <h1 class="text-black font-bold m-4 text-emerald-400">Your Friends</h1>
             <ul id="friends-list" class="flex flex-col m-4">
-              <!-- Example friend item -->
-              <li class="friend-item my-3 flex flex-wrap items-center gap-5" data-nickname="Nickname">
-                <img class="avatar h-8 w-8 rounded-full border border-emerald-400" src="profile_avatar.jpg" alt="Avatar image">
-                <h2 class="text-emerald-400">Nickname</h2>
-                <span class="online-status text-green-600">online status</span>
-                <button class="block-friend rounded bg-red-600 hover:bg-red-700 px-3">block user</button>
-              </li>
+              <!-- Friend items rendered by JS -->
             </ul>
           </div>
           <div class="flex flex-col border border-emerald-400 rounded-xl">
             <h2 class="text-black font-bold m-4 text-emerald-400">Friend Requests</h2>
             <ul id="requests-list" class="flex flex-col m-4">
-              <!-- Example request item -->
-              <li class="friend-request-item my-3 flex flex-wrap items-center gap-5" data-nickname="RequesterNickname">
-                <img class="avatar h-8 w-8 rounded-full border border-emerald-400" src="profile_avatar.jpg" alt="Avatar image">
-                <h2 class="text-emerald-400">RequesterNickname</h2>
-                <button class="accept-request rounded bg-green-600 hover:bg-green-700 px-3">accept</button>
-                <button class="refuse-request rounded bg-red-600 hover:bg-red-700 px-3">refuse</button>
-              </li>
+              <!-- Request items rendered by JS -->
             </ul>
           </div>
           </div>
@@ -272,8 +290,11 @@
     <!-- profile logic -->
     <script type="module" src="/dist/components/profile/profile.js"></script>
 
-	<!-- chat component -->
-	<script type="module" src="/dist/components/messaging/chatPage.js"></script>
+    <!-- chat component -->
+    <script type="module" src="/dist/components/messaging/chatPage.js"></script>
+
+    <!-- settings -->
+     <script type="module" src="/dist/components/settings/editUsername.js"></script>
 
     <!-- SPA Router -->
     <script type="module" src="/dist/common/router.js"></script>

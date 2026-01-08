@@ -19,7 +19,7 @@ clean_cache:
 	docker system prune -a --volumes -f
 	docker buildx prune --all --force
 
-re: down build up
+re:	down build up
 
 frontend: ## Start only the frontend container
 	$(DC) up -d frontend
