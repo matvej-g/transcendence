@@ -22,7 +22,6 @@ window.addEventListener('hashchange', () => {
 if (cancelBtn) {
 	cancelBtn.addEventListener('click', (e) => {
 		e.preventDefault(); //revents the browser from reloading the page or navigating away
-		console.log("Cancel-Button clicked");
 		window.location.hash = '#profile';
 	});
 }
