@@ -76,7 +76,6 @@
         </ul>
     </nav>
 
-
     <!-- SETTINGS: EDIT USERNAME SECTION (hidden by default) -->
     <section id="settings-edit-username" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
@@ -88,6 +87,24 @@
           <div class="flex gap-4 justify-end">
             <button type="button" id="cancel-edit-username" class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 transition">Cancel</button>
             <button type="submit" class="px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition">Save</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- SETTINGS: CHANGE PASSWORD SECTION (hidden by default) -->
+    <section id="settings-change-password" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
+        <h2 class="text-2xl font-bold text-emerald-400 mb-4">Change Password</h2>
+        <form id="change-password-form" class="w-full flex flex-col gap-4">
+          <label for="old-password" class="text-emerald-200 text-sm">Old Password</label>
+          <input id="old-password" name="old-password" type="password" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="Enter old password" required />
+          <label for="new-password" class="text-emerald-200 text-sm">New Password</label>
+          <input id="new-password" name="new-password" type="password" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="Enter new password" required />
+          <div id="change-password-error" class="text-red-400 text-sm min-h-[1.5em]"></div>
+          <div class="flex gap-4 justify-end">
+            <button type="button" id="cancel-change-password" class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 transition">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition">Change</button>
           </div>
         </form>
       </div>
@@ -322,6 +339,7 @@
     <script type="module" src="/dist/components/settings/editUsername.js"></script>
     <script type="module" src="/dist/components/settings/uploadAvatar.js"></script>
     <script type="module" src="/dist/components/settings/twoFactorAuth.js"></script>
+    <script type="module" src="/dist/components/settings/changePassword.js"></script>
 
     <!-- SPA Router -->
     <script type="module" src="/dist/common/router.js"></script>

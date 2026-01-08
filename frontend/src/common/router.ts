@@ -15,6 +15,7 @@ const sections: Record<string, HTMLElement | null> = {
 // Special modal/overlay sections (not part of main navigation)
 const editUsernameModal = document.getElementById('settings-edit-username');
 const uploadAvatarModal = document.getElementById('settings-upload-avatar');
+const changePasswordModal = document.getElementById('settings-change-password');
 
 const authNavbar = document.getElementById('auth-navbar');
 const navbar = document.getElementById('navbar');
@@ -29,6 +30,10 @@ function resolveSection(sectionId: string): string {
   // Special case: settings/upload-avatar (modal)
   if (sectionId === 'settings' && window.location.hash.includes('upload-avatar')) {
     return 'settings-upload-avatar';
+  }
+  // Special case: settings/change-password (modal)
+  if (sectionId === 'settings' && window.location.hash.includes('change-password')) {
+    return 'settings-change-password';
   }
   if (sections[sectionId]) {
     return sectionId;
@@ -50,6 +55,7 @@ function showSection(sectionId: string): void {
   // Hide modal overlays by default
   if (editUsernameModal) editUsernameModal.classList.add('hidden');
   if (uploadAvatarModal) uploadAvatarModal.classList.add('hidden');
+  if (changePasswordModal) changePasswordModal.classList.add('hidden');
 
   if (target === 'settings-edit-username') {
     // Show modal, keep navbars visible
@@ -62,6 +68,14 @@ function showSection(sectionId: string): void {
   if (target === 'settings-upload-avatar') {
     // Show modal, keep navbars visible
     uploadAvatarModal?.classList.remove('hidden');
+    navbar?.classList.remove('hidden');
+    authNavbar?.classList.add('hidden');
+    footer?.classList.remove('hidden');
+    return;
+  }
+  if (target === 'settings-change-password') {
+    // Show modal, keep navbars visible
+    changePasswordModal?.classList.remove('hidden');
     navbar?.classList.remove('hidden');
     authNavbar?.classList.add('hidden');
     footer?.classList.remove('hidden');
@@ -98,6 +112,11 @@ window.addEventListener('hashchange', () => {
   }
   // Special case: settings/upload-avatar
   if (hash.startsWith('settings/upload-avatar')) {
+    showSection('settings');
+    return;
+  }
+  // Special case: settings/change-password
+  if (hash.startsWith('settings/change-password')) {
     showSection('settings');
     return;
   }
