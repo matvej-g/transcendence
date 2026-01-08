@@ -31,7 +31,8 @@ class Require2FAMiddleware
         }
 
         // Check if user has 2FA enabled in database
-        $db = new Database();
+        $dsn = 'sqlite:' . BASE_PATH . '/database/transcendence.db';
+        $db = new Database($dsn);
         $userModel = new UserModel($db);
         $is2FAEnabled = $userModel->is2FAEnabled($userId);
 
