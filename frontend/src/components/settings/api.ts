@@ -6,6 +6,11 @@ export async function uploadAvatar(userId: number | string, avatarFile: File): P
 		method: 'POST',
 		body: formData,
 	});
+	const contentType = res.headers.get('content-type') || '';
+	if (!res.ok && res.status === 413) {
+		// Nginx or server error (e.g. 413), try to show a friendly message
+		throw new Error('File too large. Please select a smaller image.');
+	}
 	return res.json();
 }
 

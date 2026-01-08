@@ -17,7 +17,7 @@
             object-fit: contain;
             image-rendering: crisp-edges;
         }
-        
+
         #gameContainer {
             max-height: calc(100vh - 150px);
         }
@@ -113,41 +113,60 @@
         </div>
       </section>
 
-      <!-- PROFILE SECTION (hidden by default) -->
-      <section id="profile-section" class="hidden w-full">
-        <div class="profile flex justify-around items-center w-full bg-gradient-to-r from-[#40e5c9] to-[#2ecc71] p-4 shadow-lg flex-wrap">
-            <div class="avatar-name flex flex-col items-center">
-                <img id="profile-avatar" src="" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
-                <h2 class="text-white font-bold text-lg" id="username"></h2>
-            </div>
 
-            <div class="stats flex flex-col justify-between items-center">
-                <h3 class="text-black font-bold text-lg">Statistics</h3>
-                <div class="text-rectangle flex justify-between gap-12 text-black shadow-xl rounded-3xl p-4 backdrop-blur-sm font-[Brush_Script_MT]">
-                    <ul class="match-stats pl-5">
-                        <h4 class="font-bold">Matches</h4>
-                        <li>Wins: <span  id="match-wins"></span></li>
-                        <li>Losses: <span id="match-losses"></span></li>
-                        <li>Winning rate: <span id="match-winning-rate"></span> </li>
-                    </ul>
-                    <ul class="tournament-stats">
-                        <h4 class="font-bold">Tournaments</h4>
-                        <li>Wins: <span id="tourn-wins"></span></li>
-                        <li>Losses: <span  id="tourn-losses"></span></li>
-                        <li>Winning rate: <span id="tourn-winning-rate"></span> </li>
-                    </ul>
-                </div>
+        <!-- PROFILE SECTION (hidden by default) -->
+        <section id="profile-section" class="hidden w-full">
+        <div class="profile flex justify-around items-center w-full bg-gradient-to-r from-[#40e5c9] to-[#2ecc71] p-4 shadow-lg flex-wrap">
+          <div class="avatar-name flex flex-col items-center">
+            <img id="profile-avatar" src="" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
+            <h2 class="text-white font-bold text-lg" id="username"></h2>
+            <!-- Avatar upload button -->
+            <button id="open-upload-avatar" class="mt-2 px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition">Upload Avatar</button>
+          </div>
+
+          <div class="stats flex flex-col justify-between items-center">
+            <h3 class="text-black font-bold text-lg">Statistics</h3>
+            <div class="text-rectangle flex justify-between gap-12 text-black shadow-xl rounded-3xl p-4 backdrop-blur-sm font-[Brush_Script_MT]">
+              <ul class="match-stats pl-5">
+                <h4 class="font-bold">Matches</h4>
+                <li>Wins: <span  id="match-wins"></span></li>
+                <li>Losses: <span id="match-losses"></span></li>
+                <li>Winning rate: <span id="match-winning-rate"></span> </li>
+              </ul>
+              <ul class="tournament-stats">
+                <h4 class="font-bold">Tournaments</h4>
+                <li>Wins: <span id="tourn-wins"></span></li>
+                <li>Losses: <span  id="tourn-losses"></span></li>
+                <li>Winning rate: <span id="tourn-winning-rate"></span> </li>
+              </ul>
             </div>
+          </div>
         </div>
 
         <div class="match-history w-2/3 flex flex-col justify-center items-center text-emerald-400 p-4 m-auto font-[Brush_Script_MT]">
-            <h3 class="mb-4 font-bold">Match History</h3>
-            <ul class="text-rectangle flex flex-col items-start w-full">
-                <!-- Match items will be rendered here by JS -->
-                <ul id="match-history-list" class="w-full"></ul>
-            </ul>
+          <h3 class="mb-4 font-bold">Match History</h3>
+          <ul class="text-rectangle flex flex-col items-start w-full">
+            <!-- Match items will be rendered here by JS -->
+            <ul id="match-history-list" class="w-full"></ul>
+          </ul>
         </div>
-      </section>
+        </section>
+
+        <!-- SETTINGS: UPLOAD AVATAR SECTION (hidden by default) -->
+        <section id="settings-upload-avatar" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
+          <h2 class="text-2xl font-bold text-emerald-400 mb-4">Upload Avatar</h2>
+          <form id="upload-avatar-form" class="w-full flex flex-col gap-4" enctype="multipart/form-data">
+          <label for="avatar-file" class="text-emerald-200 text-sm">Choose an image</label>
+          <input id="avatar-file" name="avatar" type="file" accept="image/*" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" required />
+          <div id="upload-avatar-error" class="text-red-400 text-sm min-h-[1.5em]"> </div>
+          <div class="flex gap-4 justify-end">
+            <button type="button" id="cancel-upload-avatar" class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 transition">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition">Upload</button>
+          </div>
+          </form>
+        </div>
+        </section>
 
       <!-- GAME SECTION (hidden by default) -->
       <section id="game-section" class="hidden w-full h-full flex flex-col items-center justify-center text-white">
@@ -294,7 +313,8 @@
     <script type="module" src="/dist/components/messaging/chatPage.js"></script>
 
     <!-- settings -->
-     <script type="module" src="/dist/components/settings/editUsername.js"></script>
+    <script type="module" src="/dist/components/settings/editUsername.js"></script>
+    <script type="module" src="/dist/components/settings/uploadAvatar.js"></script>
 
     <!-- SPA Router -->
     <script type="module" src="/dist/common/router.js"></script>
