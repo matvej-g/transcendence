@@ -5,6 +5,10 @@ CREATE TABLE IF NOT EXISTS users (
 	displayname TEXT NOT NULL UNIQUE,
 	email TEXT NOT NULL UNIQUE,
 	password_hash TEXT NOT NULL,
+	two_factor_code TEXT DEFAULT NULL,
+	two_factor_expires_at DATETIME DEFAULT NULL,
+	two_factor_enabled INTEGER DEFAULT 0,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     avatar_filename TEXT NOT NULL DEFAULT 'default.jpg',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

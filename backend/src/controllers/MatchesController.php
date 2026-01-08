@@ -177,10 +177,11 @@ class MatchesController extends BaseController
         } elseif ($scoreOne < $scoreTwo) {
             $winnerId = $playerTwoId;
             $this->stats->recordMatchResult($playerTwoId, $playerOneId, $scoreTwo, $scoreOne);
-        } else {
-            // draw
-            $this->stats->recordDraw($playerOneId, $playerTwoId, $scoreOne, $scoreTwo);
         }
+        // } else {
+        //     // draw
+        //     $this->stats->recordDraw($playerOneId, $playerTwoId, $scoreOne, $scoreTwo);
+        // }
 
         $statusPlayerOne = $this->status->setCurrentMatch($match['player_one_id'], null);
         if ($statusPlayerOne === null) {

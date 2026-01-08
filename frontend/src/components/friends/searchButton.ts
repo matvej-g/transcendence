@@ -1,6 +1,8 @@
+
 import { getUserByUserId, getUserByUsername } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
-import { sendFriendRequest } from './api.js';
+import { setupAddFriendButton } from './AddFriendButton.js';
+
 
 const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
 const searchButton = document.getElementById('search-button');
@@ -10,35 +12,26 @@ const searchResultAvatar = document.getElementById('search-result-avatar') as HT
 const searchResultNickname = document.getElementById('search-result-nickname');
 const addFriendBtn = document.getElementById('add-friend-btn');
 
-if (searchButton && searchInput && searchResultMessage && searchResultUser && searchResultAvatar && searchResultNickname && addFriendBtn) {
-    let messageTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    function showMessage(text: string, colorClass: string) {
-      if (searchResultMessage == null)
-        return;
-      searchResultMessage.textContent = text;
-      searchResultMessage.classList.remove('text-green-500', 'text-red-400');
-      searchResultMessage.classList.add(colorClass);
-      searchResultMessage.style.opacity = '1';
-      if (messageTimeout) clearTimeout(messageTimeout);
-      messageTimeout = setTimeout(() => {
-        searchResultMessage.style.transition = 'opacity 0.5s';
-        searchResultMessage.style.opacity = '0';
-      }, 2500);
-    }
-  // Allow pressing Enter to trigger search
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault(); //stops the default action of an event from happening.
-      searchButton.click();
-    }
-  });
+let friendUser: any = null;
 
-  let friendUser: any = null;
+function showMessage(text: string, colorClass: string) {
+  if (!searchResultMessage) return;
+  searchResultMessage.textContent = text;
+  searchResultMessage.classList.remove('text-green-500', 'text-red-400');
+  searchResultMessage.classList.add(colorClass);
+  searchResultMessage.style.opacity = '1';
+  if ((showMessage as any).timeout) clearTimeout((showMessage as any).timeout);
+  (showMessage as any).timeout = setTimeout(() => {
+    searchResultMessage.style.transition = 'opacity 0.5s';
+    searchResultMessage.style.opacity = '0';
+  }, 2500);
+}
 
+function handleSearchButtonClick() {
+  if (!searchButton || !searchInput || !searchResultMessage || !searchResultUser || !searchResultAvatar || !searchResultNickname || !addFriendBtn) return;
   searchButton.addEventListener('click', async (e) => {
     e.preventDefault();
-    // Normalize spaces: trim and collapse multiple spaces
     const username = searchInput.value.trim().replace(/\s+/g, ' ');
     searchResultMessage.textContent = '';
     searchResultMessage.classList.remove('text-green-500', 'text-red-400');
@@ -79,26 +72,31 @@ if (searchButton && searchInput && searchResultMessage && searchResultUser && se
       searchInput.value = "";
     }
   });
+}
 
-  addFriendBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    if (!friendUser || !friendUser.id) {
-      showMessage('No user selected.', 'text-red-400');
-      return;
-    }
-    const currentUserId = getCurrentUserId();
-    if (!currentUserId) {
-      showMessage('Current user not found.', 'text-red-400');
-      return;
-    }
-        try {
-          await sendFriendRequest(Number(friendUser.id), Number(currentUserId));
-          showMessage('Friend request sent!', 'text-green-500');
-          addFriendBtn.classList.add('hidden');
-          searchResultUser.classList.add('hidden');
-    } catch (err) {
-      showMessage('Friend request already exists or invalid', 'text-red-400');
-      searchResultUser.classList.add('hidden');
+function handleSearchInputEnter() {
+  if (!searchInput || !searchButton) return;
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      searchButton.click();
     }
   });
 }
+
+function getFriendUser() {
+  return friendUser;
+}
+
+function init() {
+  if (
+    searchButton && searchInput && searchResultMessage && searchResultUser &&
+    searchResultAvatar && searchResultNickname && addFriendBtn
+  ) {
+    handleSearchInputEnter();
+    handleSearchButtonClick();
+    setupAddFriendButton(addFriendBtn, searchResultUser, showMessage, getFriendUser);
+  }
+}
+
+init();

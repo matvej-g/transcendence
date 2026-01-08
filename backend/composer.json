@@ -1,12 +1,15 @@
 {
-    "require": {
+	"require": {
+		"phpmailer/phpmailer": "^7.0",
+		"firebase/php-jwt": "^6.11",
 		"php": ">=8.1",
-        "cboden/ratchet": "^0.4"
-    },
-    "autoload": {
-        "psr-4": {
-            "Pong\\": "src/game_app",
-            "src\\": "src/"
-        }
-    }
+		"cboden/ratchet": "^0.4"
+	},
+	"autoload": {
+		"psr-4": {
+			"App\\": "src/",
+			"Pong\\": "src/game_app",
+			"src\\": "src/"
+		}
+	}
 }

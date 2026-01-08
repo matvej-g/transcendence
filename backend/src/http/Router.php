@@ -6,24 +6,25 @@ class Router {
 
     protected $routes = [];
 
-    protected function add($method, $uri, $controller)
-    {
-        $this->routes[] = [
-            'uri' => $uri,
-            'method' => $method,
-            'controller' => $controller,
-        ];
-    }
+	protected function add($method, $uri, $controller, $middleware = [])
+	{
+		$this->routes[] = [
+			'uri' => $uri,
+			'method' => $method,
+			'controller' => $controller,
+			'middleware' => $middleware,
+		];
+	}
 
-    public function get($uri, $controller)
-    {
-        $this->add('GET', $uri, $controller);
-    }
+	public function get($uri, $controller, $middleware = [])
+	{
+		$this->add('GET', $uri, $controller, $middleware);
+	}
 
-    public function post($uri, $controller)
-    {
-        $this->add('POST', $uri, $controller);
-    }
+	public function post($uri, $controller, $middleware = [])
+	{
+		$this->add('POST', $uri, $controller, $middleware);
+	}
 
     public function delete($uri, $controller)
     {
@@ -66,18 +67,44 @@ class Router {
         return false;
     }
 
-    public function route($uri, $method, $request, $db): Response
-    {
-        foreach ($this->routes as $route) {
-            $matches = $this->convert($route, $uri);
-            if ($matches !== false && $matches[0] === $uri && $route['method'] === strtoupper($method)) {
-                if (is_array($route['controller'])) {
-                    [$class, $methodName] = $route['controller'];
-                    $controllerInstance = new $class($db);
-                    return ($controllerInstance->$methodName($request, $matches));
-                }
-            }
-        }
-        return new Response(HttpStatusCode::NotFound, 'Requested Endpoint does not exist', ['Content-Type' => 'application/json']);
-    }
+	public function route($uri, $method, $request, $db): Response
+	{
+		foreach ($this->routes as $route) {
+			$matches = $this->convert($route, $uri);
+			if ($matches !== false && $matches[0] === $uri && $route['method'] === strtoupper($method)) {
+				
+				// Run middleware before controller
+				if (!empty($route['middleware'])) {
+					foreach ($route['middleware'] as $middleware) {
+						$middlewareResponse = call_user_func([$middleware, 'handle'], $request);
+						if ($middlewareResponse !== null) {
+							return $middlewareResponse;
+						}
+					}
+				}
+
+				// static page controllers
+				if (is_string($route['controller']))
+					return require base_path($route['controller']);
+				// dynamic controller classes
+				if (is_array($route['controller'])) {
+					[$class, $methodName] = $route['controller'];
+					
+					// creating a Controller because $class holds name of controller
+					$controllerInstance = new $class($db);
+					// calling the method because $methodName holds the name of the method
+					return ($controllerInstance->$methodName($request, $matches));
+				}
+			}
+		}
+		$this->abort();
+	}
+
+	protected function abort()
+	{
+		http_response_code(404);
+		echo "Sorry, Not found.";
+		die(0);
+	}
 }
+

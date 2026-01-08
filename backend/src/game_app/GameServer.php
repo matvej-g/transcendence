@@ -7,10 +7,14 @@ use Ratchet\ConnectionInterface;
 use src\Database;
 use src\Models\UserModel;
 use src\Models\MatchesModel;
-
+use src\Models\UserStatsModel;
+use src\Models\UserStatusModel;
 
 class GameServer implements MessageComponentInterface {
-    protected $players;
+    private const GAME_TICK = 0.016;
+    private const COUNTDOWN_DURATION = 4;
+
+    protected \SplObjectStorage $players;
     private array $waitingPlayers = [];
     private array $games = [];
     private $loop;
@@ -18,240 +22,234 @@ class GameServer implements MessageComponentInterface {
     private Database $db;
     private UserModel $userModel;
     private MatchesModel $matchesModel;
+    private UserStatsModel $userStatsModel;
+    private UserStatusModel $userStatus;
 
     public function __construct($loop = null) {
         $this->players = new \SplObjectStorage;
         $this->loop = $loop;
+        $this->initializeDatabase();
+        $this->setupGameLoop();
+    }
 
+    private function initializeDatabase(): void {
         $this->db = new Database('sqlite:/var/www/html/database/transcendence.db');
         $this->userModel = new UserModel($this->db);
         $this->matchesModel = new MatchesModel($this->db);
+        $this->userStatsModel = new UserStatsModel($this->db);
+        $this->userStatus = new UserStatusModel($this->db);
         echo "GameServer initialized\n";
+    }
 
-        //start game loop at ~60 FPS (every 16ms)
+    private function setupGameLoop(): void {
         if ($this->loop) {
-            $this->loop->addPeriodicTimer(0.016, function() {
+            $this->loop->addPeriodicTimer(self::GAME_TICK, function() {
                 $this->updateAllGames();
-            });
+            }
+        );
             echo "Game loop timer registered\n";
         } else {
             echo "WARNING: No event loop provided!\n";
         }
     }
 
+    /*
+    Websocket Ratchet functions
+    */
     public function onOpen(ConnectionInterface $conn) {
-        $player = new Player($conn);
-        $this->players[$conn] = $player;
+        $this->players[$conn] = new Player($conn);
         echo "New connection: {$conn->resourceId}\n";
-
-        $player->send([
-            'type' => 'connected',
-            'data' => [
-                'playerID' => $player->userID,
-                'message' => 'Successfully connected!'
-            ]
-            ]);
     }
 
     public function onMessage(ConnectionInterface $from, $msg) {
         $player = $this->players[$from];
         $data = json_decode($msg, true);
-        //echo "Message from {$player->userID}: {$msg}\n";
-
-        if ($data['type'] === 'authenticate') {
-            $userID = $data['data']['userID'] ?? null;
-            echo "DEBUG: Received authenticate request with userID: " . var_export($userID, true) . "\n";
-            if ($userID) {
-                $user = $this->userModel->getUserById($userID);
-                echo "DEBUG: getUserById returned: " . var_export($user, true) . "\n";
-                if ($user) {
-                    $player->userID = $user['id'];
-                    $player->username = $user['username'];
-                } else {
-                    echo "DEBUG: User not found in database for userID={$userID}\n";
-                }
-            } else {
-            echo "DEBUG: No userID provided in authenticate message\n";
-            }
-        }
-        //handle join players
-        if ($data['type'] === 'join') {
-            $gameMode = $data['data']['gameMode'] ?? 'remote';
-
-            if ($gameMode === 'local') {
-                $this->startLocalGame($player);
-            } elseif ($gameMode === 'remote') {
-                $this->startRemoteGame($player);
-            }
-        }
-        //handle input from players(paddle movement)
-        if ($data['type'] === 'input') {
-            if (!$player->gameID || !isset($this->games[$player->gameID])) {
-                return;
-            }
-            $game = $this->games[$player->gameID];
-            $engine = $game['engine'];
-            $action = $data['data']['action'] ?? null;
-            //check which paddle to control for local mode
-            if ($game['mode'] === 'local') {
-                $paddle = $data['data']['paddle'] ?? null;
-                if (!$paddle) {
-                    return;
-                }
-            } else {
-                $paddle = $player->paddle;
-            }
-            //set movement direction for paddle when buttom pressed / released
-            if ($action === 'keydown') {
-                $direction = $data['data']['direction'] ?? null;
-                if ($direction === 'up') {
-                    $engine->setPaddleVelocity($paddle, -1);
-                } elseif ($direction === 'down') {
-                    $engine->setPaddleVelocity($paddle, 1);
-                }
-            } elseif ($action === 'keyup') {
-                $engine->setPaddleVelocity($paddle, 0);
-            }
-        }
+        match($data['type'] ?? null) {
+            'authenticate' => $this->handleAuthentication($player, $data['data'] ?? []),
+            'join' => $this->handleJoin($player, $data['data'] ?? []),
+            'input' => $this->handleInput($player, $data['data'] ?? []),
+            default => null
+        };
     }
 
     public function onClose(ConnectionInterface $conn) {
         if (!isset($this->players[$conn])) return;
 
         $player = $this->players[$conn];
-        echo "Connection closed: {$player->userID}\n";
-        
-        //remove player from waiting list
-        $this->waitingPlayers = array_filter(
-            $this->waitingPlayers,
-            fn($p) => $p->userID !== $player->userID
-        );
-
-        //send player message that opponent disconnected/left
-        if ($player->gameID && isset($this->games[$player->gameID])) {
-            $gameID = $player->gameID;
-            $game = $this->games[$gameID];
-
-            //find opponent
-            $opponent = null;
-            if ($game['player1']->userID === $player->userID) {
-                $opponent = $game['player2'];
-            } elseif ($game['player2']->userID === $player->userID) {
-                $opponent = $game['player1'];
-            }
-
-            if ($opponent && isset($this->players[$opponent->conn])) {
-                $opponent->send([
-                    'type' => 'opponentDisconnected',
-                    'data' => [
-                        'message' => 'Opponend disconnected. You win!',
-                        'winner' => $opponent->paddle
-                    ]
-                ]);
-
-                if ($game['mode'] === 'remote') {
-                    $this->matchesModel->endMatch($gameID, $opponent->userID);
-                }
-                $opponent->gameID = null;
-                $opponent->paddle = null;
-            }
-            unset($this->games[$gameID]);
-        }
+        $this->removePlayerFromQueue($player);
+        $this->handlePlayerDisconnect($player);
         unset($this->players[$conn]);
+        echo "Connection closed: {$player->userID}\n";
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
         echo "Error: {$e->getMessage()}\n";
         $conn->close();
     }
-    
-    private function startRemoteGame(Player $player): void {
-        echo "Player {$player->userID} searching for match...\n";
-        if (count($this->waitingPlayers) > 0) {
-            $opponent = array_shift($this->waitingPlayers);
-            echo "Match found! {$player->userID} vs {$opponent->userID}\n";
 
-            // Create match in database and use matchId as gameID
-            $matchId = $this->matchesModel->createMatch($player->userID, $opponent->userID);
-            if (!$matchId) {
-                echo "ERROR: Failed to create match in database!\n";
-                return;
+    private function endGame(string $gameID, ?string $winnerId = null, bool $isDisconnect = false): void {
+        if (!isset($this->games[$gameID])) return;
+
+        $game = $this->games[$gameID];
+        
+        if ($game['mode'] === 'remote' && $winnerId) {
+            $this->recordMatchResults($gameID, $game, $winnerId);
+        }
+
+        $this->cleanupGame($game);
+        unset($this->games[$gameID]);
+    }
+
+    private function recordMatchResults(string $gameID, array $game, string $winnerId): void {
+        $state = $game['engine']->update();
+        
+        $loserId = ($winnerId === $game['player1']->userID) 
+            ? $game['player2']->userID 
+            : $game['player1']->userID;
+
+        $isLeftWinner = ($game['player1']->userID === $winnerId);
+        $goalsWinner = $isLeftWinner ? $state['leftPaddle']['score'] : $state['rightPaddle']['score'];
+        $goalsLoser = $isLeftWinner ? $state['rightPaddle']['score'] : $state['leftPaddle']['score'];
+
+        $this->matchesModel->endMatch($gameID, $winnerId);
+        $this->userStatsModel->recordMatchResult($winnerId, $loserId, $goalsWinner, $goalsLoser);
+    }
+
+    private function cleanupGame(array $game): void {
+        $game['player1']->gameID = null;
+        $game['player1']->paddle = null;
+        if ($game['mode'] !== 'local') {
+            $this->userStatus->setCurrentMatch($game['player1']->userID, null);
+        }
+
+        if ($game['player2']) {
+            $game['player2']->gameID = null;
+            $game['player2']->paddle = null;
+            if ($game['mode'] !== 'local') {
+                $this->userStatus->setCurrentMatch($game['player1']->userID, null);
             }
-            
-            $gameID = $matchId;
-            $player->gameID = $gameID;
-            $player->paddle = 'left';
+        }
+    }
 
-            $opponent->gameID = $gameID;
-            $opponent->paddle = 'right';
+    /*
+    Remote server logic
+    */
+    private function startRemoteGame(Player $player): void {
+        if ($this->isPlayerBusy($player)) {
+            return;
+        }
 
-            echo "Match created in DB with ID: {$matchId}\n";
-
-            $player->send([
-                'type' => 'matchFound',
-                'data' => [
-                    'message' => 'Match found! Starting game.',
-                    'paddle' => 'left',
-                    'gameID' => $gameID
-                ]
-            ]);
-            $opponent->send([
-                'type' => 'matchFound',
-                'data' => [
-                    'message' => 'Match found! Starting game.',
-                    'paddle' => 'right',
-                    'gameID' => $gameID    
-                ]
-            ]);
-
-            $engine = new GameEngine($gameID);
-            $this->games[$gameID] = [
-                'player1' => $player,
-                'player2' => $opponent,
-                'mode' => 'remote',
-                'matchId' => $matchId,
-                'started' => time(),
-                'engine' => $engine,
-                'lastLeftScore' => 0,
-                'lastRightScore' => 0
-            ];
+        if (count($this->waitingPlayers) > 0) {
+            $this->createRemoteMatch($player, array_shift($this->waitingPlayers));
         } else {
-            //no opponent found yet
             $this->waitingPlayers[] = $player;
             echo "Player {$player->userID} added to waiting queue.\n";
         }
     }
 
-    private function startLocalGame(Player $player): void {
-        echo "Player {$player->userID} starting local game...\n";
-        $gameID = uniqid('local_');
-        $player->gameID = $gameID;
-        $player->paddle = 'both';
-
-        $player->send([
-            'type' => 'matchFound',
-            'data' => [
-            'message' => 'Local game started!',
-            'paddle' => 'both',
-            'gameID' => $gameID
-            ]
-        ]);
-        $engine = new GameEngine($gameID);
-        $this->games[$gameID] = [
-            'player1' => $player,
-            'player2' => null,
-            'mode' => 'local',
-            'started' => time(),
-            'engine' => $engine,
-            'lastLeftScore' => 0,
-            'lastRightScore' => 0
-        ];
+    private function isPlayerBusy(Player $player): bool {
+    foreach ($this->games as $game) {
+        if ($game['player1']->userID === $player->userID) {
+            $this->sendError($player, 'You are already in a game.');
+            return true;
+        }
+        if ($game['player2'] && $game['player2']->userID === $player->userID) {
+            $this->sendError($player, 'You are already in a game.');
+            return true;
+        }
+    }
+    foreach ($this->waitingPlayers as $waitingPlayer) {
+        if ($waitingPlayer->userID === $player->userID) {
+            $this->sendError($player, 'You are already searching for a game.');
+            return true;
+        }
     }
 
+    return false;
+}
+
+    private function createRemoteMatch(Player $player1, Player $player2): void {
+        $gameID = $this->matchesModel->createMatch($player1->userID, $player2->userID);
+        
+        if (!$gameID) {
+            echo "ERROR: Failed to create match in database!\n";
+            return;
+        }
+
+        $this->initializeGame($gameID, $player1, $player2, 'remote');
+        echo "Match created: {$player1->userID} vs {$player2->userID} (ID: {$gameID})\n";
+    }
+
+    private function initializeGame(string $gameID, Player $player1, ?Player $player2, string $mode): void {
+        $player1->gameID = $gameID;
+        $player1->paddle = $mode === 'local' ? 'both' : 'left';
+        
+        if ($player2) {
+            $player2->gameID = $gameID;
+            $player2->paddle = 'right';
+            $this->userStatus->setCurrentMatch($player2->userID, $gameID);
+            if ($mode !== 'local') {
+                $this->userStatus->setCurrentMatch($player2->userID, $gameID);
+            }
+        }
+        if ($mode !== 'local') {
+            $this->userStatus->setCurrentMatch($player1->userID, $gameID);
+        }
+
+        $this->games[$gameID] = [
+            'player1' => $player1,
+            'player2' => $player2,
+            'mode' => $mode,
+            'matchId' => $gameID,
+            'started' => time(),
+            'engine' => null,
+            'lastLeftScore' => 0,
+            'lastRightScore' => 0,
+            'countdownFinished' => false,
+            'isLocalGame' => $mode === 'local'
+        ];
+
+        $this->notifyMatchStart($player1, $player2, $gameID, $mode);
+    }
+
+    private function notifyMatchStart(Player $player1, ?Player $player2, string $gameID, string $mode): void {
+        $player1->send([
+            'type' => 'matchFound',
+            'data' => [
+                'message' => $mode === 'local' ? 'Local game started!' : 'Match found! Starting game.',
+                'paddle' => $mode === 'local' ? 'both' : 'left',
+                'gameID' => $gameID
+            ]
+        ]);
+
+        if ($player2) {
+            $player2->send([
+                'type' => 'matchFound',
+                'data' => [
+                    'message' => 'Match found! Starting game.',
+                    'paddle' => 'right',
+                    'gameID' => $gameID
+                ]
+            ]);
+        }
+    }
+
+    /*
+    Local server logic
+    */
+    private function startLocalGame(Player $player): void {
+        if ($this->isPlayerBusy($player)) {
+            return;
+        }
+        $gameID = (int)(microtime(true) * 1000);
+        $this->initializeGame($gameID, $player, null, 'local');
+        echo "Local game started for player {$player->userID}\n";
+    }
+
+    /*
+    Server Update/Loop logic
+    */
     private function updateAllGames(): void {
-        // if (count($this->games) > 0) {
-        //     echo "Tick: " . count($this->games) . " active games\n";
-        // }
         foreach ($this->games as $gameID => $_) {
             $this->updateGame($gameID);
         }
@@ -260,69 +258,202 @@ class GameServer implements MessageComponentInterface {
     private function updateGame(string $gameID): void {
         if (!isset($this->games[$gameID])) return;
 
-        $game = $this->games[$gameID];
+        $game = &$this->games[$gameID];
+
+        if (!$this->checkCountdown($gameID, $game)) {
+            return;
+        }
+
         $newState = $game['engine']->update();
-        //message for Paddle and Ball positions
+        $this->broadcastGameState($game, $newState);
+        $this->checkGameEnd($gameID, $game, $newState);
+    }
+
+    private function checkCountdown(string $gameID, array $game): bool {
+        if ($game['countdownFinished']) {
+            return true;
+        }
+
+        if (time() - $game['started'] >= self::COUNTDOWN_DURATION) {
+            $this->games[$gameID]['countdownFinished'] = true;
+            $this->games[$gameID]['engine'] = new GameEngine($gameID);
+            echo "Countdown completed for game {$gameID}\n";
+            return true;
+        }
+        return false;
+    }
+
+    private function broadcastGameState(array $game, array $state): void {
         $message = [
             'type' => 'gameUpdate',
             'data' => [
-                'leftPaddleY' => $newState['leftPaddle']['y'],
-                'rightPaddleY' => $newState['rightPaddle']['y'],
-                'ballX' => $newState['ball']['x'],
-                'ballY' => $newState['ball']['y'],
+                'leftPaddleY' => $state['leftPaddle']['y'],
+                'rightPaddleY' => $state['rightPaddle']['y'],
+                'ballX' => $state['ball']['x'],
+                'ballY' => $state['ball']['y'],
             ]
         ];
 
-        //message for score change
-        if ($newState['leftPaddle']['score'] != $game['lastLeftScore'] ||
-            $newState['rightPaddle']['score'] != $game['lastRightScore']) {
-                $message['data']['leftScore'] = $newState['leftPaddle']['score'];
-                $message['data']['rightScore'] = $newState['rightPaddle']['score'];
-                if ($game['mode'] === 'remote') {
-                    $this->matchesModel->updateScore(
-                        $gameID,
-                        $newState['leftPaddle']['score'],
-                        $newState['rightPaddle']['score']);
-                }
-                $this->games[$gameID]['lastLeftScore'] = $newState['leftPaddle']['score'];
-                $this->games[$gameID]['lastRightScore'] = $newState['rightPaddle']['score'];
-            }
+        $this->updateScoreIfChanged($game, $state, $message);
 
-        if ($game['mode'] === 'local') {
-            $game['player1']->send($message);
-        } else {
-            $game['player1']->send($message);
+        $game['player1']->send($message);
+        if ($game['player2']) {
             $game['player2']->send($message);
         }
-        //clean up game if someone won
-        if ($newState['winner'] !== null) {
-            echo "Game {$gameID} finished! Winner: {$newState['winner']}\n";
-            $msgGameOver = [
-                'type' => 'gameOver',
-                'data' => [
-                    'winner' => $newState['winner']
-                ]
-            ];
+    }
 
-            if ($game['mode'] === 'local') {
-                $game['player1']->send($msgGameOver);
-            } else {
-                $winnerId = ($newState['winner'] === 'left')
-                    ? $game['player1']->userID
-                    : $game['player2']->userID;
-                $this->matchesModel->endMatch($gameID, $winnerId);
-                $game['player1']->send($msgGameOver);
-                $game['player2']->send($msgGameOver);
+    private function updateScoreIfChanged(array &$game, array $state, array &$message): void {
+        $leftScore = $state['leftPaddle']['score'];
+        $rightScore = $state['rightPaddle']['score'];
+
+        if ($leftScore !== $game['lastLeftScore'] || $rightScore !== $game['lastRightScore']) {
+            $message['data']['leftScore'] = $leftScore;
+            $message['data']['rightScore'] = $rightScore;
+
+            if ($game['mode'] === 'remote') {
+                $this->matchesModel->updateScore($game['matchId'], $leftScore, $rightScore);
             }
 
-            $game['player1']->gameID = null;
-            $game['player1']->paddle = null;
-            if ($game['player2']) {
-                $game['player2']->gameID = null;
-                $game['player2']->paddle = null;
-            }
-
-            unset($this->games[$gameID]);
+            $game['lastLeftScore'] = $leftScore;
+            $game['lastRightScore'] = $rightScore;
         }
+    }
+
+    private function checkGameEnd(string $gameID, array $game, array $state): void {
+        if ($state['winner'] === null) return;
+
+        echo "Game {$gameID} finished! Winner: {$state['winner']}\n";
+
+        $this->broadcastGameOver($game, $state['winner']);
+
+        $winnerId = ($state['winner'] === 'left') 
+            ? $game['player1']->userID 
+            : $game['player2']?->userID;
+
+        $this->endGame($gameID, $winnerId);
+    }
+
+    private function broadcastGameOver(array $game, string $winner): void {
+        $message = [
+            'type' => 'gameOver',
+            'data' => ['winner' => $winner]
+        ];
+
+        $game['player1']->send($message);
+        if ($game['player2']) {
+            $game['player2']->send($message);
+        }
+    }
+
+    /*
+    Helper Functions
+    */
+    private function sendError(Player $player, string $message): void {
+        $player->send([
+            'type' => 'error',
+            'data' => ['errorMessage' => "Authentication failed: {$message}"]
+        ]);
+    }
+
+    //helper functions for websocket functions
+    private function handleAuthentication(Player $player, array $data): void {
+        $userID = $data['userID'] ?? null;
+        if (!$userID) {
+            $this->sendError($player, 'No userID povided');
+            return;
+        }
+        $user = $this->userModel->getUserById($userID);
+        if (!$user) {
+            $this->sendError($player, 'User not found');
+            return;
+        }
+        $player->userID = $user['id'];
+        $player->username = $user['username'];
+        $player->send([
+            'type' => 'connected',
+                'data' => [
+                    'playerID' => $player->userID,
+                    'username' => $player->username,
+                    'message' => 'Successfully connected!'
+                ]
+        ]);
+    }
+
+    private function handleJoin(Player $player, array $data): void {
+        $gameMode = $data['gameMode'] ?? 'remote';
+        if ($gameMode === 'local') {
+            $this->startLocalGame($player);
+        } elseif ($gameMode === 'remote') {
+            $this->startRemoteGame($player);
+        }
+    }
+
+    private function handleInput(Player $player, array $data): void {
+        if (!$player->gameID || !isset($this->games[$player->gameID])) {
+            return;
+        }
+        $game = $this->games[$player->gameID];
+        $engine = $game['engine'];
+        $action = $data['action'] ?? null;
+        //check which paddle to control for local mode
+        if ($game['mode'] === 'local') {
+            $paddle = $data['paddle'] ?? null;
+            if (!$paddle) {
+                return;
+            }
+        } else {
+            $paddle = $player->paddle;
+        }
+        //set movement direction for paddle when buttom pressed / released
+        if ($action === 'keydown') {
+            $direction = $data['direction'] ?? null;
+            if ($direction === 'up') {
+                $engine->setPaddleVelocity($paddle, -1);
+            } elseif ($direction === 'down') {
+                $engine->setPaddleVelocity($paddle, 1);
+            }
+        } elseif ($action === 'keyup') {
+            $engine->setPaddleVelocity($paddle, 0);
+        }
+    }
+
+    private function removePlayerFromQueue(Player $player): void {
+        $this->waitingPlayers = array_filter(
+            $this->waitingPlayers,
+            fn($p) => $p->userID !== $player->userID
+        );
+    }
+
+    private function handlePlayerDisconnect(Player $player): void {
+        if (!$player->gameID || !isset($this->games[$player->gameID])) return;
+
+        $game = $this->games[$player->gameID];
+        $opponent = $this->getOpponent($player, $game);
+
+        if ($opponent) {
+            $this->notifyOpponentDisconnect($opponent, $player, $game);
+        }
+
+        $this->endGame($player->gameID, $opponent?->userID, true);
+    }
+
+    private function getOpponent(Player $player, array $game): ?Player {
+        if ($game['player1']->userID === $player->userID) {
+            return $game['player2'];
+        }
+        if ($game['player2'] && $game['player2']->userID === $player->userID) {
+            return $game['player1'];
+        }
+        return null;
+    }
+
+    private function notifyOpponentDisconnect(Player $opponent, Player $disconnectedPlayer, array $game): void {
+        $opponent->send([
+            'type' => 'opponentDisconnected',
+            'data' => [
+                'message' => 'Opponent disconnected. You win!',
+                'winner' => $opponent->paddle
+            ]
+        ]);
     }
 }

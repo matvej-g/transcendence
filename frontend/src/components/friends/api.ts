@@ -53,8 +53,20 @@ export async function sendFriendRequest(friendId: number, userId: number) {
     },
     body: JSON.stringify({ friendId })
   });
-  if (!res.ok) throw new Error('Failed to send friend request');
-  return await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new Error('Invalid server response');
+  }
+  if (!res.ok) {
+    // Use 'error' or 'message' property from backend response for error messages
+    const errorMsg = data?.error || data?.message || 'Failed to send friend request';
+    const error = new Error(errorMsg);
+    (error as any).code = res.status;
+    throw error;
+  }
+  return data;
 }
 
 // Update friend request status (accepting or pending )
@@ -76,4 +88,29 @@ export async function getUserStatus(id: string) {
   const res = await fetch(`/api/status/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error('Failed to fetch user status');
   return await res.json();
+}
+
+// Decline a friend request
+export async function declineFriendRequest(friendshipId: number, userId: number) {
+  const res = await fetch('/api/friends/decline', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-USER-ID': String(userId)
+    },
+    body: JSON.stringify({ id: friendshipId })
+  });
+  let data;
+  try {
+    data = await res.json();
+  } catch (err) {
+    throw new Error('Invalid server response');
+  }
+  if (!res.ok) {
+    const errorMsg = data?.error || data?.message || 'Failed to decline friend request';
+    const error = new Error(errorMsg);
+    (error as any).code = res.status;
+    throw error;
+  }
+  return data;
 }
