@@ -1,5 +1,5 @@
 export type LoginResult =
-  | { ok: true; user: { id: string; username: string } }
+  | { ok: true; user: { id: string; username: string }; two_factor_required?: boolean }
   | { ok: false; error: string };
 
 import { setCurrentUserId, setUserOnline, setCurrentUsername } from './authUtils.js';
@@ -48,7 +48,8 @@ export async function loginHandle(username: string, password: string): Promise<L
     // Normalize return to include `user.id` and a username field
     const returnedId = String(userIdToStore ?? '');
     const returnedUsername = String(userNameToStore ?? '');
-    return { ok: true, user: { id: returnedId, username: returnedUsername } };
+    const twoFactorRequired = data?.two_factor_required ?? false;
+    return { ok: true, user: { id: returnedId, username: returnedUsername }, two_factor_required: twoFactorRequired };
   } catch (e) {
     console.log('[TS] loginHandle → exception', e);
     return { ok: false, error: 'NETWORK_ERROR' };

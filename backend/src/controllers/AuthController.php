@@ -123,4 +123,86 @@ class AuthController
             );
         }
     }
+
+    public function enable2FA(Request $request, $parameters)
+    {
+        $userId = getCurrentUserId($request);
+        
+        if (!$userId) {
+            return new Response(
+                HttpStatusCode::Unauthorised,
+                json_encode(['success' => false, 'error' => 'Not authenticated'])
+            );
+        }
+
+        $result = $this->userModel->enable2FA($userId);
+        
+        if ($result === null) {
+            return new Response(
+                HttpStatusCode::InternalServerError,
+                json_encode(['success' => false, 'error' => 'Database error'])
+            );
+        }
+
+        return new Response(
+            HttpStatusCode::Ok,
+            json_encode([
+                'success' => true,
+                'message' => '2FA has been enabled',
+                'two_factor_enabled' => true
+            ])
+        );
+    }
+
+    public function disable2FA(Request $request, $parameters)
+    {
+        $userId = getCurrentUserId($request);
+        
+        if (!$userId) {
+            return new Response(
+                HttpStatusCode::Unauthorised,
+                json_encode(['success' => false, 'error' => 'Not authenticated'])
+            );
+        }
+
+        $result = $this->userModel->disable2FA($userId);
+        
+        if ($result === null) {
+            return new Response(
+                HttpStatusCode::InternalServerError,
+                json_encode(['success' => false, 'error' => 'Database error'])
+            );
+        }
+
+        return new Response(
+            HttpStatusCode::Ok,
+            json_encode([
+                'success' => true,
+                'message' => '2FA has been disabled',
+                'two_factor_enabled' => false
+            ])
+        );
+    }
+
+    public function get2FAStatus(Request $request, $parameters)
+    {
+        $userId = getCurrentUserId($request);
+        
+        if (!$userId) {
+            return new Response(
+                HttpStatusCode::Unauthorised,
+                json_encode(['success' => false, 'error' => 'Not authenticated'])
+            );
+        }
+
+        $isEnabled = $this->userModel->is2FAEnabled($userId);
+
+        return new Response(
+            HttpStatusCode::Ok,
+            json_encode([
+                'success' => true,
+                'two_factor_enabled' => $isEnabled
+            ])
+        );
+    }
 }

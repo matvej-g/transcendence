@@ -66,6 +66,9 @@ $this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController
 // 2FA authentication routes
 $this->router->post('/api/auth/send-2fa', [AuthController::class, 'sendTwoFactorCode'], [AuthMiddleware::class]);
 $this->router->post('/api/auth/verify-2fa', [AuthController::class, 'verifyTwoFactorCode'], [AuthMiddleware::class]);
+$this->router->post('/api/auth/2fa/enable', [AuthController::class, 'enable2FA'], [AuthMiddleware::class]);
+$this->router->post('/api/auth/2fa/disable', [AuthController::class, 'disable2FA'], [AuthMiddleware::class]);
+$this->router->get('/api/auth/2fa/status', [AuthController::class, 'get2FAStatus'], [AuthMiddleware::class]);
 
 $this->router->get('/api/conversations', [MessagingController::class, 'getConversations']);
 $this->router->get('/api/conversations/{id}', [MessagingController::class, 'getConversation']);

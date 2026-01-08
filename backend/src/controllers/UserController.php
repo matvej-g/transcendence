@@ -152,8 +152,13 @@ class UserController extends BaseController
             return $this->jsonUnauthorized("Invalid password");
         }
         
-        // Generate JWT with two_factor_verified=false (mert)
-        $token = generateJWT($user['id'], false);
+        // Check if user has 2FA enabled
+        $is2FAEnabled = (bool)$user['two_factor_enabled'];
+        
+        // Generate JWT based on 2FA status
+        // If 2FA is disabled, user is fully authenticated immediately
+        // If 2FA is enabled, they need to verify the code first
+        $token = generateJWT($user['id'], !$is2FAEnabled);
         setJWTCookie($token);
         
         return $this->jsonSuccess([
@@ -163,10 +168,9 @@ class UserController extends BaseController
                 'username' => $user['username'],
                 'email' => $user['email']
             ],
-            'token' => $token
+            'token' => $token,
+            'two_factor_required' => $is2FAEnabled
         ]);
-        $user = user_to_public($user);
-        return $this->jsonSuccess($user);
     }
 
     public function newUser(Request $request, $parameters)
