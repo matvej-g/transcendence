@@ -4,6 +4,7 @@ namespace src\controllers;
 
 use src\Database;
 use src\http\Request;
+use src\Sanitiser;
 use src\Models\ConversationModel;
 use src\Models\MessageModel;
 use src\Models\BlockModel;
@@ -216,10 +217,11 @@ class MessagingController extends BaseController
             return $this->jsonBadRequest('Invalid participant ids');
         }
 
-        $text = $messageData['text'] ?? null;
+		$text = $messageData['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
         }
+		$text = Sanitiser::normaliseMessage($text);
 
         // Ensure current user is part of the conversation
         $allParticipantIds = array_map('intval', $participantIds);
@@ -279,10 +281,11 @@ class MessagingController extends BaseController
         }
         $conversationId = (int) $id;
 
-        $text = $request->postParams['text'] ?? null;
+		$text = $request->postParams['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
         }
+		$text = Sanitiser::normaliseMessage($text);
 
         // Ensure user is a participant
         $participants = $this->conversations->getParticipants($conversationId);
@@ -340,10 +343,11 @@ class MessagingController extends BaseController
         }
         $messageId = (int) $id;
 
-        $text = $request->postParams['text'] ?? null;
+		$text = $request->postParams['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
         }
+		$text = Sanitiser::normaliseMessage($text);
 
         $row = $this->messages->editMessage($messageId, $userId, $text);
         if ($row === null) {

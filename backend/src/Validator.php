@@ -65,7 +65,7 @@ class Validator
 	}
 
 	//============ User validation ============//
-	private static function validatePassword($password): bool
+	public static function validatePassword($password): bool
 	{
 		return self::validateString($password, 8, 72);
 	}

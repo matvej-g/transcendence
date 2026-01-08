@@ -16,14 +16,6 @@ VALUES ('david', 'David', 'dhuss42@heilbron.de', 123);
 INSERT INTO users(username, displayname, email, password_hash)
 VALUES ('test', 'TEST', 'test42@test.de', 234);
 
--- User presence / status
-CREATE TABLE IF NOT EXISTS user_status (
-	user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-	online INTEGER NOT NULL DEFAULT 0,
-	last_seen DATETIME,
-	current_match_id INTEGER REFERENCES matches(id)
-);
-
 -- Pong match Data
 CREATE TABLE IF NOT EXISTS matches (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,9 +28,17 @@ CREATE TABLE IF NOT EXISTS matches (
 	finished_at DATETIME
 );
 
+-- User presence / status
+CREATE TABLE IF NOT EXISTS user_status (
+	user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+	online INTEGER NOT NULL DEFAULT 0,
+	last_seen DATETIME,
+	current_match_id INTEGER REFERENCES matches(id)
+);
+
 -- Tournament Data
 CREATE TABLE IF NOT EXISTS tournaments (
-	id INTEGER PRIMARY KEY,
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	tournament_name TEXT NOT NULL,
 	started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	finished_at DATETIME,
@@ -46,13 +46,13 @@ CREATE TABLE IF NOT EXISTS tournaments (
 );
 
 CREATE TABLE IF NOT EXISTS tournament_players (
-	id INTEGER PRIMARY KEY,
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	tournament_id INTEGER NOT NULL REFERENCES tournaments(id),
 	user_id INTEGER NOT NULL REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS tournament_matches (
-	id INTEGER PRIMARY KEY,
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	tournament_id INTEGER NOT NULL REFERENCES tournaments(id),
 	match_id INTEGER NOT NULL REFERENCES matches(id),
 	round INTEGER NOT NULL DEFAULT 1,

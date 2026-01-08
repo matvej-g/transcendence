@@ -198,10 +198,15 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+
         $old = $request->postParams['oldPassword'] ?? null;
         $new = $request->postParams['newPassword'] ?? null;
         if ($old === null || $new === null) {
             return $this->jsonBadRequest("Both old and new passwords required");
+        }
+
+        if (!Validator::validatePassword($new)) {
+            return $this->jsonBadRequest("Invalid new password");
         }
         if (!password_verify($old, $user['password_hash'])) {
             return $this->jsonBadRequest("Invalid current password");

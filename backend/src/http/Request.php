@@ -6,11 +6,14 @@ class Request
 {
 	// making sure that the variables reflect the current stage of the request and cannot be changed anymore
 	// global variables could still be changed at this point
-	public function __construct(		public readonly array $getParams,
-		public readonly array $postParams,
+	public function __construct(
+		public readonly array $getParams,
+		// may be null when JSON body is invalid
+		public readonly ?array $postParams,
 		public readonly array $cookies,
 		public readonly array $files,
-		public readonly array $server)
+		public readonly array $server
+	)
 	{
 	}
 
@@ -28,9 +31,9 @@ class Request
 			$contents = file_get_contents('php://input');
 			$decoded = json_decode($contents, associative: true);
 			if (json_last_error() != JSON_ERROR_NONE) {
-				// if an input should be null still pass an empty array for $post
-				$post = [];
-				json_last_error_msg();
+				// invalid JSON payload -> mark post params as null so Kernel can
+				// return a proper 400 response
+				$post = null;
 			}
 			else
 				$post = $decoded;
@@ -48,6 +51,11 @@ class Request
 	// returns the request method
 	public function getMethod(): string
 	{
-		return $postParams['_method'] ?? $this->server['REQUEST_METHOD'];
+		// Allow HTTP method override via hidden _method field (e.g. for PATCH/DELETE),
+		// but only when postParams is an array and the key exists.
+		if (is_array($this->postParams) && isset($this->postParams['_method'])) {
+			return strtoupper((string) $this->postParams['_method']);
+		}
+		return $this->server['REQUEST_METHOD'];
 	}
 }

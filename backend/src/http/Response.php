@@ -34,10 +34,16 @@ class Response
 	{
 		http_response_code($this->status->value);
 
-		// handle encoding here like json encode base on header type
-		if (($this->headers['Content-Type'] ?? '') === 'application/json')
+		// Send headers
+		foreach ($this->headers as $name => $value) {
+			header($name . ': ' . $value);
+		}
+
+		// handle encoding here like json encode based on header type
+		if (($this->headers['Content-Type'] ?? '') === 'application/json') {
 			echo json_encode($this->content);
-		else
+		} else {
 			echo $this->content;
+		}
 	}
 }
