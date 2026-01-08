@@ -13,6 +13,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+
+# Copy composer files and install dependencies first for better caching
+COPY composer.json composer.lock /var/www/html/
+RUN composer install --no-dev --optimize-autoloader
+
 COPY . /var/www/html/
 
 RUN chmod +x /var/www/html/tools/database_init.sh
