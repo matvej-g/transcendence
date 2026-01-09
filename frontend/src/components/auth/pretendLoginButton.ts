@@ -12,7 +12,7 @@ function wirePretendLoginButton() {
 
 	btn.addEventListener('click', async () => {
 		console.log('[UI] pretendLogin → clearing JWT and navigating to #profile');
-		
+
 		// Clear JWT cookie before pretend login
 		try {
 			const response = await fetch('/api/user/logout', {
@@ -30,7 +30,9 @@ function wirePretendLoginButton() {
 		setCurrentUserId(2);
 		setUserOnline().catch(e => console.warn('[auth] setUserOnline failed', e));
 		window.location.hash = '#profile';
-		initProfile().catch((e) => console.warn('[profile] init after register failed', e));
+		setTimeout(() => {
+			initProfile().catch((e) => console.warn('[profile] init after login failed', e));
+			}, 100);
 	});
 }
 

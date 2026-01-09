@@ -37,8 +37,9 @@ export async function loginHandle(username: string, password: string): Promise<L
       console.log('User data stored:', data.user ?? data);
       // set user online on server
       try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
-      // initialize profile UI immediately
-      initProfile().catch((e) => console.warn('[profile] init after login failed', e));
+      setTimeout(() => {
+        initProfile().catch((e) => console.warn('[profile] init after login failed', e));
+        }, 100);
     }
 	const userNameToStore = data?.user?.username ?? data?.userName ?? data?.username ?? null;
 	if (userNameToStore) {

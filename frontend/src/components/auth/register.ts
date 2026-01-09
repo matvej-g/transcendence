@@ -22,7 +22,9 @@ export async function registerHandle(payload: RegisterRequest): Promise<Register
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
       try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
-      initProfile().catch((e) => console.warn('[profile] init after register failed', e));
+      setTimeout(() => {
+        initProfile().catch((e) => console.warn('[profile] init after login failed', e));
+        }, 100);
     }
 
     return buildRegisterSuccessResult(data);
