@@ -1,5 +1,6 @@
 import { clearCurrentUserId, setUserOffline, clearCurrentUsername} from '../components/auth/authUtils.js';
-import { onFriendsSectionShown} from '../components/friends/friendsContent.js'
+import { onFriendsSectionShown} from '../components/friends/friendsContent.js';
+import { initProfile } from '../components/profile/profile.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
@@ -48,6 +49,11 @@ function resolveSection(sectionId: string): string {
   window.dispatchEvent(new CustomEvent('router:notfound', { detail: { section: sectionId } }));
   return 'notfound';
 }
+
+
+// Flags to track if sections have been loaded
+let profileLoaded = false;
+let friendsLoaded = false;
 
 function showSection(sectionId: string): void {
   const target = resolveSection(sectionId);
@@ -99,9 +105,20 @@ function showSection(sectionId: string): void {
   // Show selected (or fallback) section
   sections[target]?.classList.remove('hidden');
 
-  // If friends section, immediately populate lists
+  // If profile section, load only once unless reset
+  if (target === 'profile') {
+    if (!profileLoaded) {
+      profileLoaded = true;
+      initProfile().catch(e => console.warn('[router] initProfile failed', e));
+      }
+  }
+
+  // If friends section, load only once unless reset
   if (target === 'friends') {
-    onFriendsSectionShown();
+    if (!friendsLoaded) {
+      friendsLoaded = true;
+      onFriendsSectionShown();
+    }
   }
 
   // Show/hide navbars and footer based on section

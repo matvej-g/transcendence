@@ -1,7 +1,6 @@
 // Compiles to /site/public/js/user/auth/pretendLoginButton.js
 
 import { setCurrentUserId, setUserOnline } from './authUtils.js';
-import { initProfile } from "../profile/profile.js";
 
 function wirePretendLoginButton() {
 	const btn = document.getElementById('pretendLoginBtn') as HTMLButtonElement | null;
@@ -30,9 +29,6 @@ function wirePretendLoginButton() {
 		setCurrentUserId(2);
 		setUserOnline().catch(e => console.warn('[auth] setUserOnline failed', e));
 		window.location.hash = '#profile';
-		setTimeout(() => {
-			initProfile().catch((e) => console.warn('[profile] init after login failed', e));
-			}, 100);
 	});
 }
 

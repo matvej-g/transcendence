@@ -100,6 +100,3 @@ export async function populateRequestsList() {
 	}
 }
 
-// Auto-run on load
-
-// Auto-run logic moved to friendsContent.ts for better separation
