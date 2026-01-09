@@ -92,11 +92,5 @@ async function initProfile(): Promise<void> {
   ]);
 }
 
-// Run on module load only when a user is present
-const _currentUserId = getCurrentUserId();
-if (_currentUserId) {
-  initProfile().catch(e => console.warn('[profile] init failed', e));
-}
-
 export { initProfile };
 
