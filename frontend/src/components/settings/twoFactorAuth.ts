@@ -9,6 +9,11 @@ async function load2FAStatus() {
       credentials: 'include'
     });
     
+    // If unauthorized (not logged in), silently return
+    if (response.status === 401) {
+      return;
+    }
+    
     const data = await response.json();
     
     if (data.success && toggleBtn) {
@@ -64,8 +69,11 @@ async function toggle2FA(enable: boolean) {
 }
 
 if (toggleBtn) {
-  // Load current status on page load
-  load2FAStatus();
+  // Only load status if user is logged in (has userId in localStorage)
+  const userId = localStorage.getItem('currentUserId');
+  if (userId) {
+    load2FAStatus();
+  }
   
   let currentlyEnabled = false;
   

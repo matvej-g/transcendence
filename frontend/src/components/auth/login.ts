@@ -32,13 +32,19 @@ export async function loginHandle(username: string, password: string): Promise<L
     // store user ID in localStorage (Milena) — handle multiple possible response shapes
 	// todo why do we have userIdToStore AND returnedId?
     const userIdToStore = data?.user?.id ?? data?.id ?? null;
+    const twoFactorRequired = data?.two_factor_required ?? false;
+    
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
       console.log('User data stored:', data.user ?? data);
-      // set user online on server
-      try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
-      // initialize profile UI immediately
-      initProfile().catch((e) => console.warn('[profile] init after login failed', e));
+      
+      // Only initialize profile if 2FA is not required or already verified
+      if (!twoFactorRequired) {
+        // set user online on server
+        try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
+        // initialize profile UI immediately
+        initProfile().catch((e) => console.warn('[profile] init after login failed', e));
+      }
     }
 	const userNameToStore = data?.user?.username ?? data?.userName ?? data?.username ?? null;
 	if (userNameToStore) {
@@ -48,7 +54,6 @@ export async function loginHandle(username: string, password: string): Promise<L
     // Normalize return to include `user.id` and a username field
     const returnedId = String(userIdToStore ?? '');
     const returnedUsername = String(userNameToStore ?? '');
-    const twoFactorRequired = data?.two_factor_required ?? false;
     return { ok: true, user: { id: returnedId, username: returnedUsername }, two_factor_required: twoFactorRequired };
   } catch (e) {
     console.log('[TS] loginHandle → exception', e);
