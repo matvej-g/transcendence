@@ -8,7 +8,7 @@ import { populateFriendsList } from './friendsList.js';
 function createRequestItem(request: FriendRequest) {
 	const li = document.createElement('li');
 	li.className = 'friend-request-item my-3 flex flex-wrap items-center gap-5';
-	li.dataset.nickname = request.friend.username || '';
+	li.dataset.nickname = request.friend.displayname || '';
 
 	const img = document.createElement('img');
 	img.className = 'avatar text-white h-8 w-auto';
@@ -17,7 +17,7 @@ function createRequestItem(request: FriendRequest) {
 
 	const h2 = document.createElement('h2');
 	h2.className = 'text-emerald-400';
-	h2.textContent = request.friend.username || '';
+	h2.textContent = request.friend.displayname || '';
 
 	const reloadLists = async () => {
 		await populateRequestsList();
