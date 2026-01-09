@@ -19,7 +19,7 @@ async function initProfile(): Promise<void> {
   try {
     const data = await getUserByUserId(userId);
     console.log('[profile] initProfile → fetched user', data);
-    const username = data?.username ?? null;
+    const username = data?.displayname ?? null;
     if (!username) return;
 
     // avoid replacing UI if user changed during async fetch (race)
