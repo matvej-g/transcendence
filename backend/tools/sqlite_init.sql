@@ -12,6 +12,18 @@ CREATE TABLE IF NOT EXISTS users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Pending user registrations (for email verification via 2FA)
+CREATE TABLE IF NOT EXISTS pending_registrations (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	username TEXT NOT NULL,
+	displayname TEXT NOT NULL,
+	email TEXT NOT NULL,
+	password_hash TEXT NOT NULL,
+	verification_code TEXT NOT NULL,
+	expires_at DATETIME NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- remove these users later on because of password hash
 INSERT INTO users(username, displayname, email, password_hash)
 VALUES ('david', 'David', 'dhuss42@heilbron.de', 123);

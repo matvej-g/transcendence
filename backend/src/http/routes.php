@@ -24,6 +24,7 @@ $this->router->get('/api/user/{id}/stats', [UserController::class, 'getUserStats
 $this->router->get('/api/user/{email}', [UserController::class, 'getUserByEmail']);
 $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByUsername']);
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
+$this->router->post('/api/user/verify-registration', [UserController::class, 'verifyRegistration']);
 $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
 $this->router->post('/api/user/logout', [UserController::class, 'logout']); //mert
 $this->router->post('/api/user/{id}/uploadAvatar', [UserController::class, 'uploadAvatar']);

@@ -5,9 +5,11 @@ namespace src\controllers;
 use finfo;
 use src\Database;
 use src\http\Request;
+use src\http\HttpStatusCode;
 use src\controllers\BaseController;
 use src\Models\UserModel;
 use src\Models\UserStatsModel;
+use src\Models\PendingRegistrationModel;
 use src\Sanitiser;
 use src\Validator;
 
@@ -15,11 +17,13 @@ class UserController extends BaseController
 {
     private UserModel $users;
     private UserStatsModel $stats;
+    private PendingRegistrationModel $pendingRegistrations;
 
     public function __construct(Database $db)
     {
         $this->users = new UserModel($db);
         $this->stats = new UserStatsModel($db);
+        $this->pendingRegistrations = new PendingRegistrationModel($db);
     }
 
     public function getUser(Request $request, $parameters)
@@ -186,12 +190,70 @@ class UserController extends BaseController
         $displayName = $userName;
         [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
 
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $id = $this->users->createUser($userName, $displayName, $email, $hash);
-        if ($id === null) {
-            return $this->jsonConflict("Conflicting user info");
+        // Check if username or email already exists
+        if ($this->users->getUserByUsername($userName)) {
+            return $this->jsonConflict("Username already exists");
         }
-        return $this->jsonCreated(['id' => (int)$id]);
+        if ($this->users->getUserByEmail($email)) {
+            return $this->jsonConflict("Email already exists");
+        }
+
+        // Generate verification code
+        $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+
+        // Hash password
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+
+        // Save pending registration
+        $result = $this->pendingRegistrations->savePendingRegistration(
+            $userName,
+            $displayName,
+            $email,
+            $hash,
+            $code,
+            $expiresAt
+        );
+
+        if ($result === null) {
+            return $this->jsonServerError("Failed to save registration");
+        }
+
+        // Send verification email
+        sendTwoFactorEmail($email, $code);
+
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => 'Verification code sent to your email',
+            'email' => $email
+        ]);
+    }
+
+    public function verifyRegistration(Request $request, $parameters)
+    {
+        $email = $request->postParams['email'] ?? null;
+        $code  = $request->postParams['code']  ?? null;
+
+        if (!$email || !$code) {
+            return $this->jsonBadRequest("Email and verification code required");
+        }
+
+        [$email] = Sanitiser::normaliseStrings([$email]);
+
+        $result = $this->pendingRegistrations->verifyAndCreateUser($email, $code);
+
+        if (!$result['success']) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error' => $result['error']
+            ], HttpStatusCode::BadRequest);
+        }
+
+        return $this->jsonCreated([
+            'success' => true,
+            'message' => 'Account created successfully',
+            'user_id' => $result['user_id']
+        ]);
     }
 
     public function deleteUser(Request $request, $parameters)
