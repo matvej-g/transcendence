@@ -1,5 +1,5 @@
 import { clearCurrentUserId, setUserOffline, clearCurrentUsername} from '../components/auth/authUtils.js';
-import { onFriendsSectionShown} from '../components/friends/friendsContent.js';
+import { initFriendsSection} from '../components/friends/friendsContent.js';
 import { initProfile } from '../components/profile/profile.js';
 
 // Simple router to handle navigation between sections
@@ -117,7 +117,7 @@ function showSection(sectionId: string): void {
   if (target === 'friends') {
     if (!friendsLoaded) {
       friendsLoaded = true;
-      onFriendsSectionShown();
+      initFriendsSection();
     }
   }
 
