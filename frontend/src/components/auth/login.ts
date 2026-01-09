@@ -3,7 +3,6 @@ export type LoginResult =
   | { ok: false; error: string };
 
 import { setCurrentUserId, setUserOnline, setCurrentUsername } from './authUtils.js';
-import { initProfile } from '../profile/profile.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
   console.log('[TS] loginHandle → input', { username, password }); // todo delete password log
@@ -42,8 +41,6 @@ export async function loginHandle(username: string, password: string): Promise<L
       if (!twoFactorRequired) {
         // set user online on server
         try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
-        // initialize profile UI immediately
-        initProfile().catch((e) => console.warn('[profile] init after login failed', e));
       }
     }
 	const userNameToStore = data?.user?.username ?? data?.userName ?? data?.username ?? null;

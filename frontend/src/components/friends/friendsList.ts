@@ -1,14 +1,11 @@
-import { getFriends, blockUser } from './api.js';
+import { getFriends, blockUser, getUserStatus } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type { FriendRequest } from '../../common/types.js';
-
-// Helper to create a friend list item with block button
-import { getUserStatus } from './api.js';
 
 async function createFriendItem(friend: FriendRequest) {
 	const li = document.createElement('li');
 	li.className = 'friend-item my-3 flex flex-wrap items-center gap-5';
-	li.dataset.nickname = friend.friend.username || '';
+	li.dataset.nickname = friend.friend.displayname || '';
 
 	const img = document.createElement('img');
 	img.className = 'avatar text-white h-8 w-auto';
@@ -17,7 +14,7 @@ async function createFriendItem(friend: FriendRequest) {
 
 	const h2 = document.createElement('h2');
 	h2.className = 'text-emerald-400';
-	h2.textContent = friend.friend.username || '';
+	h2.textContent = friend.friend.displayname || '';
 
 	// Online status span
 	const statusSpan = document.createElement('span');

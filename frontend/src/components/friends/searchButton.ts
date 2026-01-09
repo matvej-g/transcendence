@@ -48,7 +48,8 @@ function handleSearchButtonClick() {
       const currentUserId = getCurrentUserId();
       const currentUser = await getUserByUserId(currentUserId);
       const currentNickname = currentUser.username;
-      const foundNickname = user.username || username;
+      const foundNickname = user.username;
+      const foundDisplayname = user.displayname;
       if (
         (currentUserId && (user.id === currentUserId || user.userId === currentUserId)) ||
         (currentNickname && foundNickname && currentNickname === foundNickname)
@@ -58,7 +59,7 @@ function handleSearchButtonClick() {
         addFriendBtn.classList.add('hidden');
         return;
       }
-      searchResultNickname.textContent = foundNickname;
+      searchResultNickname.textContent = foundDisplayname;
       searchInput.value = "";
       if (user.avatar_filename && searchResultAvatar)
         searchResultAvatar.src = `/uploads/avatars/${user.avatar_filename}`;

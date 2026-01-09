@@ -7,8 +7,8 @@ async function fetchUsername(userId: number | string): Promise<string> {
   if (usernameCache[userId]) return usernameCache[userId];
   try {
     const user = await getUserByUserId(String(userId));
-    usernameCache[userId] = user.username;
-    return user.username;
+    usernameCache[userId] = user.displayname;
+    return user.displayname;
   } catch {
     return `User#${userId}`;
   }
