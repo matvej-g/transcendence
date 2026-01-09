@@ -1,6 +1,5 @@
 // import { updateEmail } from "./api.js";
 import { getCurrentUserId } from '../auth/authUtils.js';
-import { initProfile } from "../profile/profile.js";
 
 // Elements
 const modal = document.getElementById('settings-change-email');

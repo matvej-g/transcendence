@@ -1,7 +1,7 @@
 
 import { updateUser } from "./api.js";
 import { getCurrentUserId, setCurrentUsername } from '../auth/authUtils.js';
-import { initProfile } from "../profile/profile.js";
+import { reloadUsername } from "../profile/profile.js";
 
 // Elements
 const modal = document.getElementById('settings-edit-username');
@@ -50,7 +50,7 @@ if (form) {
 				window.location.hash = '#profile';
 				// Wait for hash navigation, then refresh profile
 				setTimeout(() => {
-					initProfile();
+					reloadUsername();
 				}, 100);
 			} else if (res && res.message) {
 				if (errorDiv) errorDiv.textContent = res.message;
