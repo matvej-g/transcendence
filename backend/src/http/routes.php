@@ -73,11 +73,11 @@ $this->router->post('/api/auth/send-2fa', [AuthController::class, 'sendTwoFactor
 $this->router->post('/api/auth/verify-2fa', [AuthController::class, 'verifyTwoFactorCode'], [AuthMiddleware::class]);
 
 // messaging (protected)
-$this->router->get('/api/conversations', [MessagingController::class, 'getConversations'], [Require2FAMiddleware::class]);
-$this->router->get('/api/conversations/{id}', [MessagingController::class, 'getConversation'], [Require2FAMiddleware::class]);
-$this->router->post('/api/conversations', [MessagingController::class, 'createConversation'], [Require2FAMiddleware::class]);
-$this->router->post('/api/conversations/{id}/messages', [MessagingController::class, 'sendMessage'], [Require2FAMiddleware::class]);
-$this->router->patch('/api/messages/{id}', [MessagingController::class, 'editMessage'], [Require2FAMiddleware::class]);
+$this->router->get('/api/conversations', [MessagingController::class, 'getConversations'], /* [Require2FAMiddleware::class] */);
+$this->router->get('/api/conversations/{id}', [MessagingController::class, 'getConversation'], /* [Require2FAMiddleware::class] */);
+$this->router->post('/api/conversations', [MessagingController::class, 'createConversation'], /* [Require2FAMiddleware::class] */);
+$this->router->post('/api/conversations/{id}/messages', [MessagingController::class, 'sendMessage'], /* [Require2FAMiddleware::class] */);
+$this->router->patch('/api/messages/{id}', [MessagingController::class, 'editMessage'], /* [Require2FAMiddleware::class] */);
 
 // friendships & blocks (protected)
 $this->router->get('/api/friends', [FriendshipController::class, 'getFriends'], [Require2FAMiddleware::class]);

@@ -74,12 +74,23 @@ class MessagingController extends BaseController
             }
         }
 
+        $readAt = $row['read_at'] ?? null;
+        if ($readAt !== null) {
+            try {
+                $rt = new \DateTime($readAt);
+                $readAt = $rt->format(DATE_ATOM);
+            } catch (\Exception) {
+            }
+        }
+
         return [
             'id'             => (string) $row['id'],
             'conversationId' => (string) $row['conversation_id'],
             'author'         => $author,
             'text'           => $row['text'],
             'createdAt'      => $createdAt,
+            'isRead'         => ($row['read_at'] ?? null) !== null,
+            'readAt'         => $readAt,
         ];
     }
 
@@ -184,7 +195,7 @@ class MessagingController extends BaseController
             return $this->jsonNotFound('Conversation not found');
         }
 
-        $rows = $this->messages->getMessagesForConversation($conversationId);
+        $rows = $this->messages->getMessagesWithReadStateForConversation($conversationId, $userId);
         if ($rows === null) {
             return $this->jsonServerError();
         }

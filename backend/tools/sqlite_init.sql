@@ -13,10 +13,10 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- remove these users later on because of password hash
-INSERT INTO users(username, displayname, email, password_hash)
+INSERT OR IGNORE INTO users(username, displayname, email, password_hash)
 VALUES ('david', 'David', 'dhuss42@heilbron.de', 123);
 
-INSERT INTO users(username, displayname, email, password_hash)
+INSERT OR IGNORE INTO users(username, displayname, email, password_hash)
 VALUES ('test', 'TEST', 'test42@test.de', 234);
 
 -- Pong match Data
