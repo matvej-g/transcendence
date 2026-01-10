@@ -17,6 +17,7 @@ services:
     restart: on-failure
     volumes: 
       - ./backend:/var/www/html
+      - /var/www/html/vendor  # Exclude vendor from mount
       - sqlite_data:/var/www/html/database
       - avatars:/var/www/html/uploads/avatars
     networks: 
