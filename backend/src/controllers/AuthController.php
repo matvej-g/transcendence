@@ -2,6 +2,7 @@
 
 namespace src\Controllers;
 
+use src\controllers\BaseController;
 use src\Database;
 use src\Models\UserModel;
 use src\http\Request;
