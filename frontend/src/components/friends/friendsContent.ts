@@ -1,7 +1,7 @@
 import { populateRequestsList } from './requestsList.js';
 import { populateFriendsList } from './friendsList.js';
 
-export function onFriendsSectionShown() {
+export function initFriendsSection() {
 	const friendsSection = document.getElementById('friends-section');
 	if (!friendsSection) return;
 	populateRequestsList();

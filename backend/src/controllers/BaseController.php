@@ -46,4 +46,9 @@ abstract class BaseController
     {
         return $this->jsonResponse(['error' => $message], HttpStatusCode::Unauthorised);
     }
+
+    protected function jsonForbidden(string $message = 'Forbidden'): Response
+    {
+        return $this->jsonResponse(['error' => $message], HttpStatusCode::Forbidden);
+    }
 }

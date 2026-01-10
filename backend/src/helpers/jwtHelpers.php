@@ -67,12 +67,11 @@ function getJWTFromRequest(): ?string
  */
 function setJWTCookie(string $token, int $ttl = 3600): void
 {
-    // TODO: Change to true when deploying to production with HTTPS
     setcookie('jwt', $token, [
         'expires' => time() + $ttl,
         'path' => '/',
-        'secure' => false,   // Development: allows HTTP. Production: must be true (HTTPS)
-        'httponly' => true,
+        'secure' => true,    // HTTPS only - cookie won't be sent over HTTP
+        'httponly' => true,  // important, wont show jwt cookie when XSS attack
         'samesite' => 'Lax',
     ]);
 }

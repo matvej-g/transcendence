@@ -1,6 +1,6 @@
 import { uploadAvatar } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
-import { initProfile } from '../profile/profile.js';
+import { reloadAvatar } from '../profile/profile.js';
 
 // Modal elements
 const uploadAvatarModal = document.getElementById('settings-upload-avatar');
@@ -45,7 +45,7 @@ if (uploadAvatarForm) {
 			if (result && (result.success || result.avatar_filename)) {
 				window.location.hash = '#profile';
 				setTimeout(() => {
-					initProfile();
+					reloadAvatar();
 				}, 100);
 			} else {
 				if (uploadAvatarError) uploadAvatarError.textContent = result?.error || 'Upload failed.';

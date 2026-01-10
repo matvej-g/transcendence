@@ -8,9 +8,20 @@ CREATE TABLE IF NOT EXISTS users (
 	two_factor_code TEXT DEFAULT NULL,
 	two_factor_expires_at DATETIME DEFAULT NULL,
 	two_factor_enabled INTEGER DEFAULT 0,
-	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     avatar_filename TEXT NOT NULL DEFAULT 'default.jpg',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Pending user registrations (for email verification via 2FA)
+CREATE TABLE IF NOT EXISTS pending_registrations (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	username TEXT NOT NULL,
+	displayname TEXT NOT NULL,
+	email TEXT NOT NULL,
+	password_hash TEXT NOT NULL,
+	verification_code TEXT NOT NULL,
+	expires_at DATETIME NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- remove these users later on because of password hash
