@@ -244,7 +244,6 @@ class MessagingController extends BaseController
             // 1) Create conversation (title = null)
             $conversationId = $this->conversations->createConversation(null);
             if ($conversationId === null) {
-                error_log("[messaging] createConversation: createConversation(null) returned null");
                 return $this->jsonServerError('createConversation failed');
             }
 
@@ -252,7 +251,6 @@ class MessagingController extends BaseController
             foreach ($allParticipantIds as $pid) {
                 $added = $this->conversations->addParticipant((int)$conversationId, (int)$pid);
                 if ($added === null) {
-                    error_log("[messaging] createConversation: addParticipant failed. convo={$conversationId} pid={$pid}");
                     return $this->jsonServerError('addParticipant failed');
                 }
             }
@@ -260,21 +258,18 @@ class MessagingController extends BaseController
             // 3) Create first message
             $row = $this->messages->createMessage((int)$conversationId, (int)$userId, (string)$text);
             if ($row === null) {
-                error_log("[messaging] createConversation: createMessage failed. convo={$conversationId} user={$userId}");
                 return $this->jsonServerError('createMessage failed');
             }
 
             // 4) Map message
             $apiMessage = $this->mapMessageRowToApi($row);
             if ($apiMessage === null) {
-                error_log("[messaging] createConversation: mapMessageRowToApi failed");
                 return $this->jsonServerError('mapMessage failed');
             }
 
             return $this->jsonCreated($apiMessage);
 
         } catch (\Throwable $e) {
-            error_log("[messaging] createConversation exception: " . $e->getMessage());
             return $this->jsonServerError('Database exception');
         }
     }
