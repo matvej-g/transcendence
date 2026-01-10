@@ -26,19 +26,19 @@ class Router {
 		$this->add('POST', $uri, $controller, $middleware);
 	}
 
-    public function delete($uri, $controller)
+    public function delete($uri, $controller, $middleware = [])
     {
-        $this->add('DELETE', $uri, $controller);
+		$this->add('DELETE', $uri, $controller, $middleware);
     }
     
-    public function patch($uri, $controller)
+    public function patch($uri, $controller, $middleware = [])
     {
-        $this->add('PATCH', $uri, $controller);
+		$this->add('PATCH', $uri, $controller, $middleware);
     }
 
-    public function put($uri, $controller)
+    public function put($uri, $controller, $middleware = [])
     {
-        $this->add('PUT', $uri, $controller);
+		$this->add('PUT', $uri, $controller, $middleware);
     }
 
     // Convert a route URI with placeholders into a regex pattern,
@@ -83,9 +83,6 @@ class Router {
 					}
 				}
 
-				// static page controllers
-				if (is_string($route['controller']))
-					return require base_path($route['controller']);
 				// dynamic controller classes
 				if (is_array($route['controller'])) {
 					[$class, $methodName] = $route['controller'];
@@ -97,14 +94,6 @@ class Router {
 				}
 			}
 		}
-		$this->abort();
-	}
-
-	protected function abort()
-	{
-		http_response_code(404);
-		echo "Sorry, Not found.";
-		die(0);
+		return new Response(HttpStatusCode::NotFound, "Requested api not found", ['Content-Type' => 'application/json']);
 	}
 }
-
