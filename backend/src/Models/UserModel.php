@@ -109,6 +109,19 @@ class UserModel {
 		}
 	}
 
+	public function updateEmail($id, $email) {
+		try {
+			$this->db->query(
+				"UPDATE users SET email = ? WHERE id = ?",
+				[$email, $id]
+			);
+			return $this->getUserById($id);
+		}
+		catch (\PDOException $e) {
+        	return null;
+		}
+	}
+
     public function updateUserInfo($id, $userName, $displayName, $email, $password) {
 		try {
             $this->db->query(
