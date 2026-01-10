@@ -26,12 +26,22 @@ else
 	echo -e "${GREEN}$SCHEMA exists!${NC}";
 fi
 
-echo -e "${GREEN}Applying schema to $DB_FILE (idempotent)...${NC}"
-sudo -u www-data sqlite3 "$DB_FILE" < "$SCHEMA"
-chown www-data:www-data "$DB_FILE"
-
-DEFAULT_AVATAR_SRC="$DIR/public/assets/default.jpg"
-DEFAULT_AVATAR_DST="$DIR/uploads/avatars/default.jpg"
+# Check if database has tables (not just if file exists)
+if [ ! -f "$DB_FILE" ] || [ ! -s "$DB_FILE" ]; then
+    echo -e "${GREEN}Creating database $DB_FILE and applying schema...${NC}"
+    rm -f "$DB_FILE"  # Remove if exists but empty
+    sudo -u www-data sqlite3 "$DB_FILE" < "$SCHEMA"
+    chown www-data:www-data "$DB_FILE"
+else
+    # Check if database has tables
+    TABLE_COUNT=$(sudo -u www-data sqlite3 "$DB_FILE" "SELECT COUNT(*) FROM sqlite_master WHERE type='table';" 2>/dev/null || echo "0")
+    if [ "$TABLE_COUNT" -eq 0 ]; then
+        echo -e "${YELLOW}Database exists but is empty. Applying schema...${NC}"
+        sudo -u www-data sqlite3 "$DB_FILE" < "$SCHEMA"
+    else
+        echo -e "${YELLOW}Database already exists with $TABLE_COUNT tables. Skipping schema.${NC}"
+    fi
+fi
 
 mkdir -p "$DIR/uploads/avatars"
 chown -R www-data:www-data "$DIR/uploads/avatars"

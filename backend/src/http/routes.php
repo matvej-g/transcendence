@@ -19,6 +19,7 @@ $this->router->get('/game', 'src/controllers/game.php');
 
 // users (public: registration & login)
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
+$this->router->post('/api/user/verify-registration', [UserController::class, 'verifyRegistration']);
 $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
 
 // Authenticated-only: logout (JWT required, 2FA not strictly needed)
@@ -71,6 +72,9 @@ $this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController
 // 2FA authentication routes
 $this->router->post('/api/auth/send-2fa', [AuthController::class, 'sendTwoFactorCode'], [AuthMiddleware::class]);
 $this->router->post('/api/auth/verify-2fa', [AuthController::class, 'verifyTwoFactorCode'], [AuthMiddleware::class]);
+$this->router->post('/api/auth/2fa/enable', [AuthController::class, 'enable2FA'], [AuthMiddleware::class]);
+$this->router->post('/api/auth/2fa/disable', [AuthController::class, 'disable2FA'], [AuthMiddleware::class]);
+$this->router->get('/api/auth/2fa/status', [AuthController::class, 'get2FAStatus'], [AuthMiddleware::class]);
 
 // messaging (protected)
 $this->router->get('/api/conversations', [MessagingController::class, 'getConversations'], /* [Require2FAMiddleware::class] */);
