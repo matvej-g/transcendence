@@ -43,6 +43,9 @@ else
     fi
 fi
 
+DEFAULT_AVATAR_SRC="$DIR/public/assets/default.jpg"
+DEFAULT_AVATAR_DST="$DIR/uploads/avatars/default.jpg"
+
 mkdir -p "$DIR/uploads/avatars"
 chown -R www-data:www-data "$DIR/uploads/avatars"
 echo -e "${GREEN}Ensuring dir $DIR/uploads/avatars exists${NC}"
