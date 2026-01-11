@@ -13,10 +13,10 @@ class Logger {
 		$logDir = BASE_PATH . '/tmp/logs';
 
 		if (!is_dir($logDir)) {
-			// if (!@mkdir($logDir, 0775, true) && !is_dir($logDir))
-			// 	{
+			if (!@mkdir($logDir, 0775, true) && !is_dir($logDir))
+				{
 				throw new \RuntimeException("Failed to create log directory: {$logDir}");
-			// }
+			}
 			@chmod($logDir, 0775);
 		}
 
