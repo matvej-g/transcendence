@@ -7,7 +7,8 @@ export async function blockUser(blockedId: number, blockerId: number) {
       'X-USER-ID': String(blockerId)
     },
     body: JSON.stringify({ blockedId })
-  });
+    });
+      credentials: 'include'
   if (!res.ok) throw new Error('Failed to block user');
   return await res.json();
 }
@@ -38,7 +39,8 @@ export async function getFriends(userId: number) {
   const res = await fetch('/api/friends', {
     method: 'GET',
     headers: {'X-USER-ID': String(userId)}
-  });
+    });
+      credentials: 'include'
   if (!res.ok) throw new Error('Failed to fetch friends');
   return await res.json();
 }
@@ -52,7 +54,8 @@ export async function sendFriendRequest(friendId: number, userId: number) {
       'X-USER-ID': String(userId)
     },
     body: JSON.stringify({ friendId })
-  });
+    });
+      credentials: 'include'
   let data;
   try {
     data = await res.json();
@@ -78,7 +81,8 @@ export async function updateFriendStatus(friendshipId: string, userId: number, p
       'X-USER-ID': String(userId)
     },
     body: JSON.stringify(payload)
-  });
+    });
+      credentials: 'include'
   if (!res.ok) throw new Error('Failed to update friend status');
   return await res.json();
 }
@@ -99,7 +103,8 @@ export async function declineFriendRequest(friendshipId: number, userId: number)
       'X-USER-ID': String(userId)
     },
     body: JSON.stringify({ id: friendshipId })
-  });
+    });
+      credentials: 'include'
   let data;
   try {
     data = await res.json();

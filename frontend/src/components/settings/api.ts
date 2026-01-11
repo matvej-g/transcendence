@@ -5,6 +5,7 @@ export async function uploadAvatar(userId: number | string, avatarFile: File): P
 	const res = await fetch(`/api/user/${userId}/uploadAvatar`, {
 		method: 'POST',
 		body: formData,
+		credentials: 'include',
 	});
 	const contentType = res.headers.get('content-type') || '';
 	if (!res.ok && res.status === 413) {
@@ -22,6 +23,7 @@ export async function updateUser({ id, userName, email, password }: UpdateUserPa
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(body),
+		credentials: 'include',
 	});
 	return res.json();
 }
@@ -33,6 +35,7 @@ export async function changePassword({ id, oldPassword, newPassword }: ChangePas
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(body),
+		credentials: 'include',
 	});
 	return res.json();
 }
