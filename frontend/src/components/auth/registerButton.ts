@@ -33,14 +33,13 @@ function wireRegisterButton() {
     const res = await registerHandle(payload);
     log(`[UI] register result: ${JSON.stringify(res)}`);
 
-    alert(
-      res.ok
-        ? msg("registerOkPrefix") + `${res.user.username}`
-        : msg("registerFailedGeneric") + ` (${res.error})`
-    );
-	if (res.ok) {
-		window.location.hash = '#profile';
-	}
+    if (res.ok) {
+      // Registration initiated - redirect to verification page
+      alert('Verification code sent to your email!');
+      window.location.href = `/verify-registration.html?email=${encodeURIComponent(payload.email)}`;
+    } else {
+      alert(msg("registerFailedGeneric") + ` (${res.error})`);
+    }
   });
 }
 

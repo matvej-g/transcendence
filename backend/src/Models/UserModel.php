@@ -197,4 +197,48 @@ class UserModel {
 			return null;
 		}
 	}
+
+	// Enable 2FA for a user
+	public function enable2FA($userId)
+	{
+		try {
+			return $this->db->query(
+				"UPDATE users SET two_factor_enabled = 1 WHERE id = ?",
+				[$userId]
+			);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	// Disable 2FA for a user
+	public function disable2FA($userId)
+	{
+		try {
+			return $this->db->query(
+				"UPDATE users SET two_factor_enabled = 0 WHERE id = ?",
+				[$userId]
+			);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	// Check if 2FA is enabled for a user
+	public function is2FAEnabled($userId)
+	{
+		try {
+			$user = $this->db->query(
+				"SELECT two_factor_enabled FROM users WHERE id = ?",
+				[$userId]
+			)->fetch(PDO::FETCH_ASSOC);
+			
+			return $user ? (bool)$user['two_factor_enabled'] : false;
+		}
+		catch (\PDOException $e) {
+			return false;
+		}
+	}
 }

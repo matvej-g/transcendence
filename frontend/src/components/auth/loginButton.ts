@@ -17,20 +17,28 @@ function wireLoginButton() {
     const res = await loginHandle(u, p);
     log(`[UI] login result: ${JSON.stringify(res)}`);
     
-    if (res.ok) {   //changes for 2fa and jwt (mert)
-      // Login successful - now trigger 2FA
-      log(`[UI] Login successful, sending 2FA code...`);
+    if (res.ok) {
+      log(`[UI] Login successful`);
       
-      const twoFAResult = await apiCall('/api/auth/send-2fa', {
-        method: 'POST'
-      });
-      
-      if (twoFAResult.ok && twoFAResult.data.success) {
-        alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to your email!`);
-        // Redirect to 2FA verification page
-        window.location.href = '/verify-2fa.html';
+      // Check if 2FA is required
+      if (res.two_factor_required) {
+        // User has 2FA enabled - send code and redirect to verification
+        log(`[UI] 2FA required, sending code...`);
+        
+        const twoFAResult = await apiCall('/api/auth/send-2fa', {
+          method: 'POST'
+        });
+        
+        if (twoFAResult.ok && twoFAResult.data.success) {
+          alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to your email!`);
+          window.location.href = '/verify-2fa.html';
+        } else {
+          alert('Login successful but 2FA failed: ' + (twoFAResult.data.error || 'Unknown error'));
+        }
       } else {
-        alert('Login successful but 2FA failed: ' + (twoFAResult.data.error || 'Unknown error'));
+        // User has 2FA disabled - login complete
+        alert(msg("loginOkPrefix") + `${res.user.username}`);
+        window.location.href = '/index.html#profile';
       }
     } else {
       alert(msg("loginFailedGeneric") + ` (${res.error})`);
