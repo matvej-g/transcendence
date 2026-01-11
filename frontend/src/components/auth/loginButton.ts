@@ -4,6 +4,7 @@ import { msg } from "../languages/auth/stringsMsgsHandlers.js";
 import { loginHandle } from "./login.js";
 import { apiCall } from "../../utils/api.js";
 //import { navigateToLandingPage } from "../landing/navigation.js";
+import { appWs } from "../../ws/appWs.js";
 
 function wireLoginButton() {
   const btn = document.getElementById("loginBtn") as HTMLButtonElement | null;
@@ -39,6 +40,7 @@ function wireLoginButton() {
         // User has 2FA disabled - login complete
         alert(msg("loginOkPrefix") + `${res.user.username}`);
         window.location.href = '/index.html#profile';
+		appWs.connect(); //connect app websocket after login
       }
     } else {
       alert(msg("loginFailedGeneric") + ` (${res.error})`);

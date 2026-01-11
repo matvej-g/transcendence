@@ -63,11 +63,20 @@ export async function sendMessage(message: Message): Promise<Message> {
 		},
 	);
 
+	const ct = res.headers.get("content-type") ?? "";
+	const raw = await res.text(); // <-- read as text first ALWAYS
+
 	if (!res.ok) {
+		console.error("sendMessage failed:", res.status, ct, raw.slice(0, 400));
 		throw new Error(`Failed to send message: HTTP ${res.status}`);
 	}
 
-	return (await res.json()) as Message;
+	try {
+		return JSON.parse(raw) as Message;
+	} catch (e) {
+		console.error("sendMessage: expected JSON but got:", ct, raw.slice(0, 400));
+		throw e;
+	}
 }
 
 // creates a new conversation with initial message

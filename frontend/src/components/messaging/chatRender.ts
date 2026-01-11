@@ -13,7 +13,7 @@ export function renderChatList(list: ConversationSummary[], container: HTMLEleme
 		return;
 	}
 
-	const myId = getCurrentUserId();
+	const myId = getCurrentUserId(); // todo can we rely on localStorage?
 
 	for (const convo of list) {
 		const li = document.createElement("li");
