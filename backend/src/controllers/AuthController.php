@@ -2,13 +2,14 @@
 
 namespace src\Controllers;
 
+use src\controllers\BaseController;
 use src\Database;
 use src\Models\UserModel;
 use src\http\Request;
 use src\http\Response;
 use src\http\HttpStatusCode;
 
-class AuthController
+class AuthController extends BaseController
 {
     private $userModel;
 
@@ -22,17 +23,11 @@ class AuthController
         // require a valid JWT
         $token = getJWTFromRequest();
         if (!$token) {
-            return new Response(
-                HttpStatusCode::Unauthorised,
-                json_encode(['success' => false, 'error' => 'No JWT token found'])
-            );
+            return $this->jsonUnauthorized('No JWT token found');
         }
         $payload = verifyJWT($token);
         if (!$payload) {
-            return new Response(
-                HttpStatusCode::Unauthorised,
-                json_encode(['success' => false, 'error' => 'Invalid JWT token'])
-            );
+            return $this->jsonUnauthorized('Invalid JWT token');
         }
 
         $userId = (int) $payload['user_id'];
@@ -42,23 +37,17 @@ class AuthController
 
         $user = $this->userModel->getUserById($userId);
         if (!$user) {
-            return new Response(
-                HttpStatusCode::NotFound,
-                json_encode(['success' => false, 'error' => 'User not found'])
-            );
+            return $this->jsonNotFound('User not found');
         }
 
         $this->userModel->saveTwoFactorCode($userId, $code, $expiresAt);
 
         sendTwoFactorEmail($user['email'], $code);
 
-        return new Response(
-            HttpStatusCode::Ok,
-            json_encode([
-                'success' => true,
-                'message' => '2FA code sent to your email'
-            ])
-        );
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => '2FA code sent to your email'
+        ]);
     }
 
     public function verifyTwoFactorCode(Request $request, $parameters)
@@ -66,27 +55,18 @@ class AuthController
         // require a valid JWT
         $token = getJWTFromRequest();
         if (!$token) {
-            return new Response(
-                HttpStatusCode::Unauthorised,
-                json_encode(['success' => false, 'error' => 'No JWT token found'])
-            );
+            return $this->jsonUnauthorized('No JWT token found');
         }
         $payload = verifyJWT($token);
         if (!$payload) {
-            return new Response(
-                HttpStatusCode::Unauthorised,
-                json_encode(['success' => false, 'error' => 'Invalid JWT token'])
-            );
+            return $this->jsonUnauthorized('Invalid JWT token');
         }
 
         $userId = (int) $payload['user_id'];
 
         // Only accept POST requests
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            return new Response(
-                HttpStatusCode::BadRequest,
-                json_encode(['success' => false, 'error' => 'Method not allowed'])
-            );
+            return $this->jsonBadRequest('Method not allowed');
         }
 
         // Get JSON input
@@ -94,10 +74,7 @@ class AuthController
         $code = $input['code'] ?? '';
 
         if (empty($code)) {
-            return new Response(
-                HttpStatusCode::BadRequest,
-                json_encode(['success' => false, 'error' => 'Code is required'])
-            );
+            return $this->jsonBadRequest('Code is required');
         }
 
         if ($this->userModel->verifyTwoFactorCode($userId, $code)) {
@@ -105,22 +82,13 @@ class AuthController
             $newToken = generateJWT($userId, true);
             setJWTCookie($newToken, 3600);
 
-            return new Response(
-                HttpStatusCode::Ok,
-                json_encode([
-                    'success' => true,
-                    'message' => '2FA verified successfully',
-                    'token' => $newToken
-                ])
-            );
+            return $this->jsonSuccess([
+                'success' => true,
+                'message' => '2FA verified successfully',
+                'token' => $newToken
+            ]);
         } else {
-            return new Response(
-                HttpStatusCode::Unauthorised,
-                json_encode([
-                    'success' => false,
-                    'error' => 'Invalid or expired code'
-                ])
-            );
+            return $this->jsonUnauthorized('Invalid or expired code');
         }
     }
 
@@ -129,29 +97,20 @@ class AuthController
         $userId = getCurrentUserId($request);
         
         if (!$userId) {
-            return new Response(
-                HttpStatusCode::Unauthorised,
-                json_encode(['success' => false, 'error' => 'Not authenticated'])
-            );
+            return $this->jsonUnauthorized('Not authenticated');
         }
 
         $result = $this->userModel->enable2FA($userId);
         
         if ($result === null) {
-            return new Response(
-                HttpStatusCode::InternalServerError,
-                json_encode(['success' => false, 'error' => 'Database error'])
-            );
+            return $this->jsonServerError();
         }
 
-        return new Response(
-            HttpStatusCode::Ok,
-            json_encode([
-                'success' => true,
-                'message' => '2FA has been enabled',
-                'two_factor_enabled' => true
-            ])
-        );
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => '2FA has been enabled',
+            'two_factor_enabled' => true
+        ]);
     }
 
     public function disable2FA(Request $request, $parameters)
@@ -159,29 +118,20 @@ class AuthController
         $userId = getCurrentUserId($request);
         
         if (!$userId) {
-            return new Response(
-                HttpStatusCode::Unauthorised,
-                json_encode(['success' => false, 'error' => 'Not authenticated'])
-            );
+            return $this->jsonUnauthorized('Not authenticated');
         }
 
         $result = $this->userModel->disable2FA($userId);
         
         if ($result === null) {
-            return new Response(
-                HttpStatusCode::InternalServerError,
-                json_encode(['success' => false, 'error' => 'Database error'])
-            );
+            return $this->jsonServerError();
         }
 
-        return new Response(
-            HttpStatusCode::Ok,
-            json_encode([
-                'success' => true,
-                'message' => '2FA has been disabled',
-                'two_factor_enabled' => false
-            ])
-        );
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => '2FA has been disabled',
+            'two_factor_enabled' => false
+        ]);
     }
 
     public function get2FAStatus(Request $request, $parameters)
@@ -189,20 +139,14 @@ class AuthController
         $userId = getCurrentUserId($request);
         
         if (!$userId) {
-            return new Response(
-                HttpStatusCode::Unauthorised,
-                json_encode(['success' => false, 'error' => 'Not authenticated'])
-            );
+            return $this->jsonUnauthorized('Not authenticated');
         }
 
         $isEnabled = $this->userModel->is2FAEnabled($userId);
 
-        return new Response(
-            HttpStatusCode::Ok,
-            json_encode([
-                'success' => true,
-                'two_factor_enabled' => $isEnabled
-            ])
-        );
+        return $this->jsonSuccess([
+            'success' => true,
+            'two_factor_enabled' => $isEnabled
+        ]);
     }
 }

@@ -18,6 +18,12 @@ chown -R www-data:www-data "$DB_DIR"
 chmod 2755 "$DB_DIR"
 # try with 755
 
+# ensure tmp/logs directory exists with correct permissions
+mkdir -p "$DIR/tmp/logs"
+chown -R www-data:www-data "$DIR/tmp"
+chmod -R 775 "$DIR/tmp"
+echo -e "${GREEN}Created tmp/logs directory with www-data ownership${NC}"
+
 # exists container if no schema exists
 if [ ! -f "$SCHEMA" ]; then
 	echo -e "${RED}$SCHEMA missing! exiting...${NC}"
