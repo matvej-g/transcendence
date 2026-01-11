@@ -14,9 +14,6 @@ use src\controllers\AuthController;
 use src\middleware\AuthMiddleware;
 use src\middleware\Require2FAMiddleware;
 
-// pages
-$this->router->get('/game', 'src/controllers/game.php');
-
 // users (public: registration & login)
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
 $this->router->post('/api/user/verify-registration', [UserController::class, 'verifyRegistration']);
