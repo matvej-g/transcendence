@@ -38,6 +38,8 @@ class GameServer implements MessageComponentInterface {
         $this->matchesModel = new MatchesModel($this->db);
         $this->userStatsModel = new UserStatsModel($this->db);
         $this->userStatus = new UserStatusModel($this->db);
+
+        $this->cleanupOrphanedLocalGames();
         echo "GameServer initialized\n";
     }
 
@@ -92,10 +94,9 @@ class GameServer implements MessageComponentInterface {
 
         $game = $this->games[$gameID];
         
-        if ($game['mode'] === 'remote' && $winnerId) {
+        if ($game['mode'] === 'remote' && $winnerId) { //evtl auch fuer localGame nutzen
             $this->recordMatchResults($gameID, $game, $winnerId);
         }
-
         $this->cleanupGame($game);
         unset($this->games[$gameID]);
     }
@@ -116,18 +117,17 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function cleanupGame(array $game): void {
+        if ($game['mode'] === 'local') {
+            echo "Cleanup local ganme MAtch ID";
+            $this->matchesModel->deleteMatch($game['matchId']);
+        }
         $game['player1']->gameID = null;
         $game['player1']->paddle = null;
-        if ($game['mode'] !== 'local') {
-            $this->userStatus->setCurrentMatch($game['player1']->userID, null);
-        }
-
-        if ($game['player2']) {
+        $this->userStatus->setCurrentMatch($game['player1']->userID, null);
+        if ($game['player2'] && $game['mode'] !== 'local') {
             $game['player2']->gameID = null;
             $game['player2']->paddle = null;
-            if ($game['mode'] !== 'local') {
-                $this->userStatus->setCurrentMatch($game['player1']->userID, null);
-            }
+            $this->userStatus->setCurrentMatch($game['player1']->userID, null);
         }
     }
 
@@ -150,23 +150,25 @@ class GameServer implements MessageComponentInterface {
     private function isPlayerBusy(Player $player): bool {
     foreach ($this->games as $game) {
         if ($game['player1']->userID === $player->userID) {
-            $this->sendError($player, 'You are already in a game.');
+            $this->sendAlreadyInGame($player, $game['matchId']);
             return true;
         }
         if ($game['player2'] && $game['player2']->userID === $player->userID) {
-            $this->sendError($player, 'You are already in a game.');
+            $this->sendAlreadyInGame($player, $game['matchId']);
             return true;
+            }
         }
-    }
     foreach ($this->waitingPlayers as $waitingPlayer) {
         if ($waitingPlayer->userID === $player->userID) {
-            $this->sendError($player, 'You are already searching for a game.');
+            $player->send([
+                'type' => 'alreadySearching',
+                'data' => ['message' => 'You are already searching for a game.']
+            ]);
             return true;
+            }
         }
+        return false;
     }
-
-    return false;
-}
 
     private function createRemoteMatch(Player $player1, Player $player2): void {
         $gameID = $this->matchesModel->createMatch($player1->userID, $player2->userID);
@@ -241,8 +243,16 @@ class GameServer implements MessageComponentInterface {
         if ($this->isPlayerBusy($player)) {
             return;
         }
-        $gameID = (int)(microtime(true) * 1000);
-        $this->initializeGame($gameID, $player, null, 'local');
+        $gameID = $this->matchesModel->createMatch($player->userID, $player->userID);
+        if ($gameID === null) {
+            echo "ERROR: Failed to create match for player {$player->userID}\n";
+            $player->send([
+                'type' => 'error',
+                'data' => ['errorMessage' => 'Failed to create game']
+            ]);
+            return;
+        }
+        $this->initializeGame($gameID, $player, $player, 'local');
         echo "Local game started for player {$player->userID}\n";
     }
 
@@ -369,6 +379,11 @@ class GameServer implements MessageComponentInterface {
         }
         $player->userID = $user['id'];
         $player->username = $user['username'];
+        if ($this->isPlayerBusy($player)) {
+            echo "Player {$player->userID} tried to connect but is already in a game. Closing connection.\n";
+            $player->conn->close();
+            return;
+        }
         $player->send([
             'type' => 'connected',
                 'data' => [
@@ -455,5 +470,20 @@ class GameServer implements MessageComponentInterface {
                 'winner' => $opponent->paddle
             ]
         ]);
+    }
+
+    private function sendAlreadyInGame(Player $player, string $gameID): void {
+        $player->send([
+            'type' => 'alreadyInGame',
+            'data' => [
+                'message' => 'You are Already in a game.',
+            ]
+        ]);
+    }
+
+    private function cleanupOrphanedLocalGames(): void {
+        $query = "DELETE FROM matches WHERE player_one_id = player_two_id";
+        $this->db->query($query);
+        echo "Cleaned up orphaned local games\n";
     }
 }

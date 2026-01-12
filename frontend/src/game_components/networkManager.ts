@@ -118,10 +118,18 @@ export class NetworkManager {
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
 				break;
+			case 'alreadyInGame':
+				alert(message.data.message);
+				window.location.hash = 'profile';
+				break;
+			case 'alreadySearching':
+				alert(message.data.message);
+				window.location.hash = 'profile';
+				break;
 			case 'error':
 				console.error('Server error:', message.data.errorMessage);
 				alert(message.data.errorMessage);
-				this.disconnect();
+				window.location.hash = 'profile';
 				break;
 		}
 	}
@@ -242,4 +250,5 @@ export class NetworkManager {
 			this.keyupHandler = null;
 		}
 	}
+
 }
