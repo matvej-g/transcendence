@@ -8,6 +8,7 @@ export type NavbarDomKey =
   | "chat"
   | "settings"
   | "edit_username"
+  | "change_email"
   | "change_password"
   | "change_avatar"
   | "two_fa"
@@ -24,6 +25,7 @@ export const NavbarDomStrings: Record<Lang, NavbarDomStringsTableT> = {
 	settings: "Settings",
 	edit_username: "Edit Username",
 	change_password: "Change Password",
+	change_email: "Change Email",
 	change_avatar: "Change Avatar",
 	two_fa: "2-Factor Auth",
 	logout: "Logout"
@@ -36,6 +38,7 @@ export const NavbarDomStrings: Record<Lang, NavbarDomStringsTableT> = {
     settings: "Настройки",
     edit_username: "Изменить имя пользователя",
     change_password: "Изменить пароль",
+	change_email: "Изменить почту",
     change_avatar: "Изменить аватар",
     two_fa: "Двухфакторная аутентификация",
 	logout: "Выйти"
