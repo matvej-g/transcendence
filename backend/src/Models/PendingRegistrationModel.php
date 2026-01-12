@@ -116,4 +116,22 @@ class PendingRegistrationModel
             return null;
         }
     }
+
+    public function getPendingByEmail($email)
+    {
+        try {
+            return $this->db->query(
+                "SELECT * FROM pending_registrations WHERE email = ?",
+                [$email]
+            )->fetch(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Error getting pending registration: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function deletePending($email)
+    {
+        return $this->deletePendingRegistration($email);
+    }
 }
