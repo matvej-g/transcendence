@@ -15,6 +15,9 @@ services:
     container_name: php-backend
     build: ./backend
     restart: on-failure
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     volumes: 
       - ./backend:/var/www/html
       - /var/www/html/vendor  # Exclude vendor from mount
