@@ -23,7 +23,7 @@ export const ProfileDomStrings: Record<Lang, ProfileDomStringsTableT> = {
     matches: "Matches",
     wins: "Wins",
     losses: "Losses",
-    winning_rate: "Winning Rate",
+    winning_rate: "Win Rate",
     tournaments: "Tournaments",
     match_history: "Match History",
     avatar_choose_image: "Choose image",
