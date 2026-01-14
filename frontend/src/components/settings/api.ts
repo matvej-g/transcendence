@@ -1,3 +1,15 @@
+import { ChangeEmailParams } from '../../common/types';
+// Change email
+export async function changeEmail({ id, oldEmail, newEmail }: ChangeEmailParams): Promise<any> {
+	const body = { id, oldEmail, newEmail };
+	const res = await fetch('/api/user/changeEmail', {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(body),
+		credentials: 'include',
+	});
+	return res.json();
+}
 // Upload avatar
 export async function uploadAvatar(userId: number | string, avatarFile: File): Promise<any> {
 	const formData = new FormData();
