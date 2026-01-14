@@ -22,4 +22,10 @@ export const GameDomStrings: Record<Lang, GameDomStringsTableT> = {
     play_vs_player: "Играть против игрока",
     exit_game: "Выйти из игры",
   },
+  de: {
+	choose_game_mode: "Spielmodus wählen",
+	play_local: "Lokal spielen",
+	play_vs_player: "Gegen Spieler spielen",
+	exit_game: "Spiel verlassen",
+  },
 } as const satisfies Record<Lang, GameDomStringsTableT>;

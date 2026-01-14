@@ -43,4 +43,17 @@ export const ProfileDomStrings: Record<Lang, ProfileDomStringsTableT> = {
     avatar_cancel: "Отмена",
     avatar_upload: "Загрузить",
   },
+  de: {
+	upload_avatar: "Avatar hochladen",
+	statistics: "Statistiken",
+	matches: "Spiele",
+	wins: "Siege",
+	losses: "Niederlagen",
+	winning_rate: "Siegrate",
+	tournaments: "Turniere",
+	match_history: "Spielverlauf",
+	avatar_choose_image: "Bild auswählen",
+	avatar_cancel: "Abbrechen",
+	avatar_upload: "Hochladen",
+  },
 } as const satisfies Record<Lang, ProfileDomStringsTableT>;

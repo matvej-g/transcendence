@@ -43,4 +43,17 @@ export const NavbarDomStrings: Record<Lang, NavbarDomStringsTableT> = {
     two_fa: "Двухфакторная аутентификация",
 	logout: "Выйти"
   },
+  de: {
+	profile: "Profil",
+	game: "Spiel",
+	friends: "Freunde",
+	chat: "Chat",
+	settings: "Einstellungen",
+	edit_username: "Benutzernamen bearbeiten",
+	change_password: "Passwort ändern",
+	change_email: "E-Mail ändern",
+	change_avatar: "Avatar ändern",
+	two_fa: "2-Faktor-Authentifizierung",
+	logout: "Abmelden"
+  },	
 } as const satisfies Record<Lang, NavbarDomStringsTableT>;

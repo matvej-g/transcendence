@@ -22,4 +22,10 @@ export const FriendsDomStrings: Record<Lang, FriendsDomStringsTableT> = {
     your_friends: "Ваши друзья",
     friend_requests: "Заявки в друзья",
   },
+  de: {
+	search: "Suchen",
+	send_friend_request: "Freundschaftsanfrage senden",
+	your_friends: "Deine Freunde",
+	friend_requests: "Freundschaftsanfragen",
+  },
 } as const satisfies Record<Lang, FriendsDomStringsTableT>;

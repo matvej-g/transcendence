@@ -42,6 +42,11 @@ function createSwitcherElement(): HTMLElement {
               class="w-full text-left px-2 py-1 hover:bg-gray-100 flex items-center gap-1">
         <span>🇷🇺</span><span>Русский</span>
       </button>
+      <button type="button"
+              data-lang="de"
+              class="w-full text-left px-2 py-1 hover:bg-gray-100 flex items-center gap-1">
+        <span>🇩🇪</span><span>Deutsch</span>
+      </button>
     </div>
   `;
 
@@ -56,7 +61,7 @@ function updateButtonLabel() {
   if (!label) return;
 
   const lang = getLang();
-  label.textContent = lang === "en" ? "🇬🇧 EN" : "🇷🇺 RU";
+  label.textContent = lang === "en" ? "🇬🇧 EN" : lang === "ru" ? "🇷🇺 RU" : "🇩🇪 DE";
 }
 
 // shows or hides the language menu
@@ -123,7 +128,7 @@ export function initLanguageButton() {
       e.stopPropagation();
 
       const langAttr = item.dataset.lang;
-      if (langAttr === "en" || langAttr === "ru") {
+      if (langAttr === "en" || langAttr === "ru" || langAttr === "de") {
         setLang(langAttr as Lang);
       }
       // close menu after selection

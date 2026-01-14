@@ -16,4 +16,8 @@ export const ChatDomStrings: Record<Lang, ChatDomStringsTableT> = {
     select_a_chat: "Выберите чат",
     send: "Отправить",
   },
+  de: {
+	select_a_chat: "Chat auswählen",
+	send: "Senden",
+  },
 } as const satisfies Record<Lang, ChatDomStringsTableT>;
