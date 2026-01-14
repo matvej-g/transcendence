@@ -4,14 +4,14 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 function sendTwoFactorEmail($email, $code) {
-    
+
 	// error_log("=== 2FA code for $email: $code ===");	//
 	// $_SESSION['test_2fa_code'] = $code;					// for testing
 	// return true;										//
 
 
 	$mail = new PHPMailer(true);
-    
+
     try {
         // Server settings from environment
         $mail->isSMTP();
@@ -38,6 +38,15 @@ function sendTwoFactorEmail($email, $code) {
             <p>This code expires in <strong>10 minutes</strong>.</p>
             <p>If you didn't request this, please ignore this email.</p>
         ";
+
+        // Allow self-signed certificates
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true,
+            ],
+        ];
 
         $mail->send();
         return true;

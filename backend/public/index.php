@@ -10,7 +10,7 @@ require BASE_PATH . 'src/helpers/functions.php';
 require BASE_PATH . 'src/helpers/2faHelpers.php';
 require BASE_PATH . 'src/helpers/jwtHelpers.php';
 // for dump() and composer packages
-// require base_path("vendor/autoload.php");
+require base_path("vendor/autoload.php");
 
 // runs only when PHP tries to instantiate a class that hasn't been loaded yet
 // converts class name (like Database) into a file path

@@ -34,13 +34,13 @@ class UserController extends BaseController
             return $this->jsonBadRequest("Invalid id");
         }
         $id = (int)$id;
-        
+
         // Security: Only allow users to access their own data
         $currentUserId = getCurrentUserId($request);
         if ($currentUserId !== $id) {
             return $this->jsonForbidden("You can only access your own user data");
         }
-        
+
         $user = $this->users->getUserById($id);
         if ($user === null) {
             return $this->jsonServerError();
@@ -76,7 +76,7 @@ class UserController extends BaseController
         if ($email === null || !is_string($email)) {
             return $this->jsonBadRequest("Invalid email");
         }
-        
+
         [$email] = Sanitiser::normaliseStrings([$email]);
         $user = $this->users->getUserByEmail($email);
         if ($user === null) {
@@ -156,16 +156,16 @@ class UserController extends BaseController
         if (!password_verify($password, $user['password_hash'])) {
             return $this->jsonUnauthorized("Invalid password");
         }
-        
+
         // Check if user has 2FA enabled
         $is2FAEnabled = (bool)$user['two_factor_enabled'];
-        
+
         // Generate JWT based on 2FA status
         // If 2FA is disabled, user is fully authenticated immediately
         // If 2FA is enabled, they need to verify the code first
         $token = generateJWT($user['id'], !$is2FAEnabled);
         setJWTCookie($token);
-        
+
         return $this->jsonSuccess([
             'success' => true,
             'user' => [
@@ -221,7 +221,8 @@ class UserController extends BaseController
         }
 
         // Send verification email
-        sendTwoFactorEmail($email, $code);
+        if (!sendTwoFactorEmail($email, $code))
+            return $this->jsonServerError("Email sending failed.");
 
         return $this->jsonSuccess([
             'success' => true,
@@ -372,7 +373,7 @@ class UserController extends BaseController
         if ($errors) {
             return $this->jsonBadRequest(json_encode($errors));
         }
-        
+
         $displayName = $userName;
         [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
 
@@ -385,7 +386,7 @@ class UserController extends BaseController
         return $this->jsonSuccess($updated);
     }
 
-	
+
     public function uploadAvatar(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;
@@ -445,8 +446,8 @@ class UserController extends BaseController
         }
         return $this->jsonSuccess(user_to_public($updated));
     }
-	
-	
+
+
 	//removes the jwt cookie when logging out (mert)
 	public function logout(Request $request, $parameters)
 	{
@@ -460,17 +461,17 @@ class UserController extends BaseController
 				'samesite' => 'Lax'
 			]
 		);
-		
+
 		return $this->jsonSuccess(['message' => 'Logged out successfully']);
 	}
-	
+
 	//for testing (mert)
 	public function getProtectedData(Request $request, $parameters)
 	{
 		// This endpoint requires JWT + 2FA verification
 		// If we reach here, user is fully authenticated
 		$userId = $request->user['user_id'] ?? null;
-		
+
 		return $this->jsonSuccess([
 			'message' => 'You have access to protected content!',
 			'user_id' => $userId,
