@@ -18,6 +18,8 @@ export interface GameState {
     ball: Ball;
     isRunning: boolean;
     winner: 'left' | 'right' | null;
+    leftPlayerName?: string;
+    rightPlayerName?: string;
 }
 
 export interface GameConfig {
@@ -31,7 +33,7 @@ export interface GameConfig {
 export const DEFAULT_CONFIG: GameConfig = {
     canvasWidth: 800, // set max width here
     canvasHeight: 400, // set max height here
-    paddleWidth: 12,
+    paddleWidth: 10,
     paddleHeight: 60,
     ballRadius: 8,
 };

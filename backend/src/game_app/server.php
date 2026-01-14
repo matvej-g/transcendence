@@ -23,6 +23,5 @@ $socket = new SocketServer('0.0.0.0:8080', [], $loop);
 $ioServer = new IoServer($httpServer, $socket, $loop);
 
 echo "WebSocket server started on port 8080\n";
-
 // Run the event loop
 $loop->run();

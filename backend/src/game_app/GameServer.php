@@ -215,12 +215,20 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function notifyMatchStart(Player $player1, ?Player $player2, string $gameID, string $mode): void {
+        $player1Name = $player1->username ?? 'Player 1';
+        $player2Name = $player2 ? ($player2->username ?? 'Player 2') : 'Player 2';
+        if ($mode === 'local') {
+            $player1Name = NULL;
+            $player2Name = NULL;
+        }
         $player1->send([
             'type' => 'matchFound',
             'data' => [
                 'message' => $mode === 'local' ? 'Local game started!' : 'Match found! Starting game.',
                 'paddle' => $mode === 'local' ? 'both' : 'left',
-                'gameID' => $gameID
+                'gameID' => $gameID,
+                'leftPlayerName' => $player1Name,
+                'rightPlayerName' => $player2Name
             ]
         ]);
 
@@ -230,7 +238,9 @@ class GameServer implements MessageComponentInterface {
                 'data' => [
                     'message' => 'Match found! Starting game.',
                     'paddle' => 'right',
-                    'gameID' => $gameID
+                    'gameID' => $gameID,
+                    'leftPlayerName' => $player1Name,
+                    'rightPlayerName' => $player2Name  
                 ]
             ]);
         }

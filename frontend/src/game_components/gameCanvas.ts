@@ -40,7 +40,10 @@ export class GameCanvas {
 		this.drawPaddle(state.leftPaddle);
         this.drawPaddle(state.rightPaddle);
         this.drawBall(state.ball);
-        this.drawScore(state.leftPaddle.score ,state.rightPaddle.score);
+        this.drawScore(
+            state.leftPaddle.score, state.rightPaddle.score,
+            state.leftPlayerName, state.rightPlayerName
+        );
 	}
 
 	// Draw center Line
@@ -76,21 +79,38 @@ export class GameCanvas {
     }
 
     // draw Score
-    private drawScore(leftScore: number, rightScore: number): void {
+    private drawScore(leftScore: number, rightScore: number,
+        leftPlayerName?: string, rightPlayerName?: string
+    ): void {
         if (!this.renderingContext || !this.canvas) return;
 
         this.renderingContext.fillStyle = '#ffffff';
-        this.renderingContext.font = '48px Arial';
         this.renderingContext.textAlign = 'center';
         this.renderingContext.textBaseline = 'top';
 
+        //draw Player Names
+        this.renderingContext.font = '12px Arial';
+        if (leftPlayerName) {
+            this.renderingContext.fillText(
+                leftPlayerName,
+                this.canvas.width / 4,
+                10
+            );
+        }
+        if (rightPlayerName) {
+            this.renderingContext.fillText(
+                rightPlayerName,
+                (this.canvas.width * 3) / 4,
+                10
+            );
+        }
+        this.renderingContext.font = '24px Arial';
         // Left score
         this.renderingContext.fillText(
             leftScore.toString(),
             this.canvas.width / 4,
             30
         );
-
         // Right score
         this.renderingContext.fillText(
             rightScore.toString(),

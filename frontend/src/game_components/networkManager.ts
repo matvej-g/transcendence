@@ -38,7 +38,9 @@ export class NetworkManager {
 				radius: DEFAULT_CONFIG.ballRadius
 			},
 			isRunning: false,
-			winner: null
+			winner: null,
+			leftPlayerName: undefined,
+			rightPlayerName: undefined
 		};
 	}
 
@@ -86,8 +88,13 @@ export class NetworkManager {
 			
 			case 'matchFound':
 				console.log('Match found!');
+				if (message.data.leftPlayerName) {
+					this.localGameState.leftPlayerName = message.data.leftPlayerName;
+				}
+				if (message.data.rightPlayerName) {
+					this.localGameState.rightPlayerName = message.data.rightPlayerName;
+				}
 				this.canvas.clear();
-				//show countdown
 				this.canvas.showCountdown(() => {
 					this.setupInputHandlers();
 				});
