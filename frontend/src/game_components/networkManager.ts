@@ -1,5 +1,6 @@
 import { DEFAULT_CONFIG, GameState } from "./gameEntities.js";
 import { GameCanvas } from "./gameCanvas";
+import { reloadMatchHistory, reloadStats } from "../components/profile/profile.js";
 
 export class NetworkManager {
 	private canvas: GameCanvas;
@@ -111,12 +112,16 @@ export class NetworkManager {
 				console.log('Winner received:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
+				reloadStats();
+				reloadMatchHistory();
 				break;
 
 			case 'opponentDisconnected':
 				console.log('Opponent disconnected:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
+				reloadStats();
+				reloadMatchHistory();
 				break;
 			case 'alreadyInGame':
 				alert(message.data.message);
