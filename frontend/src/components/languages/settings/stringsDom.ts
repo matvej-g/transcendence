@@ -40,4 +40,16 @@ export const SettingsDomStrings: Record<Lang, SettingsDomStringsTableT> = {
     new_password: "Новый пароль",
     change: "Изменить",
   },
+  de: {
+	edit_username: "Benutzernamen bearbeiten",
+	new_username: "Neuer Benutzername",
+	cancel: "Abbrechen",
+	save: "Speichern",
+	change_email: "E-Mail ändern",
+	new_email: "Neue E-Mail",
+	change_password: "Passwort ändern",
+	old_password: "Altes Passwort",
+	new_password: "Neues Passwort",
+	change: "Ändern",
+  },
 } as const satisfies Record<Lang, SettingsDomStringsTableT>;

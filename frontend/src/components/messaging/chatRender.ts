@@ -1,6 +1,7 @@
 import { Conversation, ConversationSummary } from "./types.js";
 import type { UserId } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
+import { t } from "../languages/i18n.js";
 
 const chatListEl = document.getElementById("chat-list")!;
 
@@ -9,7 +10,7 @@ export function renderChatList(list: ConversationSummary[], container: HTMLEleme
   container.innerHTML = "";
 
 	if (!list.length) {
-		container.innerHTML = `<li class="p-4 text-white/60">No conversations yet</li>`; // todo i18n
+		container.innerHTML = `<li class="p-4 text-white/60" data-i18n="chat.no_conversations_yet">${t('chat.no_conversations_yet')}</li>`; // todo i18n
 		return;
 	}
 
@@ -24,7 +25,7 @@ export function renderChatList(list: ConversationSummary[], container: HTMLEleme
 		const others = (convo.participants ?? []).filter((p) => String(p.id) !== myId)
 		.map((p) => p.username);
 
-		const displayTitle = (convo.title) || others.join(", ") || "Conversation"; // todo i18n
+		const displayTitle = (convo.title) || others.join(", ") || t('chat.conversation'); // todo i18n
 
 		const lastText = convo.lastMessage?.text ?? "";
 
@@ -56,14 +57,14 @@ export function prependSearchRow(user: any, mode: "open" | "start", convoId?: st
 		li.dataset.id = String(convoId);
 		li.innerHTML = `
 		<div class="font-semibold">${user.username}</div>
-		<div class="text-sm text-white/60">Open conversation</div>
+		<div class="text-sm text-white/60" data-i18n="chat.open_conversation">${t('chat.open_conversation')}</div>
 		`;
 	} else {
 		li.setAttribute("data-user-id", String(user.id));
 		li.setAttribute("data-username", String(user.username));
 		li.innerHTML = `
 		<div class="font-semibold">${user.username}</div>
-		<div class="text-sm text-white/60">Start conversation</div>
+		<div class="text-sm text-white/60" data-i18n="chat.start_conversation">${t('chat.start_conversation')}</div>
 		`;
 	}
 

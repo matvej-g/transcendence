@@ -27,4 +27,12 @@ export const AuthMsgStrings: Record<Lang, AuthMsgStringsTableT> = {
     registerFailedGeneric: "Не удалось зарегистрироваться. Попробуйте другое имя.",
     networkErrorGeneric: "Ошибка сети. Проверьте соединение и попробуйте снова.",
   },
+  de: {
+	loginOkPrefix: "Anmeldung OK: ",
+	registerOkPrefix: "Registriert: ",
+
+	loginFailedGeneric: "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihren Benutzernamen und Ihr Passwort.",
+	registerFailedGeneric: "Registrierung fehlgeschlagen. Bitte versuchen Sie es mit einem anderen Benutzernamen.",
+	networkErrorGeneric: "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  },
 } as const satisfies Record<Lang, AuthMsgStringsTableT>;

@@ -33,4 +33,13 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     registerBtn: "Зарегистрироваться",
     pretendLoginBtn: "Сделать вид, что вошёл → landing",
   },
+  de: {
+	title: "Authentifizierung",
+	username: "Benutzername",
+	email: "EMail",
+	password: "Passwort",
+	loginBtn: "Anmelden",
+	registerBtn: "Registrieren",
+	pretendLoginBtn: "Vortäuschen Anmeldung → Landing",
+  },
 } satisfies Record<Lang, AuthDomStringsTableT>;

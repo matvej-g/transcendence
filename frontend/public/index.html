@@ -61,13 +61,16 @@
                     <a href="#settings/change-password" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_password">Change Password</a>
                     <a href="#settings/change-email" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_email">Change Email</a>
                     <a href="#settings/upload-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_avatar">Upload Avatar</a>
-                    <div class="block px-4 py-2 rounded-b-lg transition-colors flex items-center gap-3">
-                      <span class="text-white" data-i18n="navbarDom.two_fa">2-Factor Auth</span>
-                      <button id="dropdown-toggle-2fa" type="button" class="relative inline-flex items-center h-6 w-12 rounded-full transition-colors focus:outline-none bg-gray-400" aria-pressed="false">
-                        <span class="sr-only">Enable 2FA</span>
-                        <span class="inline-block h-5 w-5 transform bg-white rounded-full shadow transition-transform translate-x-0"></span>
-                      </button>
-                    </div>
+					<div class="px-4 py-2 rounded-b-lg transition-colors grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+					<span class="text-white min-w-0 break-words" data-i18n="navbarDom.two_fa">2-Faktor-Authentifizierung</span>
+					<button id="dropdown-toggle-2fa"
+							type="button"
+							class="relative inline-flex items-center h-6 w-12 rounded-full transition-colors focus:outline-none bg-gray-400 shrink-0"
+							aria-pressed="false">
+						<span class="sr-only">Enable 2FA</span>
+						<span class="inline-block h-5 w-5 transform bg-white rounded-full shadow transition-transform translate-x-0"></span>
+					</button>
+					</div>
                 </div>
             </li>
             <button id="logoutBtn" class="bg-gradient-to-r from-green-400 to-green-500 hover:bg-gradient-to-r hover:from-green-500 hover:to-green-400 border-none rounded-3xl px-4 py-1.5 my-1 text-white font-bold cursor-pointer transition-all duration-300 shadow-md hover:-translate-y-1 hover:shadow-lg" data-i18n="navbarDom.logout">
@@ -242,7 +245,7 @@
         <div class="friends flex flex-col justify-between m-8 gap-8">
           <!-- Search Section -->
           <div class="searchbar flex flex-wrap justify-center items-center gap-4">
-              <input id="searchInput" name="to-search" type="text" placeholder="Search nickname..." class="border border-gray-400 p-2 rounded text-black">
+              <input id="searchInput" name="to-search" type="text" placeholder="Search nickname..." class="border border-gray-400 p-2 rounded text-black" data-i18n-placeholder="friends.input_box">
               <button id="search-button" class="rounded px-3 py-1 bg-emerald-300 hover:bg-emerald-500 text-black" data-i18n="friends.search">search</button>
           </div>
           <!-- Search Result Display (shown when a user is found) -->
@@ -283,6 +286,7 @@
 			id="chat-search"
 			type="text"
 			placeholder="Search chats..."
+			data-i18n-placeholder="chat.search_chats"
 			class="w-full bg-white/10 rounded px-3 py-2 outline-none text-sm"
 			/>
 		</div>
@@ -307,6 +311,7 @@
 			id="chat-input"
 			type="text"
 			placeholder="Type a message…"
+			data-i18n-placeholder="chat.type_a_message"
 			class="flex-1 bg-white/10 rounded px-3 py-2 outline-none"
 		/>
 		<button type="submit" class="bg-blue-600 px-4 py-2 rounded" data-i18n="chat.send">

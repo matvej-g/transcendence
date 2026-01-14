@@ -1,6 +1,7 @@
 import { getFriends, blockUser, getUserStatus } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type { FriendRequest } from '../../common/types.js';
+import { t } from '../languages/i18n.js';
 
 async function createFriendItem(friend: FriendRequest) {
 	const li = document.createElement('li');
@@ -22,20 +23,24 @@ async function createFriendItem(friend: FriendRequest) {
 	try {
 		const status = await getUserStatus(String(friend.friend.id));
 		if (status && status.online) {
-			statusSpan.textContent = 'online';
+			statusSpan.dataset.i18n = 'friends.online';
+			statusSpan.textContent = t('friends.online');
 			statusSpan.classList.add('text-green-600');
 		} else {
-			statusSpan.textContent = 'offline';
+			statusSpan.dataset.i18n = 'friends.offline';
+			statusSpan.textContent = t('friends.offline');
 			statusSpan.classList.add('text-gray-400');
 		}
 	} catch (e) {
-		statusSpan.textContent = 'unknown';
+		statusSpan.dataset.i18n = 'friends.unknown';
+		statusSpan.textContent = t('friends.unknown');
 		statusSpan.classList.add('text-gray-400');
 	}
 
 	const blockBtn = document.createElement('button');
 	blockBtn.className = 'block-friend rounded bg-red-600 hover:bg-red-700 px-3';
-	blockBtn.textContent = 'block user';
+	blockBtn.dataset.i18n = 'friends.block_user';
+	blockBtn.textContent = t('friends.block_user');
 	blockBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
@@ -60,7 +65,7 @@ export async function populateFriendsList() {
 	ul.innerHTML = '';
 	const userId = getCurrentUserId && getCurrentUserId();
 	if (!userId) {
-		ul.innerHTML = '<li class="text-red-400">No user ID found</li>';
+		ul.innerHTML = `<li class="text-red-400" data-i18n="friends.no_user_id_found">${t('friends.no_user_id_found')}</li>`;
 		return;
 	}
 	try {
@@ -72,11 +77,12 @@ export async function populateFriendsList() {
 		}
 		if (accepted.length === 0) {
 			const li = document.createElement('li');
-			li.textContent = 'No friends yet.';
+			li.dataset.i18n = 'friends.no_friends_yet';
+			li.textContent = t('friends.no_friends_yet');
 			li.className = 'text-gray-400';
 			ul.appendChild(li);
 		}
 	} catch (e) {
-		ul.innerHTML = '<li class="text-red-400">Failed to load friends</li>';
+		ul.innerHTML = '<li class="text-red-400" data-i18n="friends.failed_to_load">Failed to load friends</li>';
 	}
 }

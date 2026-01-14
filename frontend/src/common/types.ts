@@ -1,3 +1,8 @@
+export interface ChangeEmailParams {
+  id: UserId | number;
+  oldEmail: string;
+  newEmail: string;
+}
 
 export type UserId = string;
 

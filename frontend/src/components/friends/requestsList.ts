@@ -1,6 +1,7 @@
 import { getFriends, updateFriendStatus, blockUser, declineFriendRequest } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type {FriendRequest} from '../../common/types.js'
+import { t } from '../languages/i18n.js';
 
 
 import { populateFriendsList } from './friendsList.js';
@@ -26,7 +27,8 @@ function createRequestItem(request: FriendRequest) {
 
 	const acceptBtn = document.createElement('button');
 	acceptBtn.className = 'accept-request rounded bg-green-600 hover:bg-green-700 px-3';
-	acceptBtn.textContent = 'accept';
+	acceptBtn.dataset.i18n = 'friends.accept';
+	acceptBtn.textContent = t('friends.accept');
 	acceptBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
@@ -39,7 +41,8 @@ function createRequestItem(request: FriendRequest) {
 
 	const declineBtn = document.createElement('button');
 	declineBtn.className = 'decline-request rounded bg-yellow-500 hover:bg-yellow-600 px-3';
-	declineBtn.textContent = 'decline';
+	declineBtn.dataset.i18n = 'friends.decline';
+	declineBtn.textContent = t('friends.decline');
 	declineBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
@@ -52,7 +55,8 @@ function createRequestItem(request: FriendRequest) {
 
 	const blockBtn = document.createElement('button');
 	blockBtn.className = 'block-request rounded bg-red-600 hover:bg-red-700 px-3';
-	blockBtn.textContent = 'block';
+	blockBtn.dataset.i18n = 'friends.block_user';
+	blockBtn.textContent = t('friends.block_user');
 	blockBtn.onclick = async () => {
 		try {
 			const userId = getCurrentUserId();
@@ -78,7 +82,7 @@ export async function populateRequestsList() {
 	ul.innerHTML = '';
 	const userId = getCurrentUserId && getCurrentUserId();
 	if (!userId) {
-		ul.innerHTML = '<li class="text-red-400">No user ID found</li>';
+		ul.innerHTML = `<li class="text-red-400" data-i18n="friends.no_user_id_found">${t('friends.no_user_id_found')}</li>`;
 		return;
 	}
 	try {
@@ -91,12 +95,13 @@ export async function populateRequestsList() {
 		}
 		if (pendingToMe.length === 0) {
 			const li = document.createElement('li');
-			li.textContent = 'No friend requests.';
+			li.dataset.i18n = 'friends.no_friend_requests';
+			li.textContent = t('friends.no_friend_requests');
 			li.className = 'text-gray-400';
 			ul.appendChild(li);
 		}
 	} catch (e) {
-		ul.innerHTML = '<li class="text-red-400">Failed to load requests</li>';
+		ul.innerHTML = `<li class="text-red-400" data-i18n="friends.failed_to_load_requests">${t('friends.failed_to_load_requests')}</li>`;
 	}
 }
 

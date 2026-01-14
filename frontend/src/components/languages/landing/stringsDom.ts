@@ -67,4 +67,26 @@ export const LandingDomStrings: Record<Lang, LandingDomStringsTableT> = {
     devlogClearButtonLabel: "Очистить",
     devlogReadyMessage: "[log] Готово.",
   },
+  de: {
+	welcomeHeading: "Willkommen",
+	actionsSectionLabel: "Aktionen",
+
+	mode1v1Title: "1 gegen 1",
+	mode1v1Description: "Fordere einen anderen Spieler direkt heraus.",
+
+	modeVsPcTitle: "1 gegen PC",
+	modeVsPcDescription: "Übe gegen den Computer.",
+
+	tournamentTitle: "Turnier",
+	tournamentDescription: "Erstelle oder trete einem Turnier bei.",
+	
+	profileTitle: "Mein Profil",
+	profileDescription: "Sehen und bearbeiten Sie Ihre Informationen.",
+	messagesTitle: "Meine Nachrichten",
+	messagesDescription: "Lesen und senden Sie Nachrichten.",
+
+	devlogSectionTitle: "Entwicklerprotokoll",
+	devlogClearButtonLabel: "Löschen",
+	devlogReadyMessage: "[log] Bereit.",
+  },
 } as const satisfies Record<Lang, LandingDomStringsTableT>;
