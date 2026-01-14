@@ -10,6 +10,7 @@ import { renderChatList, renderMessages, prependSearchRow } from "./chatRender.j
 import { Conversation, ConversationSummary } from "./types.js";
 import { UserDataPublic } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
+import { appWs } from "../../ws/appWs.js";
 
 const chatListEl = document.getElementById("chat-list")!;
 const chatHeaderEl = document.getElementById("chat-header")!;
@@ -24,7 +25,74 @@ let pendingUser: UserDataPublic | null = null;
 
 console.log("chatPage loading");
 
-function onHashChange() {
+// events start
+function handleChatMessageCreated(ev: any) {
+	if (ev.type !== "message.created") {
+		console.log("handleChatMessageCreated: ignoring event type", ev.type);
+		return;
+	}
+
+	console.log("handleChatMessageCreated: event", ev);
+
+	const cid = String(ev.data?.conversationId ?? "");
+	const msg = ev.data?.message;
+
+	if (!cid || !msg) {
+		console.warn("handleChatMessageCreated: missing cid or message in event", ev);
+		return;
+	}
+
+	// 1) If message belongs to currently open conversation -> append + rerender
+	const activeId = activeConversation?.summary?.id ? String(activeConversation.summary.id) : null;
+
+	if (activeConversation && activeId === cid) {
+		const mid = String((msg as any).id ?? "");
+		if (!mid) return;
+
+		// de-dupe
+		if (activeConversation.messages.some((m: any) => String(m.id) === mid)) return;
+
+		activeConversation.messages.push(msg);
+		renderMessages(activeConversation, messagesEl, getCurrentUsername());
+	}
+
+	// 2) Update chat list preview + move convo to top (or create it if missing)
+	let idx = conversations.findIndex((c) => String(c.id) === cid);
+
+	if (idx === -1) {
+		// convo not in list yet (e.g. list not loaded, or "new convo" case)
+		// Create a minimal summary from the WS payload.
+		const minimalSummary: any = {
+			id: cid,
+			title: "", // title get's filled in when render happens
+			lastMessage: msg,
+			unreadCount: 1,
+			participants: [ev.data?.message?.author],
+		};
+
+		conversations.unshift(minimalSummary);
+		renderChatList(conversations, chatListEl);
+		return;
+	}
+
+	// Existing conversation: update preview, bump to top
+	const summary = conversations[idx];
+	summary.lastMessage = msg as any;
+
+	if (idx > 0) {
+		conversations.splice(idx, 1);
+		conversations.unshift(summary);
+	}
+
+	renderChatList(conversations, chatListEl);
+}
+
+appWs.on(handleChatMessageCreated);
+// events end
+
+// todo move this to (include in) central router section
+function onHashChange() { 
+	appWs.connect(); // fail-safe connect/re-connect
 	console.log("hash changed to", window.location.hash);
 	if (window.location.hash === "#chat") {
 		loadConversations();
@@ -34,6 +102,7 @@ function onHashChange() {
 window.addEventListener("hashchange", onHashChange);
 
 if (window.location.hash === "#chat") {
+	appWs.connect();
  	loadConversations();
 }
 
@@ -43,6 +112,9 @@ async function loadConversations() {
 
   conversations.splice(0, conversations.length, ...(await fetchConversations()));
   renderChatList(conversations, chatListEl);
+  for (const convo of conversations) {
+	appWs.joinConversation(convo.id);
+  }
 }
 
 chatListEl.addEventListener("click", async (e) => {

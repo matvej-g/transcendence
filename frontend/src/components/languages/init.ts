@@ -5,6 +5,12 @@ import { initAuthMsgI18n } from "./auth/stringsMsgsHandlers.js";
 
 import { initLandingDomI18n } from "./landing/stringsDomHandlers.js";
 import { initNavbarDomI18n } from "./navbar/stringsDomHandlers.js";
+import { initSettingsDomI18n } from "./settings/stringsDomHandlers.js";
+import { initProfileDomI18n } from "./profile/stringsDomHandlers.js";
+import { initGameDomI18n } from "./game/stringsDomHandlers.js";
+import { initFriendsDomI18n } from "./friends/stringsDomHandlers.js";
+import { initChatDomI18n } from "./chat/stringsDomHandlers.js";
+
 
 document.addEventListener("DOMContentLoaded", () => {
   initI18n();          // sets lang (html tag + localStorage) and notifies
@@ -14,6 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuthMsgI18n();   // AUTH PAGE TS-only messages
   initLandingDomI18n(); // LANDING PAGE DOM texts
   initNavbarDomI18n();  // NAVBAR DOM texts
+
+  initSettingsDomI18n(); // SETTINGS PAGE DOM texts
+  initProfileDomI18n();  // PROFILE PAGE DOM texts
+  initGameDomI18n();     // GAME PAGE DOM texts
+  initFriendsDomI18n();  // FRIENDS PAGE DOM texts
+  initChatDomI18n();     // CHAT PAGE DOM texts
 
   // the language switcher button
   initLanguageButton();

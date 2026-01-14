@@ -1,5 +1,6 @@
 // Verify 2FA Code Logic
 import { apiCall } from '../../utils/api.js';
+import { appWs } from '../../ws/appWs.js';
 
 function showMessage(message: string, isError: boolean) {
     const errorEl = document.getElementById('error-message');
@@ -26,6 +27,7 @@ async function verifyCode(code: string) {
         showMessage('Verification successful! Redirecting...', false);
         setTimeout(() => {
             window.location.href = '/index.html#profile';
+			appWs.connect(); //connect app websocket after login
         }, 1500);
     } else {
         showMessage(result.data.error || 'Invalid or expired code', true);

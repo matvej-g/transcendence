@@ -11,6 +11,8 @@ use src\Models\BlockModel;
 use src\Models\GameInviteModel;
 use src\Models\UserModel;
 use src\Validator;
+use src\Services\MessagingNotifier;
+use src\app_ws\RedisPublisher;
 
 class MessagingController extends BaseController
 {
@@ -19,6 +21,7 @@ class MessagingController extends BaseController
     private BlockModel $blocks;
     private GameInviteModel $invites;
     private UserModel $users;
+	private MessagingNotifier $notifier;
 
     public function __construct(Database $db)
     {
@@ -27,6 +30,7 @@ class MessagingController extends BaseController
         $this->blocks        = new BlockModel($db);
         $this->invites       = new GameInviteModel($db);
         $this->users         = new UserModel($db);
+		$this->notifier	     = new MessagingNotifier(new RedisPublisher());
     }
 
     // Replace this with proper auth/JWT once available.
@@ -240,6 +244,24 @@ class MessagingController extends BaseController
             $allParticipantIds[] = $userId;
         }
 
+		$otherUserIds = [];
+        foreach ($allParticipantIds as $uid) {
+            if ($uid === $userId) {
+            } else {
+                $otherUserIds[] = $uid;
+            }
+        }
+		// Basic block check: if any other participant has blocked current user, deny
+		foreach ($otherUserIds as $otherId) {
+			$blocked = $this->blocks->isBlocked($otherId, $userId);
+			if ($blocked === null) {
+				return $this->jsonServerError();
+			}
+			if ($blocked === true) {
+				return $this->jsonBadRequest('You are blocked by this user');
+			}
+		}
+
         try {
             // 1) Create conversation (title = null)
             $conversationId = $this->conversations->createConversation(null);
@@ -266,7 +288,7 @@ class MessagingController extends BaseController
             if ($apiMessage === null) {
                 return $this->jsonServerError('mapMessage failed');
             }
-
+			$this->notifier->messageCreated((int)$conversationId, $apiMessage, $otherUserIds, (int)$userId); //notify all users
             return $this->jsonCreated($apiMessage);
 
         } catch (\Throwable $e) {
@@ -332,6 +354,7 @@ class MessagingController extends BaseController
         if ($apiMessage === null) {
             return $this->jsonServerError();
         }
+		$this->notifier->messageCreated(conversationId: $conversationId, apiMessage: $apiMessage, recipientUserIds: $otherUserIds, actorUserId: $userId); //notify all users
 
         return $this->jsonCreated($apiMessage);
     }

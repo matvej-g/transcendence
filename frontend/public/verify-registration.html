@@ -50,6 +50,7 @@
             border-radius: 4px;
             font-size: 16px;
             cursor: pointer;
+            margin-bottom: 10px;
         }
         button:hover {
             background-color: #059669;
@@ -57,6 +58,13 @@
         button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
+        }
+        .bypass-btn {
+            background-color: #f59e0b;
+            font-size: 14px;
+        }
+        .bypass-btn:hover {
+            background-color: #d97706;
         }
         .error {
             color: #dc2626;
@@ -86,11 +94,13 @@
         >
         
         <button id="verifyBtn">Verify & Create Account</button>
+        <button id="bypassBtn" class="bypass-btn">🔧 Dev: Continue Without Code</button>
     </div>
 
     <script type="module">
         const codeInput = document.getElementById('codeInput');
         const verifyBtn = document.getElementById('verifyBtn');
+        const bypassBtn = document.getElementById('bypassBtn');
         const messageDiv = document.getElementById('message');
 
         // Get email from URL params
@@ -100,7 +110,42 @@
         if (!email) {
             messageDiv.innerHTML = '<div class="error">No email found. Please register again.</div>';
             verifyBtn.disabled = true;
+            bypassBtn.disabled = true;
         }
+
+        // Bypass button - uses special bypass code
+        bypassBtn.addEventListener('click', async () => {
+            bypassBtn.disabled = true;
+            bypassBtn.textContent = 'Creating account...';
+            messageDiv.innerHTML = '<div class="success">DEV MODE: Bypassing verification...</div>';
+
+            try {
+                const response = await fetch('/api/user/verify-registration', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email, 
+                        code: 'BYPASS123',  // Special bypass code
+                        bypass: true         // Bypass flag
+                    })
+                });
+
+                const data = await response.json();
+
+                // Redirect to login regardless of response (for dev mode)
+                messageDiv.innerHTML = '<div class="success">Account created! Redirecting to login...</div>';
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1500);
+            } catch (error) {
+                messageDiv.innerHTML = '<div class="success">Redirecting to login...</div>';
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1500);
+            }
+        });
 
         verifyBtn.addEventListener('click', async () => {
             const code = codeInput.value.trim();

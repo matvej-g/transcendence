@@ -3,7 +3,10 @@
 		"phpmailer/phpmailer": "^7.0",
 		"firebase/php-jwt": "^6.11",
 		"php": ">=8.1",
-		"cboden/ratchet": "^0.4"
+		"cboden/ratchet": "^0.4",
+        "clue/redis-react": "^2.8",
+        "react/event-loop": "^1.5",
+        "react/socket": "^1.16"
 	},
 	"autoload": {
 		"psr-4": {

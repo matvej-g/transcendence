@@ -15,11 +15,17 @@ services:
     container_name: php-backend
     build: ./backend
     restart: on-failure
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     volumes: 
       - ./backend:/var/www/html
       - /var/www/html/vendor  # Exclude vendor from mount
       - sqlite_data:/var/www/html/database
       - avatars:/var/www/html/uploads/avatars
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     networks: 
       - transcendence
     healthcheck:
@@ -53,6 +59,34 @@ services:
       - sqlite_data:/var/www/html/database
     networks:
       - transcendence
+  redis:
+    container_name: redis
+    image: "redis:7-alpine"
+    restart: on-failure
+    # ports:
+      # - "6379:6379"
+    networks:
+      - transcendence
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+  ws_app:
+    container_name: ws_app
+    build:
+      context: .
+      dockerfile: websocket_app/Dockerfile
+    restart: on-failure
+    networks:
+      - transcendence
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
   nginx:
     container_name: nginx
     build: ./nginx

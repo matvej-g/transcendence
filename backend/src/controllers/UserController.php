@@ -235,6 +235,7 @@ class UserController extends BaseController
     {
         $email = $request->postParams['email'] ?? null;
         $code  = $request->postParams['code']  ?? null;
+        $bypass = $request->postParams['bypass'] ?? false;
 
         if (!$email || !$code) {
             return $this->jsonBadRequest("Email and verification code required");
@@ -242,6 +243,38 @@ class UserController extends BaseController
 
         [$email] = Sanitiser::normaliseStrings([$email]);
 
+        // DEV MODE: Bypass verification if bypass flag is set or special code is used
+        if ($bypass === true || $code === 'BYPASS123') {
+            // Get pending registration data
+            $pendingUser = $this->pendingRegistrations->getPendingByEmail($email);
+            
+            if (!$pendingUser) {
+                return $this->jsonBadRequest("No pending registration found for this email");
+            }
+            
+            // Create user directly without code verification
+            $userId = $this->users->createUser(
+                $pendingUser['username'],
+                $pendingUser['displayname'], 
+                $pendingUser['email'],
+                $pendingUser['password_hash']
+            );
+            
+            if (!$userId) {
+                return $this->jsonServerError("Failed to create user");
+            }
+            
+            // Clean up pending registration
+            $this->pendingRegistrations->deletePending($email);
+            
+            return $this->jsonCreated([
+                'success' => true,
+                'message' => 'Account created successfully (dev bypass)',
+                'user_id' => $userId
+            ]);
+        }
+
+        // Normal verification flow
         $result = $this->pendingRegistrations->verifyAndCreateUser($email, $code);
 
         if (!$result['success']) {
