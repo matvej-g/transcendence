@@ -31,7 +31,7 @@ $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByUse
 $this->router->post('/api/user/{id}/uploadAvatar', [UserController::class, 'uploadAvatar'], [Require2FAMiddleware::class]);
 $this->router->patch('/api/user/update', [UserController::class, 'updateUser'], [Require2FAMiddleware::class]);
 $this->router->patch('/api/user/changePassword', [UserController::class, 'changePassword'], [Require2FAMiddleware::class]);
-$this->router->patch('/api/user/changeEmail', [UserController::class, 'changeEmail']);
+$this->router->patch('/api/user/changeEmail', [UserController::class, 'changeEmail'], /* [Require2FAMiddleware::class] */);
 $this->router->delete('/api/user/{id}', [UserController::class, 'deleteUser'], [Require2FAMiddleware::class]);
 $this->router->delete('/api/user/{id}/avatar', [UserController::class, 'deleteAvatar'], [Require2FAMiddleware::class]);
 

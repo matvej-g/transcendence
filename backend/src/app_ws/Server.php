@@ -10,6 +10,8 @@ use src\app_ws\AppServer;
 // health check for Redis
 use src\app_ws\RedisPing;
 
+pcntl_async_signals(true);
+
 // env
 $redisHost = getenv('REDIS_HOST') ?: 'redis';
 $redisPort = (int)(getenv('REDIS_PORT') ?: 6379);
@@ -115,6 +117,18 @@ $server = new IoServer(
     $socket,
     $loop
 );
+
+$shutdown = function (string $signal) use ($loop, $socket) {
+    echo "Received {$signal}, shutting down...\n";
+
+    $socket->close();
+    $loop->stop();
+
+    echo "Shutdown complete\n";
+};
+
+pcntl_signal(SIGTERM, fn() => $shutdown('SIGTERM'));
+pcntl_signal(SIGINT,  fn() => $shutdown('SIGINT'));
 
 echo "WS app server listening on :8082\n";
 $loop->run();

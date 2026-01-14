@@ -101,6 +101,7 @@ services:
       - php-backend
       - frontend
       - websocket
+      - ws_app
     networks:
       - transcendence
     healthcheck:

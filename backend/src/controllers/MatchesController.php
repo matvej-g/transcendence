@@ -127,7 +127,6 @@ class MatchesController extends BaseController
         if ($match['finished_at'] !== null) {
             return $this->jsonBadRequest('Match already finished');
         }
-        var_dump($request->postParams);
         $scoreOne = $request->postParams['scorePlayerOne'] ?? null;
         $scoreTwo = $request->postParams['scorePlayerTwo'] ?? null;
         if ($scoreOne === null|| $scoreTwo === null || !ctype_digit($scoreOne) || !ctype_digit($scoreTwo)) {
@@ -178,10 +177,6 @@ class MatchesController extends BaseController
             $winnerId = $playerTwoId;
             $this->stats->recordMatchResult($playerTwoId, $playerOneId, $scoreTwo, $scoreOne);
         }
-        // } else {
-        //     // draw
-        //     $this->stats->recordDraw($playerOneId, $playerTwoId, $scoreOne, $scoreTwo);
-        // }
 
         $statusPlayerOne = $this->status->setCurrentMatch($match['player_one_id'], null);
         if ($statusPlayerOne === null) {

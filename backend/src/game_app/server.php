@@ -7,6 +7,8 @@ use Ratchet\WebSocket\WsServer;
 use React\Socket\SocketServer;
 use Pong\GameServer;
 
+pcntl_async_signals(true);
+
 // Create event loop, manages all asynchronous operations
 $loop = React\EventLoop\Loop::get();
 
@@ -24,5 +26,19 @@ $ioServer = new IoServer($httpServer, $socket, $loop);
 
 echo "WebSocket server started on port 8080\n";
 
+$shutdown = function (string $signal) use ($loop, $socket) {
+    echo "Received {$signal}, shutting down...\n";
+
+    $socket->close();
+    $loop->stop();
+
+    echo "Shutdown complete\n";
+};
+
+pcntl_signal(SIGTERM, fn() => $shutdown('SIGTERM'));
+pcntl_signal(SIGINT,  fn() => $shutdown('SIGINT'));
+
 // Run the event loop
 $loop->run();
+
+exit(0);

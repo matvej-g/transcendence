@@ -351,11 +351,10 @@ class UserController extends BaseController
             return $this->jsonBadRequest("Invalid id");
         }
         $user = $this->users->getUserById((int)$id);
-        if ($user === null) {
-            return $this->jsonServerError();
-        }
         if (!$user) {
             return $this->jsonNotFound("User not found");
+        } elseif ($user === null) {
+            return $this->jsonServerError();
         }
 
         $old = $request->postParams['oldEmail'] ?? null;
@@ -372,15 +371,11 @@ class UserController extends BaseController
             return $this->jsonBadRequest("New Email must differ");
         }
 
-        $updated = $this->users->updatePassword((int)$id, $new);
+        $updated = $this->users->updateEmail((int)$id, $new);
         if ($updated === null) {
             return $this->jsonServerError();
         }
         return $this->jsonSuccess(['message' => 'Email changed']);
-        // validate email
-        // validate new email
-        // verify old email
-        // update in db
     }
 
     // needs more validation (username email)
