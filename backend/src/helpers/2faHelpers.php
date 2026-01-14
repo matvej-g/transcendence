@@ -21,7 +21,7 @@ function sendTwoFactorEmail($email, $code) {
         $mail->Password = getenv('SMTP_PASSWORD') ?: 'hgzl wozx jhgc msnu';  //change later
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = (int)(getenv('SMTP_PORT') ?: 587);
-        
+
         // Fix for Docker Desktop on Windows/Mac - SSL certificate validation issues
         $mail->SMTPOptions = [
             'ssl' => [
@@ -47,15 +47,6 @@ function sendTwoFactorEmail($email, $code) {
             <p>This code expires in <strong>10 minutes</strong>.</p>
             <p>If you didn't request this, please ignore this email.</p>
         ";
-
-        // Allow self-signed certificates
-        $mail->SMTPOptions = [
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true,
-            ],
-        ];
 
         $mail->send();
         return true;
