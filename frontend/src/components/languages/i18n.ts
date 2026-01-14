@@ -29,7 +29,7 @@ function detectInitialLang(): Lang {
 
   // 2) <html lang="...">
   const htmlLang = document.documentElement.lang.toLowerCase();
-  if (htmlLang === "en" || htmlLang === "ru") {
+  if (htmlLang === "en" || htmlLang === "ru" || htmlLang === "de") {
     return htmlLang as Lang;
   }
 
@@ -113,4 +113,12 @@ export function applyI18nToDom() {
     if (!key) return;
     el.textContent = t(key);
   });
+    // input placeholders (like friend search box)
+  document
+    .querySelectorAll<HTMLInputElement>("[data-i18n-placeholder]")
+    .forEach((el) => {
+      const key = el.dataset.i18nPlaceholder;
+      if (!key) return;
+      el.placeholder = t(key);
+    });
 }
