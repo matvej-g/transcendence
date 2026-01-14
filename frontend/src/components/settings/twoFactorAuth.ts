@@ -1,6 +1,9 @@
 
 const toggleBtn = document.getElementById('dropdown-toggle-2fa');
 
+// Track current 2FA state
+let currentlyEnabled = false;
+
 // Fetch current 2FA status on page load
 async function load2FAStatus() {
   try {
@@ -18,6 +21,7 @@ async function load2FAStatus() {
     
     if (data.success && toggleBtn) {
       const enabled = data.two_factor_enabled;
+      currentlyEnabled = enabled; // Update state with DB value
       updateToggleUI(enabled);
     }
   } catch (error) {
@@ -57,6 +61,7 @@ async function toggle2FA(enable: boolean) {
     
     if (data.success) {
       console.log(data.message);
+      currentlyEnabled = data.two_factor_enabled; // Update state after API call
       updateToggleUI(data.two_factor_enabled);
     } else {
       console.error('Failed to toggle 2FA:', data.error);
@@ -69,13 +74,21 @@ async function toggle2FA(enable: boolean) {
 }
 
 if (toggleBtn) {
-  // Only load status if user is logged in (has userId in localStorage)
-  const userId = localStorage.getItem('currentUserId');
-  if (userId) {
-    load2FAStatus();
-  }
+  // Load status on page load
+  load2FAStatus();
   
-  let currentlyEnabled = false;
+  // Reload status when settings page becomes visible
+  const observer = new MutationObserver(() => {
+    const settingsSection = document.getElementById('settings');
+    if (settingsSection && !settingsSection.classList.contains('hidden')) {
+      load2FAStatus();
+    }
+  });
+  
+  const settingsSection = document.getElementById('settings');
+  if (settingsSection) {
+    observer.observe(settingsSection, { attributes: true, attributeFilter: ['class'] });
+  }
   
   toggleBtn.addEventListener('click', async () => {
     // Toggle the state
