@@ -33,6 +33,17 @@ class GameManager {
         this.playRemoteButton?.addEventListener('click', () => this.startRemoteGame());
         this.exitGameButton?.addEventListener('click', () => this.exitGame());
         
+        window.addEventListener('hashchange', () => {
+            if (window.location.hash === '#game') {
+                // Zeige GameMode Menu wieder an
+                this.gameModeMenu?.classList.remove('hidden');
+                this.gameCanvas.hide();
+            } else if (window.location.hash !== '#game') {
+                // User hat #game verlassen
+                this.gameModeMenu?.classList.remove('hidden');
+                this.gameCanvas.hide();
+            }
+        });
         //Keyboard events
         window.addEventListener('keydown', (e) => this.keyState[e.key] = true);
         window.addEventListener('keyup', (e) => this.keyState[e.key] = false);
@@ -65,7 +76,6 @@ class GameManager {
     public getInputState() {
         return this.keyState;
     }
-    
 }
 
 // Initialize when DOM is ready
