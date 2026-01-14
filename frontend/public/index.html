@@ -17,7 +17,7 @@
             object-fit: contain;
             image-rendering: crisp-edges;
         }
-        
+
         #gameContainer {
             max-height: calc(100vh - 150px);
         }
@@ -59,8 +59,15 @@
                 <div class="absolute left-0 mt-0 w-48 bg-gray-800 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                     <a href="#settings/edit-username" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-t-lg transition-colors" data-i18n="navbarDom.edit_username">Edit Username</a>
                     <a href="#settings/change-password" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_password">Change Password</a>
-                    <a href="#settings/change-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_avatar">Change Avatar</a>
-                    <a href="#settings/2fa" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black rounded-b-lg transition-colors" data-i18n="navbarDom.two_fa">2-Factor Auth</a>
+                    <a href="#settings/change-email" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_email">Change Email</a>
+                    <a href="#settings/upload-avatar" class="block px-4 py-2 text-white hover:bg-emerald-400 hover:text-black transition-colors" data-i18n="navbarDom.change_avatar">Upload Avatar</a>
+                    <div class="block px-4 py-2 rounded-b-lg transition-colors flex items-center gap-3">
+                      <span class="text-white" data-i18n="navbarDom.two_fa">2-Factor Auth</span>
+                      <button id="dropdown-toggle-2fa" type="button" class="relative inline-flex items-center h-6 w-12 rounded-full transition-colors focus:outline-none bg-gray-400" aria-pressed="false">
+                        <span class="sr-only">Enable 2FA</span>
+                        <span class="inline-block h-5 w-5 transform bg-white rounded-full shadow transition-transform translate-x-0"></span>
+                      </button>
+                    </div>
                 </div>
             </li>
             <button id="logoutBtn" class="bg-gradient-to-r from-green-400 to-green-500 hover:bg-gradient-to-r hover:from-green-500 hover:to-green-400 border-none rounded-3xl px-4 py-1.5 my-1 text-white font-bold cursor-pointer transition-all duration-300 shadow-md hover:-translate-y-1 hover:shadow-lg" data-i18n="navbarDom.logout">
@@ -68,6 +75,56 @@
             </button>
         </ul>
     </nav>
+
+    <!-- SETTINGS: EDIT USERNAME SECTION (hidden by default) -->
+    <section id="settings-edit-username" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
+        <h2 class="text-2xl font-bold text-emerald-400 mb-4" data-i18n="settings.edit_username">Edit Username</h2>
+        <form id="edit-username-form" class="w-full flex flex-col gap-4">
+          <label for="new-username" class="text-emerald-200 text-sm" data-i18n="settings.new_username">New Username</label>
+          <input id="new-username" name="new-username" type="text" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="Enter new username" required />
+          <div id="edit-username-error" class="text-red-400 text-sm min-h-[1.5em]"></div>
+          <div class="flex gap-4 justify-end">
+            <button type="button" id="cancel-edit-username" class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 transition" data-i18n="settings.cancel">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition" data-i18n="settings.save">Save</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- SETTINGS: EDIT EMAIL SECTION (hidden by default) -->
+    <section id="settings-change-email" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
+        <h2 class="text-2xl font-bold text-emerald-400 mb-4" data-i18n="settings.change_email">Change Email</h2>
+        <form id="change-email-form" class="w-full flex flex-col gap-4">
+          <label for="new-email" class="text-emerald-200 text-sm" data-i18n="settings.new_email">New Email</label>
+          <input id="new-email" name="new-email" type="text" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="Enter new email" required />
+          <div id="change-email-error" class="text-red-400 text-sm min-h-[1.5em]"></div>
+          <div class="flex gap-4 justify-end">
+            <button type="button" id="cancel-change-email" class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 transition" data-i18n="settings.cancel">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition" data-i18n="settings.save">Save</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- SETTINGS: CHANGE PASSWORD SECTION (hidden by default) -->
+    <section id="settings-change-password" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
+        <h2 class="text-2xl font-bold text-emerald-400 mb-4" data-i18n="settings.change_password">Change Password</h2>
+        <form id="change-password-form" class="w-full flex flex-col gap-4">
+          <label for="old-password" class="text-emerald-200 text-sm" data-i18n="settings.old_password">Old Password</label>
+          <input id="old-password" name="old-password" type="password" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="Enter old password" required />
+          <label for="new-password" class="text-emerald-200 text-sm" data-i18n="settings.new_password">New Password</label>
+          <input id="new-password" name="new-password" type="password" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-400" placeholder="Enter new password" required />
+          <div id="change-password-error" class="text-red-400 text-sm min-h-[1.5em]"></div>
+          <div class="flex gap-4 justify-end">
+            <button type="button" id="cancel-change-password" class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 transition" data-i18n="settings.cancel">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition" data-i18n="settings.change">Change</button>
+          </div>
+        </form>
+      </div>
+    </section>
 
     <!-- MAIN CONTENT AREA -->
     <div id="content" class="flex-1 flex flex-col justify-start items-center max-w-[1960px] mx-auto w-full">
@@ -95,57 +152,76 @@
         </div>
       </section>
 
-      <!-- PROFILE SECTION (hidden by default) -->
-      <section id="profile-section" class="hidden w-full">
-        <div class="profile flex justify-around items-center w-full bg-gradient-to-r from-[#40e5c9] to-[#2ecc71] p-4 shadow-lg flex-wrap">
-            <div class="avatar-name flex flex-col items-center">
-                <img id="profile-avatar" src="" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
-                <h2 class="text-white font-bold text-lg" id="username"></h2>
-            </div>
 
-            <div class="stats flex flex-col justify-between items-center">
-                <h3 class="text-black font-bold text-lg">Statistics</h3>
-                <div class="text-rectangle flex justify-between gap-12 text-black shadow-xl rounded-3xl p-4 backdrop-blur-sm font-[Brush_Script_MT]">
-                    <ul class="match-stats pl-5">
-                        <h4 class="font-bold">Matches</h4>
-                        <li>Wins: <span  id="match-wins"></span></li>
-                        <li>Losses: <span id="match-losses"></span></li>
-                        <li>Winning rate: <span id="match-winning-rate"></span> </li>
-                    </ul>
-                    <ul class="tournament-stats">
-                        <h4 class="font-bold">Tournaments</h4>
-                        <li>Wins: <span id="tourn-wins"></span></li>
-                        <li>Losses: <span  id="tourn-losses"></span></li>
-                        <li>Winning rate: <span id="tourn-winning-rate"></span> </li>
-                    </ul>
-                </div>
+        <!-- PROFILE SECTION (hidden by default) -->
+        <section id="profile-section" class="hidden w-full">
+        <div class="profile flex justify-around items-center w-full bg-gradient-to-r from-[#40e5c9] to-[#2ecc71] p-4 shadow-lg flex-wrap">
+          <div class="avatar-name flex flex-col items-center">
+            <img id="profile-avatar" src="" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
+            <h2 class="text-white font-bold text-lg" id="username"></h2>
+            <!-- Avatar upload button -->
+            <button id="open-upload-avatar" class="mt-2 px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition" data-i18n="profile.upload_avatar">Upload Avatar</button>
+          </div>
+
+          <div class="stats flex flex-col justify-between items-center">
+            <h3 class="text-black font-bold text-lg" data-i18n="profile.statistics">Statistics</h3>
+            <div class="text-rectangle flex justify-between gap-12 text-black shadow-xl rounded-3xl p-4 backdrop-blur-sm font-[Brush_Script_MT]">
+              <ul class="match-stats pl-5">
+                <h4 class="font-bold" data-i18n="profile.matches">Matches</h4>
+                <li><span data-i18n="profile.wins">Wins:</span> <span  id="match-wins"></span></li>
+                <li><span data-i18n="profile.losses">Losses:</span> <span id="match-losses"></span></li>
+                <li><span data-i18n="profile.winning_rate">Win rate:</span> <span id="match-winning-rate"></span> </li>
+              </ul>
+              <ul class="tournament-stats">
+                <h4 class="font-bold" data-i18n="profile.tournaments">Tournaments</h4>
+                <li><span data-i18n="profile.wins">Wins:</span> <span id="tourn-wins"></span></li>
+                <li><span data-i18n="profile.losses">Losses:</span> <span  id="tourn-losses"></span></li>
+                <li><span data-i18n="profile.winning_rate">Win rate:</span> <span id="tourn-winning-rate"></span> </li>
+              </ul>
             </div>
+          </div>
         </div>
 
         <div class="match-history w-2/3 flex flex-col justify-center items-center text-emerald-400 p-4 m-auto font-[Brush_Script_MT]">
-            <h3 class="mb-4 font-bold">Match History</h3>
-            <ul class="text-rectangle flex flex-col items-start w-full">
-                <!-- Match items will be rendered here by JS -->
-                <ul id="match-history-list" class="w-full"></ul>
-            </ul>
+          <h3 class="mb-4 font-bold" data-i18n="profile.match_history">Match History</h3>
+          <ul class="text-rectangle flex flex-col items-start w-full">
+            <!-- Match items will be rendered here by JS -->
+            <ul id="match-history-list" class="w-full"></ul>
+          </ul>
         </div>
-      </section>
+        </section>
+
+        <!-- SETTINGS: UPLOAD AVATAR SECTION (hidden by default) -->
+        <section id="settings-upload-avatar" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
+          <h2 class="text-2xl font-bold text-emerald-400 mb-4" data-i18n="profile.upload_avatar">Upload Avatar</h2>
+          <form id="upload-avatar-form" class="w-full flex flex-col gap-4" enctype="multipart/form-data">
+          <label for="avatar-file" class="text-emerald-200 text-sm" data-i18n="profile.avatar_choose_image">Choose an image</label>
+          <input id="avatar-file" name="avatar" type="file" accept="image/*" class="w-full px-3 py-2 border border-emerald-400 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400" required />
+          <div id="upload-avatar-error" class="text-red-400 text-sm min-h-[1.5em]"> </div>
+          <div class="flex gap-4 justify-end">
+            <button type="button" id="cancel-upload-avatar" class="px-4 py-2 rounded bg-gray-500 text-white hover:bg-gray-600 transition" data-i18n="profile.avatar_cancel">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded bg-emerald-400 text-black font-semibold hover:bg-emerald-300 transition" data-i18n="profile.avatar_upload">Upload</button>
+          </div>
+          </form>
+        </div>
+        </section>
 
       <!-- GAME SECTION (hidden by default) -->
       <section id="game-section" class="hidden w-full h-full flex flex-col items-center justify-center text-white">
         <!-- Edited by Matthias for testing:
         Game Mode Menu (direkt sichtbar) -->
         <div id="gameModeMenu" class="flex-column m-8">
-          <h2 class="mb-8 text-4xl font-bold">Choose Game Mode</h2>
+          <h2 class="mb-8 text-4xl font-bold" data-i18n="game.choose_game_mode">Choose Game Mode</h2>
           <div class="flex gap-4">
             <button
               id="playLocalButton"
-              class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105">
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_local">
               Play Local
             </button>
             <button
               id="playRemoteButton"
-              class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105">
+              class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_vs_player">
               Play vs Player
             </button>
           </div>
@@ -155,7 +231,7 @@
           <canvas id="gameCanvas" class="max-w-full max-h-full"></canvas>
           <button
             id="exitGameButton"
-            class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors">
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors" data-i18n="game.exit_game">
             Exit Game
           </button>
         </div>
@@ -167,7 +243,7 @@
           <!-- Search Section -->
           <div class="searchbar flex flex-wrap justify-center items-center gap-4">
               <input id="searchInput" name="to-search" type="text" placeholder="Search nickname..." class="border border-gray-400 p-2 rounded text-black">
-              <button id="search-button" class="rounded px-3 py-1 bg-emerald-300 hover:bg-emerald-500 text-black">search</button>
+              <button id="search-button" class="rounded px-3 py-1 bg-emerald-300 hover:bg-emerald-500 text-black" data-i18n="friends.search">search</button>
           </div>
           <!-- Search Result Display (shown when a user is found) -->
           <div id="search-result-user" class="hidden flex flex-col items-center gap-2 mt-2">
@@ -175,20 +251,20 @@
               <img id="search-result-avatar" src="" alt="Avatar image" class="avatar h-8 w-8 rounded-full border border-emerald-400">
               <span id="search-result-nickname" class="font-semibold text-emerald-300"></span>
             </div>
-            <button id="add-friend-btn" class="bg-blue-500 text-white px-3 py-1 rounded">Send Friend Request</button>
+            <button id="add-friend-btn" class="bg-blue-500 text-white px-3 py-1 rounded" data-i18n="friends.send_friend_request">Send Friend Request</button>
           </div>
           <div id="search-result-message" class="text-red-400 text-center"></div>
 
           <!-- Friends Block -->
           <div class="friends-block flex flex-wrap justify-center gap-32 items-start">
           <div class="flex flex-col border border-emerald-400 rounded-xl">
-            <h1 class="text-black font-bold m-4 text-emerald-400">Your Friends</h1>
+            <h1 class="text-black font-bold m-4 text-emerald-400" data-i18n="friends.your_friends">Your Friends</h1>
             <ul id="friends-list" class="flex flex-col m-4">
               <!-- Friend items rendered by JS -->
             </ul>
           </div>
           <div class="flex flex-col border border-emerald-400 rounded-xl">
-            <h2 class="text-black font-bold m-4 text-emerald-400">Friend Requests</h2>
+            <h2 class="text-black font-bold m-4 text-emerald-400" data-i18n="friends.friend_requests">Friend Requests</h2>
             <ul id="requests-list" class="flex flex-col m-4">
               <!-- Request items rendered by JS -->
             </ul>
@@ -217,7 +293,7 @@
 	<!-- RIGHT: ACTIVE CHAT -->
 	<div class="flex flex-col flex-1">
 		<!-- Chat header -->
-		<header id="chat-header" class="p-4 border-b border-white/10 font-semibold">
+		<header id="chat-header" class="p-4 border-b border-white/10 font-semibold" data-i18n="chat.select_a_chat">
 		Select a chat
 		</header>
 
@@ -233,7 +309,7 @@
 			placeholder="Type a message…"
 			class="flex-1 bg-white/10 rounded px-3 py-2 outline-none"
 		/>
-		<button type="submit" class="bg-blue-600 px-4 py-2 rounded">
+		<button type="submit" class="bg-blue-600 px-4 py-2 rounded" data-i18n="chat.send">
 			Send
 		</button>
 		</form>
@@ -272,8 +348,15 @@
     <!-- profile logic -->
     <script type="module" src="/dist/components/profile/profile.js"></script>
 
-	<!-- chat component -->
-	<script type="module" src="/dist/components/messaging/chatPage.js"></script>
+    <!-- chat component -->
+    <script type="module" src="/dist/components/messaging/chatPage.js"></script>
+
+    <!-- settings -->
+    <script type="module" src="/dist/components/settings/editUsername.js"></script>
+    <script type="module" src="/dist/components/settings/uploadAvatar.js"></script>
+    <script type="module" src="/dist/components/settings/twoFactorAuth.js"></script>
+    <script type="module" src="/dist/components/settings/changePassword.js"></script>
+    <script type="module" src="/dist/components/settings/changeEmail.js"></script>
 
     <!-- SPA Router -->
     <script type="module" src="/dist/common/router.js"></script>

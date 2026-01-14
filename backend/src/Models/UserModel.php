@@ -109,8 +109,21 @@ class UserModel {
 		}
 	}
 
+	public function updateEmail($id, $email) {
+		try {
+			$this->db->query(
+				"UPDATE users SET email = ? WHERE id = ?",
+				[$email, $id]
+			);
+			return $this->getUserById($id);
+		}
+		catch (\PDOException $e) {
+        	return null;
+		}
+	}
+
     public function updateUserInfo($id, $userName, $displayName, $email, $password) {
-        try {
+		try {
             $this->db->query(
                 "UPDATE users SET username = ?, displayname = ?, email = ?, password_hash = ? WHERE id = ?",
                 [$userName, $displayName, $email, $password, $id]
@@ -118,7 +131,7 @@ class UserModel {
             return $this->getUserById($id);
         }
         catch (\PDOException $e) {
-            return null;
+			return null;
         }
     }
 
@@ -134,4 +147,98 @@ class UserModel {
             return null;
         }
     }
+
+	// 2FA functions (added for JWT + 2FA authentication) (mert)
+	public function saveTwoFactorCode($userId, $code, $expiresAt)
+	{
+		try {
+			return $this->db->query(
+				"UPDATE users 
+				SET two_factor_code = ?, 
+					two_factor_expires_at = ? 
+				WHERE id = ?",
+				[$code, $expiresAt, $userId]
+			);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	public function verifyTwoFactorCode($userId, $code)
+	{
+		try {
+			$user = $this->db->query(
+				"SELECT two_factor_code, two_factor_expires_at 
+				FROM users 
+				WHERE id = ?",
+				[$userId]
+			)->fetch(PDO::FETCH_ASSOC);
+
+			// Check if code matches and hasn't expired
+			if ($user && $user['two_factor_code'] === $code) {
+				$now = date('Y-m-d H:i:s');
+				if ($user['two_factor_expires_at'] > $now) {
+					// Clear the 2FA code after successful verification to prevent reuse
+					$this->db->query(
+						"UPDATE users 
+						SET two_factor_code = NULL, 
+							two_factor_expires_at = NULL 
+						WHERE id = ?",
+						[$userId]
+					);
+					return true;
+				}
+			}
+
+			return false;
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	// Enable 2FA for a user
+	public function enable2FA($userId)
+	{
+		try {
+			return $this->db->query(
+				"UPDATE users SET two_factor_enabled = 1 WHERE id = ?",
+				[$userId]
+			);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	// Disable 2FA for a user
+	public function disable2FA($userId)
+	{
+		try {
+			return $this->db->query(
+				"UPDATE users SET two_factor_enabled = 0 WHERE id = ?",
+				[$userId]
+			);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	// Check if 2FA is enabled for a user
+	public function is2FAEnabled($userId)
+	{
+		try {
+			$user = $this->db->query(
+				"SELECT two_factor_enabled FROM users WHERE id = ?",
+				[$userId]
+			)->fetch(PDO::FETCH_ASSOC);
+			
+			return $user ? (bool)$user['two_factor_enabled'] : false;
+		}
+		catch (\PDOException $e) {
+			return false;
+		}
+	}
 }

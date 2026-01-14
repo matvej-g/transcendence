@@ -15,7 +15,21 @@ class Validator
 
 	public static function validateEmail($email)
 	{
-		return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+			return false;
+		}
+
+		if (!self::validateString($email, max:254)) {
+			return false;
+		}
+
+		[$local, $domain] = explode('@', $email, 2);
+
+		if (!self::validateString($local, max:64)) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public static function validateId($value): bool
@@ -65,7 +79,7 @@ class Validator
 	}
 
 	//============ User validation ============//
-	private static function validatePassword($password): bool
+	public static function validatePassword($password): bool
 	{
 		return self::validateString($password, 8, 72);
 	}

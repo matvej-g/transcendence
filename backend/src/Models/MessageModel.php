@@ -24,6 +24,38 @@ class MessageModel
         }
     }
 
+    public function getMessagesWithReadStateForConversation(int $conversationId, int $userId): ?array
+    {
+        try {
+            $rows = $this->db->query(
+                "SELECT m.*, rs.read_at
+                 FROM messages m
+                 LEFT JOIN message_read_states rs
+                   ON rs.message_id = m.id AND rs.user_id = ?
+                 WHERE m.conversation_id = ?
+                 ORDER BY m.created_at ASC, m.id ASC",
+                [$userId, $conversationId]
+            )->fetchAll(\PDO::FETCH_ASSOC);
+
+            if ($rows === false || $rows === null) {
+                return [];
+            }
+
+            // Auto-mark unread as read for this user
+            foreach ($rows as &$row) {
+                if ($row['read_at'] === null) {
+                    $this->markMessageRead((int)$row['id'], $userId);
+                    // Set read_at to “now” in the in-memory row so we don’t have to requery
+                    $row['read_at'] = date('Y-m-d H:i:s');
+                }
+            }
+
+            return $rows;
+        } catch (\PDOException $e) {
+            return null;
+        }
+    }
+
     public function createMessage(int $conversationId, int $authorId, string $text): ?array
     {
         try {

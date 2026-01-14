@@ -4,12 +4,15 @@ namespace src\controllers;
 
 use src\Database;
 use src\http\Request;
+use src\Sanitiser;
 use src\Models\ConversationModel;
 use src\Models\MessageModel;
 use src\Models\BlockModel;
 use src\Models\GameInviteModel;
 use src\Models\UserModel;
 use src\Validator;
+use src\Services\MessagingNotifier;
+use src\app_ws\RedisPublisher;
 
 class MessagingController extends BaseController
 {
@@ -18,6 +21,7 @@ class MessagingController extends BaseController
     private BlockModel $blocks;
     private GameInviteModel $invites;
     private UserModel $users;
+	private MessagingNotifier $notifier;
 
     public function __construct(Database $db)
     {
@@ -26,6 +30,7 @@ class MessagingController extends BaseController
         $this->blocks        = new BlockModel($db);
         $this->invites       = new GameInviteModel($db);
         $this->users         = new UserModel($db);
+		$this->notifier	     = new MessagingNotifier(new RedisPublisher());
     }
 
     // Replace this with proper auth/JWT once available.
@@ -73,12 +78,23 @@ class MessagingController extends BaseController
             }
         }
 
+        $readAt = $row['read_at'] ?? null;
+        if ($readAt !== null) {
+            try {
+                $rt = new \DateTime($readAt);
+                $readAt = $rt->format(DATE_ATOM);
+            } catch (\Exception) {
+            }
+        }
+
         return [
             'id'             => (string) $row['id'],
             'conversationId' => (string) $row['conversation_id'],
             'author'         => $author,
             'text'           => $row['text'],
             'createdAt'      => $createdAt,
+            'isRead'         => ($row['read_at'] ?? null) !== null,
+            'readAt'         => $readAt,
         ];
     }
 
@@ -183,7 +199,7 @@ class MessagingController extends BaseController
             return $this->jsonNotFound('Conversation not found');
         }
 
-        $rows = $this->messages->getMessagesForConversation($conversationId);
+        $rows = $this->messages->getMessagesWithReadStateForConversation($conversationId, $userId);
         if ($rows === null) {
             return $this->jsonServerError();
         }
@@ -216,10 +232,11 @@ class MessagingController extends BaseController
             return $this->jsonBadRequest('Invalid participant ids');
         }
 
-        $text = $messageData['text'] ?? null;
+		$text = $messageData['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
         }
+		$text = Sanitiser::normaliseMessage($text);
 
         // Ensure current user is part of the conversation
         $allParticipantIds = array_map('intval', $participantIds);
@@ -227,11 +244,28 @@ class MessagingController extends BaseController
             $allParticipantIds[] = $userId;
         }
 
+		$otherUserIds = [];
+        foreach ($allParticipantIds as $uid) {
+            if ($uid === $userId) {
+            } else {
+                $otherUserIds[] = $uid;
+            }
+        }
+		// Basic block check: if any other participant has blocked current user, deny
+		foreach ($otherUserIds as $otherId) {
+			$blocked = $this->blocks->isBlocked($otherId, $userId);
+			if ($blocked === null) {
+				return $this->jsonServerError();
+			}
+			if ($blocked === true) {
+				return $this->jsonBadRequest('You are blocked by this user');
+			}
+		}
+
         try {
             // 1) Create conversation (title = null)
             $conversationId = $this->conversations->createConversation(null);
             if ($conversationId === null) {
-                error_log("[messaging] createConversation: createConversation(null) returned null");
                 return $this->jsonServerError('createConversation failed');
             }
 
@@ -239,7 +273,6 @@ class MessagingController extends BaseController
             foreach ($allParticipantIds as $pid) {
                 $added = $this->conversations->addParticipant((int)$conversationId, (int)$pid);
                 if ($added === null) {
-                    error_log("[messaging] createConversation: addParticipant failed. convo={$conversationId} pid={$pid}");
                     return $this->jsonServerError('addParticipant failed');
                 }
             }
@@ -247,21 +280,18 @@ class MessagingController extends BaseController
             // 3) Create first message
             $row = $this->messages->createMessage((int)$conversationId, (int)$userId, (string)$text);
             if ($row === null) {
-                error_log("[messaging] createConversation: createMessage failed. convo={$conversationId} user={$userId}");
                 return $this->jsonServerError('createMessage failed');
             }
 
             // 4) Map message
             $apiMessage = $this->mapMessageRowToApi($row);
             if ($apiMessage === null) {
-                error_log("[messaging] createConversation: mapMessageRowToApi failed");
                 return $this->jsonServerError('mapMessage failed');
             }
-
+			$this->notifier->messageCreated((int)$conversationId, $apiMessage, $otherUserIds, (int)$userId); //notify all users
             return $this->jsonCreated($apiMessage);
 
         } catch (\Throwable $e) {
-            error_log("[messaging] createConversation exception: " . $e->getMessage());
             return $this->jsonServerError('Database exception');
         }
     }
@@ -279,10 +309,11 @@ class MessagingController extends BaseController
         }
         $conversationId = (int) $id;
 
-        $text = $request->postParams['text'] ?? null;
+		$text = $request->postParams['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
         }
+		$text = Sanitiser::normaliseMessage($text);
 
         // Ensure user is a participant
         $participants = $this->conversations->getParticipants($conversationId);
@@ -323,6 +354,7 @@ class MessagingController extends BaseController
         if ($apiMessage === null) {
             return $this->jsonServerError();
         }
+		$this->notifier->messageCreated(conversationId: $conversationId, apiMessage: $apiMessage, recipientUserIds: $otherUserIds, actorUserId: $userId); //notify all users
 
         return $this->jsonCreated($apiMessage);
     }
@@ -340,10 +372,11 @@ class MessagingController extends BaseController
         }
         $messageId = (int) $id;
 
-        $text = $request->postParams['text'] ?? null;
+		$text = $request->postParams['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
         }
+		$text = Sanitiser::normaliseMessage($text);
 
         $row = $this->messages->editMessage($messageId, $userId, $text);
         if ($row === null) {

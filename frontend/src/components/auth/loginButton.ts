@@ -2,6 +2,9 @@
 import { $, log } from "../../utils/utils.js";
 import { msg } from "../languages/auth/stringsMsgsHandlers.js";
 import { loginHandle } from "./login.js";
+import { apiCall } from "../../utils/api.js";
+//import { navigateToLandingPage } from "../landing/navigation.js";
+import { appWs } from "../../ws/appWs.js";
 
 function wireLoginButton() {
   const btn = document.getElementById("loginBtn") as HTMLButtonElement | null;
@@ -14,11 +17,34 @@ function wireLoginButton() {
 
     const res = await loginHandle(u, p);
     log(`[UI] login result: ${JSON.stringify(res)}`);
-    alert(res.ok ? msg("loginOkPrefix") + `${res.user.username}` : msg("loginFailedGeneric") + ` (${res.error})`);
-	if (res.ok) {
-		window.location.hash = '#profile';;
-	}
-
+    
+    if (res.ok) {
+      log(`[UI] Login successful`);
+      
+      // Check if 2FA is required
+      if (res.two_factor_required) {
+        // User has 2FA enabled - send code and redirect to verification
+        log(`[UI] 2FA required, sending code...`);
+        
+        const twoFAResult = await apiCall('/api/auth/send-2fa', {
+          method: 'POST'
+        });
+        
+        if (twoFAResult.ok && twoFAResult.data.success) {
+          alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to your email!`);
+          window.location.href = '/verify-2fa.html';
+        } else {
+          alert('Login successful but 2FA failed: ' + (twoFAResult.data.error || 'Unknown error'));
+        }
+      } else {
+        // User has 2FA disabled - login complete
+        alert(msg("loginOkPrefix") + `${res.user.username}`);
+        window.location.href = '/index.html#profile';
+		appWs.connect(); //connect app websocket after login
+      }
+    } else {
+      alert(msg("loginFailedGeneric") + ` (${res.error})`);
+    }
   });
 }
 wireLoginButton();

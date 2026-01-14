@@ -1,6 +1,6 @@
 // frontend/src/languages/i18n.ts
 
-export type Lang = "en" | "ru";
+export type Lang = "en" | "ru" | "de";
 
 type FlatKey = string;            // "auth.title", "auth.loginBtn", etc.
 type LangTable = Record<FlatKey, string>;
@@ -8,6 +8,7 @@ type LangTable = Record<FlatKey, string>;
 const registry: Record<Lang, LangTable> = {
   en: {},
   ru: {},
+  de: {},
 };
 
 let currentLang: Lang = "en";
@@ -19,7 +20,7 @@ function detectInitialLang(): Lang {
   // 1) localStorage if available/implemented
   try {
     const saved = window.localStorage?.getItem("lang");
-    if (saved === "en" || saved === "ru") {
+    if (saved === "en" || saved === "ru" || saved === "de") {
       return saved;
     }
   } catch {

@@ -16,8 +16,6 @@ class Database {
 		$this->connection->exec("PRAGMA foreign_keys = ON;");
 	}
 
-	// reconsider accessability
-	// simple query function
 	public function query($query, $parmas = [])
 	{
 		$statement = $this->connection->prepare($query);

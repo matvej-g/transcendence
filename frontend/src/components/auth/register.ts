@@ -2,6 +2,7 @@ import type { RegisterRequest, RegisterResult } from "./types.js";
 import { postRegisterRequest } from "./api.js";
 import { setCurrentUserId, setUserOnline } from './authUtils.js';
 import { initProfile } from '../profile/profile.js';
+import { appWs } from "../../ws/appWs.js";
 
 /**
  * Public API used by the UI.
@@ -22,9 +23,8 @@ export async function registerHandle(payload: RegisterRequest): Promise<Register
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
       try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
-      initProfile().catch((e) => console.warn('[profile] init after register failed', e));
     }
-
+	appWs.connect(); //connect app websocket after register
     return buildRegisterSuccessResult(data);
   } catch (e) {
     logRegisterException(e);

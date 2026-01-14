@@ -5,24 +5,31 @@ CREATE TABLE IF NOT EXISTS users (
 	displayname TEXT NOT NULL UNIQUE,
 	email TEXT NOT NULL UNIQUE,
 	password_hash TEXT NOT NULL,
+	two_factor_code TEXT DEFAULT NULL,
+	two_factor_expires_at DATETIME DEFAULT NULL,
+	two_factor_enabled INTEGER DEFAULT 0,
     avatar_filename TEXT NOT NULL DEFAULT 'default.jpg',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Pending user registrations (for email verification via 2FA)
+CREATE TABLE IF NOT EXISTS pending_registrations (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	username TEXT NOT NULL,
+	displayname TEXT NOT NULL,
+	email TEXT NOT NULL,
+	password_hash TEXT NOT NULL,
+	verification_code TEXT NOT NULL,
+	expires_at DATETIME NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- remove these users later on because of password hash
-INSERT INTO users(username, displayname, email, password_hash)
+INSERT OR IGNORE INTO users(username, displayname, email, password_hash)
 VALUES ('david', 'David', 'dhuss42@heilbron.de', 123);
 
-INSERT INTO users(username, displayname, email, password_hash)
+INSERT OR IGNORE INTO users(username, displayname, email, password_hash)
 VALUES ('test', 'TEST', 'test42@test.de', 234);
-
--- User presence / status
-CREATE TABLE IF NOT EXISTS user_status (
-	user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-	online INTEGER NOT NULL DEFAULT 0,
-	last_seen DATETIME,
-	current_match_id INTEGER REFERENCES matches(id)
-);
 
 -- Pong match Data
 CREATE TABLE IF NOT EXISTS matches (
@@ -36,9 +43,17 @@ CREATE TABLE IF NOT EXISTS matches (
 	finished_at DATETIME
 );
 
+-- User presence / status
+CREATE TABLE IF NOT EXISTS user_status (
+	user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+	online INTEGER NOT NULL DEFAULT 0,
+	last_seen DATETIME,
+	current_match_id INTEGER REFERENCES matches(id)
+);
+
 -- Tournament Data
 CREATE TABLE IF NOT EXISTS tournaments (
-	id INTEGER PRIMARY KEY,
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	tournament_name TEXT NOT NULL,
 	started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	finished_at DATETIME,
@@ -46,13 +61,13 @@ CREATE TABLE IF NOT EXISTS tournaments (
 );
 
 CREATE TABLE IF NOT EXISTS tournament_players (
-	id INTEGER PRIMARY KEY,
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	tournament_id INTEGER NOT NULL REFERENCES tournaments(id),
 	user_id INTEGER NOT NULL REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS tournament_matches (
-	id INTEGER PRIMARY KEY,
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	tournament_id INTEGER NOT NULL REFERENCES tournaments(id),
 	match_id INTEGER NOT NULL REFERENCES matches(id),
 	round INTEGER NOT NULL DEFAULT 1,

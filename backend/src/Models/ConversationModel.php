@@ -50,7 +50,6 @@ class ConversationModel
             );
             return $this->db->connection->lastInsertId();
         } catch (\PDOException $e) {
-			error_log("[db] createConversation PDOException: " . $e->getMessage());
             return null;
         }
     }

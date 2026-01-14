@@ -1,5 +1,6 @@
 import { clearCurrentUserId, setUserOffline, clearCurrentUsername} from '../components/auth/authUtils.js';
-import { onFriendsSectionShown} from '../components/friends/friendsContent.js'
+import { initFriendsSection} from '../components/friends/friendsContent.js';
+import { initProfile } from '../components/profile/profile.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
@@ -11,40 +12,113 @@ const sections: Record<string, HTMLElement | null> = {
   'notfound': document.getElementById('notfound-section'),
 };
 
+
+// Special modal/overlay sections (not part of main navigation)
+const editUsernameModal = document.getElementById('settings-edit-username');
+const uploadAvatarModal = document.getElementById('settings-upload-avatar');
+const changePasswordModal = document.getElementById('settings-change-password');
+const changeEmailModal = document.getElementById('settings-change-email');
+
 const authNavbar = document.getElementById('auth-navbar');
 const navbar = document.getElementById('navbar');
 const footer = document.getElementById('footer');
 
+
 function resolveSection(sectionId: string): string {
+  // Special case: settings/edit-username (modal)
+  if (sectionId === 'settings' && window.location.hash.includes('edit-username')) {
+    return 'settings-edit-username';
+  }
+  // Special case: settings/upload-avatar (modal)
+  if (sectionId === 'settings' && window.location.hash.includes('upload-avatar')) {
+    return 'settings-upload-avatar';
+  }
+  // Special case: settings/change-password (modal)
+  if (sectionId === 'settings' && window.location.hash.includes('change-password')) {
+    return 'settings-change-password';
+  }
+  // Special case: settings/change-email (modal)
+  if (sectionId === 'settings' && window.location.hash.includes('change-email')) {
+    return 'settings-change-email';
+  }
   if (sections[sectionId]) {
     return sectionId;
   }
-
   // Unknown section requested — warn and notify consumers.
-  // Consumers can listen for the `router:notfound` event to show a custom 404 UI.
   console.warn(`Router: unknown section "${sectionId}", showing 'notfound' section`);
   window.dispatchEvent(new CustomEvent('router:notfound', { detail: { section: sectionId } }));
-
-  // Show the dedicated notfound section
   return 'notfound';
 }
+
+
+// Flags to track if sections have been loaded
+let profileLoaded = false;
+let friendsLoaded = false;
 
 function showSection(sectionId: string): void {
   const target = resolveSection(sectionId);
 
-  // Hide all sections
+  // Hide all main sections
   Object.values(sections).forEach(section => {
-    if (section) {
-      section.classList.add('hidden');
-    }
+    if (section) section.classList.add('hidden');
   });
+
+  // Hide modal overlays by default
+  if (editUsernameModal) editUsernameModal.classList.add('hidden');
+  if (uploadAvatarModal) uploadAvatarModal.classList.add('hidden');
+  if (changePasswordModal) changePasswordModal.classList.add('hidden');
+  if (changeEmailModal) changeEmailModal.classList.add('hidden');
+
+  if (target === 'settings-edit-username') {
+    // Show modal, keep navbars visible
+    editUsernameModal?.classList.remove('hidden');
+    navbar?.classList.remove('hidden');
+    authNavbar?.classList.add('hidden');
+    footer?.classList.remove('hidden');
+    return;
+  }
+  if (target === 'settings-upload-avatar') {
+    // Show modal, keep navbars visible
+    uploadAvatarModal?.classList.remove('hidden');
+    navbar?.classList.remove('hidden');
+    authNavbar?.classList.add('hidden');
+    footer?.classList.remove('hidden');
+    return;
+  }
+  if (target === 'settings-change-password') {
+    // Show modal, keep navbars visible
+    changePasswordModal?.classList.remove('hidden');
+    navbar?.classList.remove('hidden');
+    authNavbar?.classList.add('hidden');
+    footer?.classList.remove('hidden');
+    return;
+  }
+  if (target === 'settings-change-email') {
+    // Show modal, keep navbars visible
+    changeEmailModal?.classList.remove('hidden');
+    navbar?.classList.remove('hidden');
+    authNavbar?.classList.add('hidden');
+    footer?.classList.remove('hidden');
+    return;
+  }
 
   // Show selected (or fallback) section
   sections[target]?.classList.remove('hidden');
 
-  // If friends section, immediately populate lists
+  // If profile section, load only once unless reset
+  if (target === 'profile') {
+    if (!profileLoaded) {
+      profileLoaded = true;
+      initProfile().catch(e => console.warn('[router] initProfile failed', e));
+      }
+  }
+
+  // If friends section, load only once unless reset
   if (target === 'friends') {
-    onFriendsSectionShown();
+    if (!friendsLoaded) {
+      friendsLoaded = true;
+      initFriendsSection();
+    }
   }
 
   // Show/hide navbars and footer based on section
@@ -58,14 +132,46 @@ function showSection(sectionId: string): void {
 }
 
 // Handle hash navigation
+
+
 window.addEventListener('hashchange', () => {
   const hash = window.location.hash.slice(1);
+  // Special case: settings/edit-username
+  if (hash.startsWith('settings/edit-username')) {
+    showSection('settings');
+    return;
+  }
+  // Special case: settings/upload-avatar
+  if (hash.startsWith('settings/upload-avatar')) {
+    showSection('settings');
+    return;
+  }
+  // Special case: settings/change-password
+  if (hash.startsWith('settings/change-password')) {
+    showSection('settings');
+    return;
+  }
+  // Special case: settings/change-email
+  if (hash.startsWith('settings/change-email')) {
+    showSection('settings');
+    return;
+  }
   const section = hash.split('/')[0] || 'auth';
   showSection(section);
 });
 
 // Logout button
-document.getElementById('logoutBtn')?.addEventListener('click', () => {
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+  // Call logout endpoint to clear JWT cookie
+  try {
+    await fetch('/api/user/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch (error) {
+    console.error('Logout endpoint failed:', error);
+  }
+  
   // mark user offline on server (best-effort)
   setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
   clearCurrentUserId();
@@ -79,6 +185,16 @@ document.getElementById('notfoundHomeBtn')?.addEventListener('click', () => {
 });
 
 // Initial load
-const initialHash = window.location.hash.slice(1);  //read everything after #
-const initialSection = initialHash.split('/')[0] || 'auth'; // Extracts the first segment before a slash
-showSection(initialSection);
+const initialHash = window.location.hash.slice(1);
+if (initialHash.startsWith('settings/edit-username')) {
+  showSection('settings');
+} else if (initialHash.startsWith('settings/upload-avatar')) {
+  showSection('settings');
+} else if (initialHash.startsWith('settings/change-password')) {
+  showSection('settings');
+} else if (initialHash.startsWith('settings/change-email')) {
+  showSection('settings');
+} else {
+  const initialSection = initialHash.split('/')[0] || 'auth';
+  showSection(initialSection);
+}

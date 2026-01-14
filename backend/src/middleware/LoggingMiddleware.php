@@ -18,12 +18,21 @@ class LoggingMiddleware {
 	{
 		$requestId = uniqid('');
 
+		// Redact sensitive fields before logging to avoid leaking passwords/tokens
+		$params = is_array($request->postParams) ? $request->postParams : [];
+		$sensitiveKeys = ['password', 'oldPassword', 'newPassword', 'token', 'access_token', 'refresh_token'];
+		foreach ($sensitiveKeys as $key) {
+			if (array_key_exists($key, $params)) {
+				$params[$key] = '***';
+			}
+		}
+
 		$this->logger->info('Incoming request', [
 			'request_id' => $requestId,
 			'method' => $request->getMethod(),
 			'uri' => $request->getUri(),
-			'params' => $request->postParams,
-        	'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+			'params' => $params,
+	    	'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
 		]);
 		return $requestId;
 	}

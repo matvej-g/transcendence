@@ -57,7 +57,7 @@ export async function setUserOnline(options?: { token?: string }): Promise<void>
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (options?.token) headers['Authorization'] = `Bearer ${options.token}`;
 
-  const res = await fetch('/api/status/online', { method: 'PATCH', headers, body: JSON.stringify({ currentUserId: userId }) });
+  const res = await fetch('/api/status/online', { method: 'PATCH', headers, body: JSON.stringify({ currentUserId: userId }), credentials: 'include' });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     console.warn('[authUtils] setUserOnline failed', res.status, body);
@@ -79,7 +79,7 @@ export async function setUserOffline(options?: { token?: string }): Promise<void
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (options?.token) headers['Authorization'] = `Bearer ${options.token}`;
 
-  const res = await fetch('/api/status/offline', { method: 'PATCH', headers, body: JSON.stringify({ currentUserId: userId }) });
+  const res = await fetch('/api/status/offline', { method: 'PATCH', headers, body: JSON.stringify({ currentUserId: userId }), credentials: 'include' });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     console.warn('[authUtils] setUserOffline failed', res.status, body);

@@ -6,38 +6,39 @@ class Router {
 
     protected $routes = [];
 
-    protected function add($method, $uri, $controller)
-    {
-        $this->routes[] = [
-            'uri' => $uri,
-            'method' => $method,
-            'controller' => $controller,
-        ];
-    }
+	protected function add($method, $uri, $controller, $middleware = [])
+	{
+		$this->routes[] = [
+			'uri' => $uri,
+			'method' => $method,
+			'controller' => $controller,
+			'middleware' => $middleware,
+		];
+	}
 
-    public function get($uri, $controller)
-    {
-        $this->add('GET', $uri, $controller);
-    }
+	public function get($uri, $controller, $middleware = [])
+	{
+		$this->add('GET', $uri, $controller, $middleware);
+	}
 
-    public function post($uri, $controller)
-    {
-        $this->add('POST', $uri, $controller);
-    }
+	public function post($uri, $controller, $middleware = [])
+	{
+		$this->add('POST', $uri, $controller, $middleware);
+	}
 
-    public function delete($uri, $controller)
+    public function delete($uri, $controller, $middleware = [])
     {
-        $this->add('DELETE', $uri, $controller);
+		$this->add('DELETE', $uri, $controller, $middleware);
     }
     
-    public function patch($uri, $controller)
+    public function patch($uri, $controller, $middleware = [])
     {
-        $this->add('PATCH', $uri, $controller);
+		$this->add('PATCH', $uri, $controller, $middleware);
     }
 
-    public function put($uri, $controller)
+    public function put($uri, $controller, $middleware = [])
     {
-        $this->add('PUT', $uri, $controller);
+		$this->add('PUT', $uri, $controller, $middleware);
     }
 
     // Convert a route URI with placeholders into a regex pattern,
@@ -66,18 +67,33 @@ class Router {
         return false;
     }
 
-    public function route($uri, $method, $request, $db): Response
-    {
-        foreach ($this->routes as $route) {
-            $matches = $this->convert($route, $uri);
-            if ($matches !== false && $matches[0] === $uri && $route['method'] === strtoupper($method)) {
-                if (is_array($route['controller'])) {
-                    [$class, $methodName] = $route['controller'];
-                    $controllerInstance = new $class($db);
-                    return ($controllerInstance->$methodName($request, $matches));
-                }
-            }
-        }
-        return new Response(HttpStatusCode::NotFound, 'Requested Endpoint does not exist', ['Content-Type' => 'application/json']);
-    }
+	public function route($uri, $method, $request, $db): Response
+	{
+		foreach ($this->routes as $route) {
+			$matches = $this->convert($route, $uri);
+			if ($matches !== false && $matches[0] === $uri && $route['method'] === strtoupper($method)) {
+				
+				// Run middleware before controller
+				if (!empty($route['middleware'])) {
+					foreach ($route['middleware'] as $middleware) {
+						$middlewareResponse = call_user_func([$middleware, 'handle'], $request);
+						if ($middlewareResponse !== null) {
+							return $middlewareResponse;
+						}
+					}
+				}
+
+				// dynamic controller classes
+				if (is_array($route['controller'])) {
+					[$class, $methodName] = $route['controller'];
+					
+					// creating a Controller because $class holds name of controller
+					$controllerInstance = new $class($db);
+					// calling the method because $methodName holds the name of the method
+					return ($controllerInstance->$methodName($request, $matches));
+				}
+			}
+		}
+		return new Response(HttpStatusCode::NotFound, "Requested api not found", ['Content-Type' => 'application/json']);
+	}
 }

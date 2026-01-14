@@ -5,9 +5,12 @@ namespace src\controllers;
 use finfo;
 use src\Database;
 use src\http\Request;
+use src\http\HttpStatusCode;
 use src\controllers\BaseController;
+use src\http\Response;
 use src\Models\UserModel;
 use src\Models\UserStatsModel;
+use src\Models\PendingRegistrationModel;
 use src\Sanitiser;
 use src\Validator;
 
@@ -15,11 +18,13 @@ class UserController extends BaseController
 {
     private UserModel $users;
     private UserStatsModel $stats;
+    private PendingRegistrationModel $pendingRegistrations;
 
     public function __construct(Database $db)
     {
         $this->users = new UserModel($db);
         $this->stats = new UserStatsModel($db);
+        $this->pendingRegistrations = new PendingRegistrationModel($db);
     }
 
     public function getUser(Request $request, $parameters)
@@ -29,6 +34,13 @@ class UserController extends BaseController
             return $this->jsonBadRequest("Invalid id");
         }
         $id = (int)$id;
+
+        // Security: Only allow users to access their own data
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only access your own user data");
+        }
+
         $user = $this->users->getUserById($id);
         if ($user === null) {
             return $this->jsonServerError();
@@ -64,7 +76,7 @@ class UserController extends BaseController
         if ($email === null || !is_string($email)) {
             return $this->jsonBadRequest("Invalid email");
         }
-        
+
         [$email] = Sanitiser::normaliseStrings([$email]);
         $user = $this->users->getUserByEmail($email);
         if ($user === null) {
@@ -144,8 +156,26 @@ class UserController extends BaseController
         if (!password_verify($password, $user['password_hash'])) {
             return $this->jsonUnauthorized("Invalid password");
         }
-        $user = user_to_public($user);
-        return $this->jsonSuccess($user);
+
+        // Check if user has 2FA enabled
+        $is2FAEnabled = (bool)$user['two_factor_enabled'];
+
+        // Generate JWT based on 2FA status
+        // If 2FA is disabled, user is fully authenticated immediately
+        // If 2FA is enabled, they need to verify the code first
+        $token = generateJWT($user['id'], !$is2FAEnabled);
+        setJWTCookie($token);
+
+        return $this->jsonSuccess([
+            'success' => true,
+            'user' => [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'email' => $user['email']
+            ],
+            'token' => $token,
+            'two_factor_required' => $is2FAEnabled
+        ]);
     }
 
     public function newUser(Request $request, $parameters)
@@ -161,12 +191,104 @@ class UserController extends BaseController
         $displayName = $userName;
         [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
 
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $id = $this->users->createUser($userName, $displayName, $email, $hash);
-        if ($id === null) {
-            return $this->jsonConflict("Conflicting user info");
+        // Check if username or email already exists
+        if ($this->users->getUserByUsername($userName)) {
+            return $this->jsonConflict("Username already exists");
         }
-        return $this->jsonCreated(['id' => (int)$id]);
+        if ($this->users->getUserByEmail($email)) {
+            return $this->jsonConflict("Email already exists");
+        }
+
+        // Generate verification code
+        $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+
+        // Hash password
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+
+        // Save pending registration
+        $result = $this->pendingRegistrations->savePendingRegistration(
+            $userName,
+            $displayName,
+            $email,
+            $hash,
+            $code,
+            $expiresAt
+        );
+
+        if ($result === null) {
+            return $this->jsonServerError("Failed to save registration");
+        }
+
+        // Send verification email
+        if (!sendTwoFactorEmail($email, $code))
+            return $this->jsonServerError("Email sending failed.");
+
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => 'Verification code sent to your email',
+            'email' => $email
+        ]);
+    }
+
+    public function verifyRegistration(Request $request, $parameters)
+    {
+        $email = $request->postParams['email'] ?? null;
+        $code  = $request->postParams['code']  ?? null;
+        $bypass = $request->postParams['bypass'] ?? false;
+
+        if (!$email || !$code) {
+            return $this->jsonBadRequest("Email and verification code required");
+        }
+
+        [$email] = Sanitiser::normaliseStrings([$email]);
+
+        // DEV MODE: Bypass verification if bypass flag is set or special code is used
+        if ($bypass === true || $code === 'BYPASS123') {
+            // Get pending registration data
+            $pendingUser = $this->pendingRegistrations->getPendingByEmail($email);
+            
+            if (!$pendingUser) {
+                return $this->jsonBadRequest("No pending registration found for this email");
+            }
+            
+            // Create user directly without code verification
+            $userId = $this->users->createUser(
+                $pendingUser['username'],
+                $pendingUser['displayname'], 
+                $pendingUser['email'],
+                $pendingUser['password_hash']
+            );
+            
+            if (!$userId) {
+                return $this->jsonServerError("Failed to create user");
+            }
+            
+            // Clean up pending registration
+            $this->pendingRegistrations->deletePending($email);
+            
+            return $this->jsonCreated([
+                'success' => true,
+                'message' => 'Account created successfully (dev bypass)',
+                'user_id' => $userId
+            ]);
+        }
+
+        // Normal verification flow
+        $result = $this->pendingRegistrations->verifyAndCreateUser($email, $code);
+
+        if (!$result['success']) {
+            return $this->jsonResponse([
+                'success' => false,
+                'error' => $result['error']
+            ], HttpStatusCode::BadRequest);
+        }
+
+        return $this->jsonCreated([
+            'success' => true,
+            'message' => 'Account created successfully',
+            'user_id' => $result['user_id']
+        ]);
     }
 
     public function deleteUser(Request $request, $parameters)
@@ -198,10 +320,15 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+
         $old = $request->postParams['oldPassword'] ?? null;
         $new = $request->postParams['newPassword'] ?? null;
         if ($old === null || $new === null) {
             return $this->jsonBadRequest("Both old and new passwords required");
+        }
+
+        if (!Validator::validatePassword($new)) {
+            return $this->jsonBadRequest("Invalid new password");
         }
         if (!password_verify($old, $user['password_hash'])) {
             return $this->jsonBadRequest("Invalid current password");
@@ -215,6 +342,45 @@ class UserController extends BaseController
             return $this->jsonServerError();
         }
         return $this->jsonSuccess(['message' => 'Password changed']);
+    }
+
+    public function changeEmail(Request $request, $parameters): Response
+    {
+        $id = $request->postParams['id'] ?? null;
+        if (!Validator::validateId($id)) {
+            return $this->jsonBadRequest("Invalid id");
+        }
+        $user = $this->users->getUserById((int)$id);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+
+        $old = $request->postParams['oldEmail'] ?? null;
+        $new = $request->postParams['newEmail'] ?? null;
+        if ($old === null || $new === null) {
+            return $this->jsonBadRequest("Both old and new emails required");
+        }
+
+        if (!Validator::validateEmail($new)) {
+            return $this->jsonBadRequest("Invalid new email");
+        }
+
+        if ($old === $new) {
+            return $this->jsonBadRequest("New Email must differ");
+        }
+
+        $updated = $this->users->updatePassword((int)$id, $new);
+        if ($updated === null) {
+            return $this->jsonServerError();
+        }
+        return $this->jsonSuccess(['message' => 'Email changed']);
+        // validate email
+        // validate new email
+        // verify old email
+        // update in db
     }
 
     // needs more validation (username email)
@@ -240,7 +406,7 @@ class UserController extends BaseController
         if ($errors) {
             return $this->jsonBadRequest(json_encode($errors));
         }
-        
+
         $displayName = $userName;
         [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
 
@@ -252,6 +418,7 @@ class UserController extends BaseController
         $updated = user_to_public($updated);
         return $this->jsonSuccess($updated);
     }
+
 
     public function uploadAvatar(Request $request, $parameters)
     {
@@ -312,4 +479,37 @@ class UserController extends BaseController
         }
         return $this->jsonSuccess(user_to_public($updated));
     }
+
+
+	//removes the jwt cookie when logging out (mert)
+	public function logout(Request $request, $parameters)
+	{
+		setcookie(
+			'jwt',
+			'',
+			[
+				'expires' => time() - 3600,
+				'path' => '/',
+				'httponly' => true,
+				'samesite' => 'Lax'
+			]
+		);
+
+		return $this->jsonSuccess(['message' => 'Logged out successfully']);
+	}
+
+	//for testing (mert)
+	public function getProtectedData(Request $request, $parameters)
+	{
+		// This endpoint requires JWT + 2FA verification
+		// If we reach here, user is fully authenticated
+		$userId = $request->user['user_id'] ?? null;
+
+		return $this->jsonSuccess([
+			'message' => 'You have access to protected content!',
+			'user_id' => $userId,
+			'two_factor_verified' => $request->user['two_factor_verified'] ?? false,
+			'timestamp' => date('Y-m-d H:i:s')
+		]);
+	}
 }
