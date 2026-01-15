@@ -363,6 +363,12 @@ class UserController extends BaseController
             return $this->jsonBadRequest("Both old and new emails required");
         }
 
+        [$new] = Sanitiser::normaliseStrings([$new]);
+
+        if ($this->users->getUserByEmail($new)) {
+            return $this->jsonConflict("Email already exists");
+        }
+
         if (!Validator::validateEmail($new)) {
             return $this->jsonBadRequest("Invalid new email");
         }
