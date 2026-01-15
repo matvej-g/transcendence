@@ -7,6 +7,8 @@ volumes:
     name: database
   avatars:
     name: avatars
+  vendor:
+    name: vendor
   # volume_frontend:
   #   name: frontend
 
@@ -20,7 +22,7 @@ services:
       - 8.8.4.4
     volumes: 
       - ./backend:/var/www/html
-      - /var/www/html/vendor  # Exclude vendor from mount
+      - vendor:/var/www/html/vendor  # Exclude vendor from mount
       - sqlite_data:/var/www/html/database
       - avatars:/var/www/html/uploads/avatars
     environment:
