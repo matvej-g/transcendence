@@ -27,7 +27,8 @@ function wireLoginButton() {
         log(`[UI] 2FA required, sending code...`);
         
         const twoFAResult = await apiCall('/api/auth/send-2fa', {
-          method: 'POST'
+          method: 'POST',
+          body: JSON.stringify({})
         });
         
         if (twoFAResult.ok && twoFAResult.data.success) {

@@ -54,7 +54,8 @@ async function toggle2FA(enable: boolean) {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({})  // Send empty JSON object
     });
     
     const data = await response.json();
