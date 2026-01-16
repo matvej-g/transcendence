@@ -164,6 +164,7 @@ window.addEventListener('hashchange', () => {
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   // Call logout endpoint to clear JWT cookie
   try {
+    setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
     await fetch('/api/user/logout', {
       method: 'POST',
       credentials: 'include'
@@ -171,9 +172,8 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   } catch (error) {
     console.error('Logout endpoint failed:', error);
   }
-  
+
   // mark user offline on server (best-effort)
-  setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
   clearCurrentUserId();
   clearCurrentUsername();
   window.location.hash = '#';
