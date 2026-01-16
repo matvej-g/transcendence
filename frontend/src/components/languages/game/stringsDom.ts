@@ -7,6 +7,7 @@ export type GameDomKey =
   | "play_vs_player"
   | "join_tournament"
   | "host_tournament"
+  | "exit_tournament"
   | "exit_game";
 
 export type GameDomStringsTableT = Record<GameDomKey, string>;
@@ -18,7 +19,8 @@ export const GameDomStrings: Record<Lang, GameDomStringsTableT> = {
     play_vs_player: "Play vs Player",
     join_tournament: "Join Tournament",
     host_tournament: "Host Tournament",
-    exit_game: "Exit game",
+    exit_tournament: "Exit Tournament",
+    exit_game: "Exit Game",
   },
   ru: {
     choose_game_mode: "Выбор режима игры",
@@ -26,6 +28,7 @@ export const GameDomStrings: Record<Lang, GameDomStringsTableT> = {
     play_vs_player: "Играть против игрока",
     join_tournament: "Присоединиться к турниру",
     host_tournament: "Создать турнир",
+    exit_tournament: "Выйти из турнир",
     exit_game: "Выйти из игры",
   },
   de: {
@@ -34,6 +37,7 @@ export const GameDomStrings: Record<Lang, GameDomStringsTableT> = {
 	play_vs_player: "Gegen Spieler spielen",
   join_tournament: "Turnier beitreten",
   host_tournament: "Turnier erstellen",
+  exit_tournament: "Turnier verlassen",
 	exit_game: "Spiel verlassen",
   },
 } as const satisfies Record<Lang, GameDomStringsTableT>;

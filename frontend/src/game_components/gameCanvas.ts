@@ -156,7 +156,6 @@ export class GameCanvas {
         const exitButton = document.getElementById('exitGameButton');
         container?.classList.remove('hidden');
         exitButton?.classList.remove('hidden');
-
         console.log('Game canvas visible');
     }
 
@@ -167,7 +166,6 @@ export class GameCanvas {
         const exitButton = document.getElementById('exitGameButton');
         container?.classList.add('hidden');
         exitButton?.classList.add('hidden');
-
         console.log('Game canvas hidden');
     }
 
@@ -192,17 +190,13 @@ export class GameCanvas {
     // Show countdown timer (3, 2, 1, GO!)
     public showCountdown(callback: () => void): void {
         if (!this.renderingContext || !this.canvas) return;
-
         let count = 3;
-
         const showNumber = () => {
             this.clear();
-
             this.renderingContext!.fillStyle = '#ffffff';
             this.renderingContext!.font = 'bold 120px Arial';
             this.renderingContext!.textAlign = 'center';
             this.renderingContext!.textBaseline = 'middle';
-
             if (count > 0) {
                 this.renderingContext!.fillText(
                     count.toString(),
@@ -216,9 +210,7 @@ export class GameCanvas {
                     this.canvas!.height / 2
                 );
             }
-
             count--;
-
             if (count >= 0) {
                 setTimeout(showNumber, 1000);
             } else {
@@ -227,7 +219,6 @@ export class GameCanvas {
                 }, 500);
             }
         };
-
         showNumber();
     }
 }
