@@ -1,11 +1,11 @@
-import { GameState, GameConfig, DEFAULT_CONFIG } from './gameEntities.js';
+import { GameState, GameConfig, DEFAULT_GAME_CONFIG } from './gameEntities.js';
 
 export class GameCanvas {
     private canvas: HTMLCanvasElement | null;
     private renderingContext: CanvasRenderingContext2D | null;
     private config: GameConfig;
 
-    constructor(canvasId: string = 'gameCanvas', config: GameConfig = DEFAULT_CONFIG) {
+    constructor(canvasId: string = 'gameCanvas', config: GameConfig = DEFAULT_GAME_CONFIG) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         this.renderingContext = this.canvas?.getContext('2d') || null;
         this.config = config;
@@ -24,8 +24,6 @@ export class GameCanvas {
         this.renderingContext.fillStyle = '#1a1a1a';
         this.renderingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
-
-
 
 	/*
 	* Drawing functions inside Canvas

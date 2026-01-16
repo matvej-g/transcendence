@@ -397,6 +397,10 @@ class GameServer implements MessageComponentInterface {
             $this->startLocalGame($player);
         } elseif ($gameMode === 'remote') {
             $this->startRemoteGame($player);
+        } else if ($gameMode === 'joinT') {
+            return;
+        } else if ($gameMode === 'hostT') {
+            return;
         }
     }
 
