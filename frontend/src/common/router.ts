@@ -157,6 +157,14 @@ window.addEventListener('hashchange', () => {
     return;
   }
   const section = hash.split('/')[0] || 'auth';
+  const isLoggedIn = getCurrentUserId();
+  // If trying to access a protected section and not logged in, redirect to login
+  const protectedSections = ['profile', 'game', 'friends', 'chat'];
+  if (protectedSections.includes(section) && !isLoggedIn) {
+    window.location.hash = '#auth';
+    showSection('auth');
+    return;
+  }
   showSection(section);
 });
 
@@ -187,10 +195,15 @@ document.getElementById('notfoundHomeBtn')?.addEventListener('click', () => {
 // Initial load
 const initialHash = window.location.hash.slice(1);
 const isLoggedIn = getCurrentUserId();
+const protectedSections = ['profile', 'game', 'friends', 'chat'];
+const initialSection = initialHash.split('/')[0] || 'auth';
 
 if (isLoggedIn) {
   window.location.hash = '#profile';
   showSection('profile');
+} else if (protectedSections.includes(initialSection)) {
+  window.location.hash = '#auth';
+  showSection('auth');
 } else if (initialHash.startsWith('settings/edit-username')) {
   showSection('settings');
 } else if (initialHash.startsWith('settings/upload-avatar')) {
@@ -200,6 +213,5 @@ if (isLoggedIn) {
 } else if (initialHash.startsWith('settings/change-email')) {
   showSection('settings');
 } else {
-  const initialSection = initialHash.split('/')[0] || 'auth';
   showSection(initialSection);
 }
