@@ -153,7 +153,9 @@ export class GameCanvas {
 	// Show game container
     public show(): void {
         const container = document.getElementById('gameContainer');
+        const exitButton = document.getElementById('exitGameButton');
         container?.classList.remove('hidden');
+        exitButton?.classList.remove('hidden');
 
         console.log('Game canvas visible');
     }
@@ -162,7 +164,9 @@ export class GameCanvas {
     // Hide game container
     public hide(): void {
         const container = document.getElementById('gameContainer');
+        const exitButton = document.getElementById('exitGameButton');
         container?.classList.add('hidden');
+        exitButton?.classList.add('hidden');
 
         console.log('Game canvas hidden');
     }
