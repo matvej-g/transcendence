@@ -52,8 +52,8 @@ if (form) {
 			}
 			const res = await changeEmail({ id: userId, oldEmail, newEmail });
 			console.log(res);
-			if (res && res.email === newEmail) {
-				alert("OK: Email set to " + newEmail);
+			if (res && res.message === "Email changed") {
+				alert("OK: Email changed.");
 				window.location.hash = '#profile';
 			} else if (res && res.message) {
 				if (errorDiv) errorDiv.textContent = res.message;
