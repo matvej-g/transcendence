@@ -1,4 +1,4 @@
-import { clearCurrentUserId, setUserOffline, clearCurrentUsername} from '../components/auth/authUtils.js';
+import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId} from '../components/auth/authUtils.js';
 import { initFriendsSection} from '../components/friends/friendsContent.js';
 import { initProfile } from '../components/profile/profile.js';
 
@@ -186,7 +186,12 @@ document.getElementById('notfoundHomeBtn')?.addEventListener('click', () => {
 
 // Initial load
 const initialHash = window.location.hash.slice(1);
-if (initialHash.startsWith('settings/edit-username')) {
+const isLoggedIn = getCurrentUserId();
+
+if (isLoggedIn) {
+  window.location.hash = '#profile';
+  showSection('profile');
+} else if (initialHash.startsWith('settings/edit-username')) {
   showSection('settings');
 } else if (initialHash.startsWith('settings/upload-avatar')) {
   showSection('settings');
