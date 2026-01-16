@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS user_status (
 	user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
 	online INTEGER NOT NULL DEFAULT 0,
 	last_seen DATETIME,
-	current_match_id INTEGER REFERENCES matches(id)
+	-- current_match_id INTEGER REFERENCES matches(id)
 );
 
 -- Tournament Data
