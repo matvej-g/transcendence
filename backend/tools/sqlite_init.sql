@@ -11,10 +11,21 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- remove these users later on because of password hash
 INSERT INTO users(username, displayname, email, password_hash)
-VALUES ('david', 'David', 'dhuss42@heilbron.de', 123);
-
+VALUES ('matt1', 'Matt1', 'user1@example.com', '$2y$10$Syhy6OYyxQBgv81khGkcCuQxEMQx24hEps8UFIZYf2aJqUptZRzfG');
 INSERT INTO users(username, displayname, email, password_hash)
-VALUES ('test', 'TEST', 'test42@test.de', 234);
+VALUES ('matt2', 'Matt2', 'user2@example.com', '$2y$10$Syhy6OYyxQBgv81khGkcCuQxEMQx24hEps8UFIZYf2aJqUptZRzfG');
+INSERT INTO users(username, displayname, email, password_hash)
+VALUES ('matt3', 'Matt3', 'user3@example.com', '$2y$10$Syhy6OYyxQBgv81khGkcCuQxEMQx24hEps8UFIZYf2aJqUptZRzfG');
+INSERT INTO users(username, displayname, email, password_hash)
+VALUES ('matt4', 'Matt4', 'user4@example.com', '$2y$10$Syhy6OYyxQBgv81khGkcCuQxEMQx24hEps8UFIZYf2aJqUptZRzfG');
+INSERT INTO users(username, displayname, email, password_hash)
+VALUES ('matt5', 'Matt5', 'user5@example.com', '$2y$10$Syhy6OYyxQBgv81khGkcCuQxEMQx24hEps8UFIZYf2aJqUptZRzfG');
+INSERT INTO users(username, displayname, email, password_hash)
+VALUES ('matt6', 'Matt6', 'user6@example.com', '$2y$10$Syhy6OYyxQBgv81khGkcCuQxEMQx24hEps8UFIZYf2aJqUptZRzfG');
+INSERT INTO users(username, displayname, email, password_hash)
+VALUES ('matt7', 'Matt7', 'user7@example.com', '$2y$10$Syhy6OYyxQBgv81khGkcCuQxEMQx24hEps8UFIZYf2aJqUptZRzfG');
+INSERT INTO users(username, displayname, email, password_hash)
+VALUES ('matt8', 'Matt8', 'user8@example.com', '$2y$10$Syhy6OYyxQBgv81khGkcCuQxEMQx24hEps8UFIZYf2aJqUptZRzfG');
 
 -- User presence / status
 CREATE TABLE IF NOT EXISTS user_status (

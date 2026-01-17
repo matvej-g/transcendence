@@ -1,11 +1,11 @@
-import { GameState, GameConfig, DEFAULT_CONFIG } from './gameEntities.js';
+import { GameState, GameConfig, DEFAULT_GAME_CONFIG } from './gameEntities.js';
 
 export class GameCanvas {
     private canvas: HTMLCanvasElement | null;
     private renderingContext: CanvasRenderingContext2D | null;
     private config: GameConfig;
 
-    constructor(canvasId: string = 'gameCanvas', config: GameConfig = DEFAULT_CONFIG) {
+    constructor(canvasId: string = 'gameCanvas', config: GameConfig = DEFAULT_GAME_CONFIG) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         this.renderingContext = this.canvas?.getContext('2d') || null;
         this.config = config;
@@ -25,8 +25,6 @@ export class GameCanvas {
         this.renderingContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-
-
 	/*
 	* Drawing functions inside Canvas
 	*/
@@ -40,7 +38,10 @@ export class GameCanvas {
 		this.drawPaddle(state.leftPaddle);
         this.drawPaddle(state.rightPaddle);
         this.drawBall(state.ball);
-        this.drawScore(state.leftPaddle.score ,state.rightPaddle.score);
+        this.drawScore(
+            state.leftPaddle.score, state.rightPaddle.score,
+            state.leftPlayerName, state.rightPlayerName
+        );
 	}
 
 	// Draw center Line
@@ -76,21 +77,38 @@ export class GameCanvas {
     }
 
     // draw Score
-    private drawScore(leftScore: number, rightScore: number): void {
+    private drawScore(leftScore: number, rightScore: number,
+        leftPlayerName?: string, rightPlayerName?: string
+    ): void {
         if (!this.renderingContext || !this.canvas) return;
 
         this.renderingContext.fillStyle = '#ffffff';
-        this.renderingContext.font = '48px Arial';
         this.renderingContext.textAlign = 'center';
         this.renderingContext.textBaseline = 'top';
 
+        //draw Player Names
+        this.renderingContext.font = '12px Arial';
+        if (leftPlayerName) {
+            this.renderingContext.fillText(
+                leftPlayerName,
+                this.canvas.width / 4,
+                10
+            );
+        }
+        if (rightPlayerName) {
+            this.renderingContext.fillText(
+                rightPlayerName,
+                (this.canvas.width * 3) / 4,
+                10
+            );
+        }
+        this.renderingContext.font = '24px Arial';
         // Left score
         this.renderingContext.fillText(
             leftScore.toString(),
             this.canvas.width / 4,
             30
         );
-
         // Right score
         this.renderingContext.fillText(
             rightScore.toString(),
@@ -133,8 +151,9 @@ export class GameCanvas {
 	// Show game container
     public show(): void {
         const container = document.getElementById('gameContainer');
+        const exitButton = document.getElementById('exitGameButton');
         container?.classList.remove('hidden');
-
+        exitButton?.classList.remove('hidden');
         console.log('Game canvas visible');
     }
 
@@ -142,8 +161,9 @@ export class GameCanvas {
     // Hide game container
     public hide(): void {
         const container = document.getElementById('gameContainer');
+        const exitButton = document.getElementById('exitGameButton');
         container?.classList.add('hidden');
-
+        exitButton?.classList.add('hidden');
         console.log('Game canvas hidden');
     }
 
@@ -168,17 +188,13 @@ export class GameCanvas {
     // Show countdown timer (3, 2, 1, GO!)
     public showCountdown(callback: () => void): void {
         if (!this.renderingContext || !this.canvas) return;
-
         let count = 3;
-
         const showNumber = () => {
             this.clear();
-
             this.renderingContext!.fillStyle = '#ffffff';
             this.renderingContext!.font = 'bold 120px Arial';
             this.renderingContext!.textAlign = 'center';
             this.renderingContext!.textBaseline = 'middle';
-
             if (count > 0) {
                 this.renderingContext!.fillText(
                     count.toString(),
@@ -192,9 +208,7 @@ export class GameCanvas {
                     this.canvas!.height / 2
                 );
             }
-
             count--;
-
             if (count >= 0) {
                 setTimeout(showNumber, 1000);
             } else {
@@ -203,7 +217,6 @@ export class GameCanvas {
                 }, 500);
             }
         };
-
         showNumber();
     }
 }
