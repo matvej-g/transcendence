@@ -1,3 +1,9 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+	const temp = document.createElement('div');
+	temp.textContent = str;
+	return temp.innerHTML;
+}
 // Extend Window interface for __profileReload (must match router.ts)
 
 import { updateUser } from "./api.js";
@@ -51,14 +57,14 @@ if (form) {
 				window.__profileReload = { username: true, matchHistory: true };
 				window.location.hash = '#profile';
 			} else if (res && res.message) {
-				if (errorDiv) errorDiv.textContent = res.message;
+				if (errorDiv) errorDiv.textContent = sanitizeString(res.message);
 			} else if (res && res.error) {
-				if (errorDiv) errorDiv.textContent = res.error;
+				if (errorDiv) errorDiv.textContent = sanitizeString(res.error);
 			} else {
 				if (errorDiv) errorDiv.textContent = 'Failed to update username.';
 			}
 		} catch (err: any) {
-			if (errorDiv) errorDiv.textContent = err?.message || 'Error updating username.';
+			if (errorDiv) errorDiv.textContent = sanitizeString(err?.message || 'Error updating username.');
 		}
 	});
 }

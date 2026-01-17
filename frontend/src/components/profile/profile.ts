@@ -1,3 +1,9 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+}
 // initProfile is declared with async, meaning it runs asynchronously and automatically returns
 // a Promise<void>. The function body can use await to pause until async work completes.
 
@@ -16,7 +22,7 @@ export async function reloadUsername(): Promise<void> {
     const data = await getUserByUserId(userId);
     const username = data?.displayname ?? null;
     if (!username) return;
-    document.getElementById('username')!.textContent = `${username}`;
+    document.getElementById('username')!.textContent = sanitizeString(`${username}`);
   } catch (e) {
     console.warn('[profile] reloadUsername error', e);
   }
@@ -32,7 +38,8 @@ export async function reloadAvatar(): Promise<void> {
     if (avatarImg) {
       const avatarFilename = data?.avatar_filename;
       if (avatarFilename) {
-        avatarImg.src = `/uploads/avatars/${avatarFilename}`;
+        // Use encodeURIComponent to prevent injection and ensure safe URLs
+        avatarImg.src = `/uploads/avatars/${encodeURIComponent(avatarFilename || '')}`;
       } else {
         avatarImg.src = '';
         console.error('avatar filename not found');

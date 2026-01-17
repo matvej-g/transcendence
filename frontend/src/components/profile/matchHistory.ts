@@ -1,3 +1,9 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+}
 
 import { getCurrentUserId } from '../auth/authUtils.js';
 import { getMatches } from './api.js';
@@ -34,11 +40,11 @@ export async function renderMatchHistory(): Promise<void> {
     const li = document.createElement('li');
     li.className = 'match-item w-full flex justify-between py-1';
     li.innerHTML = `
-      <div class="date-time text-emerald-400 flex w-[50%]">${date}</div>
+      <div class="date-time text-emerald-400 flex w-[50%]">${sanitizeString(date)}</div>
       <div class="match-middle flex gap-4 w-[50%] mx-5">
-        <div class="truncate">${trunc(playerUsername)}</div>
+        <div class="truncate">${sanitizeString(trunc(playerUsername))}</div>
         <div>:</div>
-        <div class="truncate">${trunc(opponentUsername)}</div>
+        <div class="truncate">${sanitizeString(trunc(opponentUsername))}</div>
       </div>
       <div class="text-emerald-400">${playerScore}:${opponentScore}</div>
     `;
