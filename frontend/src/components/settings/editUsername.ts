@@ -1,7 +1,7 @@
+// Extend Window interface for __profileReload (must match router.ts)
 
 import { updateUser } from "./api.js";
 import { getCurrentUserId, setCurrentUsername } from '../auth/authUtils.js';
-import { reloadUsername, reloadMatchHistory } from "../profile/profile.js";
 
 // Elements
 const modal = document.getElementById('settings-edit-username');
@@ -10,10 +10,10 @@ const input = document.getElementById('new-username') as HTMLInputElement | null
 const errorDiv = document.getElementById('edit-username-error');
 const cancelBtn = document.getElementById('cancel-edit-username');
 
-// Listen for hash change to open modal
+// Listen for hash change to open modal (focus input only)
 window.addEventListener('hashchange', () => {
 	if (window.location.hash === '#settings/edit-username') {
-		if (input) input.focus(); //puts cursor into input field
+		if (input) input.focus(); // puts cursor into input field
 		if (errorDiv) errorDiv.textContent = '';
 	}
 });
@@ -46,13 +46,10 @@ if (form) {
 			console.log(res);
 			if (res && res.displayname === newUsername) {
 				setCurrentUsername(newUsername);
-				alert("OK: Username set to " + newUsername);
+				alert("OK: Username has been changed.");
+				// Set reload flag for profile page
+				window.__profileReload = { username: true, matchHistory: true };
 				window.location.hash = '#profile';
-				// Wait for hash navigation, then refresh profile
-				setTimeout(() => {
-					reloadUsername();
-					reloadMatchHistory();
-				}, 100);
 			} else if (res && res.message) {
 				if (errorDiv) errorDiv.textContent = res.message;
 			} else if (res && res.error) {

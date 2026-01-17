@@ -1,6 +1,6 @@
 import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId} from '../components/auth/authUtils.js';
 import { initFriendsSection} from '../components/friends/friendsContent.js';
-import { initProfile } from '../components/profile/profile.js';
+import { initProfile, reloadUsername, reloadAvatar, reloadMatchHistory, reloadStats } from '../components/profile/profile.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
@@ -134,7 +134,7 @@ function showSection(sectionId: string): void {
 // Handle hash navigation
 
 
-window.addEventListener('hashchange', () => {
+window.addEventListener('hashchange', async () => {
   const hash = window.location.hash.slice(1);
   // Special case: settings/edit-username
   if (hash.startsWith('settings/edit-username')) {
@@ -166,6 +166,16 @@ window.addEventListener('hashchange', () => {
     return;
   }
   showSection(section);
+
+  // Handle selective profile reloads
+  if (section === 'profile' && window.__profileReload) {
+    const reload = window.__profileReload;
+    if (reload.username) await reloadUsername();
+    if (reload.avatar) await reloadAvatar();
+    if (reload.matchHistory) await reloadMatchHistory();
+    if (reload.stats) await reloadStats();
+    window.__profileReload = null;
+  }
 });
 
 // Logout button

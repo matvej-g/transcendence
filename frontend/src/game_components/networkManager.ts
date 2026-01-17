@@ -4,7 +4,7 @@ import { reloadMatchHistory, reloadStats } from "../components/profile/profile.j
 
 export class NetworkManager {
 	private canvas: GameCanvas;
-	private localGameState: GameState; 
+	private localGameState: GameState;
 	private socket: WebSocket | null = null;
 	private roomId: string | null = null;
 	private playerRole: 'left' | 'right' | null = null;
@@ -60,11 +60,11 @@ export class NetworkManager {
 
 	private onConnected(): void {
 		console.log('Connected to server!');
-		
+
 		// send authenticate message to server
 		this.send({
 			type: 'authenticate',
-			data: { 
+			data: {
 				userID: this.userId
 			}
 		});
@@ -83,7 +83,7 @@ export class NetworkManager {
 				});
 				this.canvas.show();
 				break;
-			
+
 			case 'matchFound':
 				console.log('Match found!');
 				this.canvas.clear();
@@ -112,16 +112,14 @@ export class NetworkManager {
 				console.log('Winner received:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
-				reloadStats();
-				reloadMatchHistory();
+				window.__profileReload = { stats: true, matchHistory: true };
 				break;
 
 			case 'opponentDisconnected':
 				console.log('Opponent disconnected:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
-				reloadStats();
-				reloadMatchHistory();
+				window.__profileReload = { stats: true, matchHistory: true };
 				break;
 			case 'alreadyInGame':
 				alert(message.data.message);

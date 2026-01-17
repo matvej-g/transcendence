@@ -43,10 +43,9 @@ if (uploadAvatarForm) {
 			if (uploadAvatarError) uploadAvatarError.textContent = '';
 			const result = await uploadAvatar(userId, file);
 			if (result && (result.success || result.avatar_filename)) {
+				alert("OK: Uploaded avatar.");
+				window.__profileReload = { avatar: true };
 				window.location.hash = '#profile';
-				setTimeout(() => {
-					reloadAvatar();
-				}, 100);
 			} else {
 				if (uploadAvatarError) uploadAvatarError.textContent = result?.error || 'Upload failed.';
 			}
