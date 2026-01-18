@@ -11,8 +11,10 @@ use src\controllers\UserStatusController;
 
 //mert
 use src\controllers\AuthController;
+use src\controllers\OAuthController;
 use src\middleware\AuthMiddleware;
 use src\middleware\Require2FAMiddleware;
+
 
 // users (public: registration & login)
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
@@ -65,6 +67,10 @@ $this->router->get('/api/tournament/match/{id}', [TournamentMatchesController::c
 $this->router->post('/api/tournament/match/new', [TournamentMatchesController::class, 'newTournamentMatch'], [Require2FAMiddleware::class]);
 $this->router->patch('/api/tournament/match/{id}', [TournamentMatchesController::class, 'updateTournamentMatch'], [Require2FAMiddleware::class]);
 $this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController::class, 'deleteTournamentMatch'], [Require2FAMiddleware::class]);
+
+// OAuth routes (public)
+$this->router->get('/api/auth/google', [OAuthController::class, 'redirectToGoogle']);
+$this->router->get('/api/auth/google/callback', [OAuthController::class, 'handleGoogleCallback']);
 
 // 2FA authentication routes
 $this->router->post('/api/auth/send-2fa', [AuthController::class, 'sendTwoFactorCode'], [AuthMiddleware::class]);
