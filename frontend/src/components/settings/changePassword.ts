@@ -8,6 +8,78 @@ const newPasswordInput = document.getElementById('new-password') as HTMLInputEle
 const changePasswordError = document.getElementById('change-password-error');
 const cancelChangePasswordBtn = document.getElementById('cancel-change-password');
 
+// Check if user is Google OAuth user
+window.addEventListener('hashchange', async () => {
+  if (window.location.hash === '#settings/change-password') {
+    const userId = getCurrentUserId();
+    if (userId) {
+      try {
+        const res = await fetch(`/api/user/${userId}`, { credentials: 'include' });
+        const userData = await res.json();
+        const user = userData?.user || userData;
+        
+        if (user?.oauth_id) {
+          // User is logged in with Google - show warning and disable form
+          if (changePasswordError) {
+            changePasswordError.innerHTML = `
+              ⚠️ <strong>Cannot change password for Google accounts.</strong><br>
+              Your password is managed by Google.<br><br>
+              <button onclick="window.location.hash='#profile'" 
+                      style="background: #10b981; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold;">
+                ← Back to Profile
+              </button>
+            `;
+            changePasswordError.style.color = '#f59e0b';
+            changePasswordError.style.marginBottom = '16px';
+          }
+          // Disable form inputs
+          if (oldPasswordInput) {
+            oldPasswordInput.disabled = true;
+            oldPasswordInput.style.opacity = '0.5';
+            oldPasswordInput.style.cursor = 'not-allowed';
+          }
+          if (newPasswordInput) {
+            newPasswordInput.disabled = true;
+            newPasswordInput.style.opacity = '0.5';
+            newPasswordInput.style.cursor = 'not-allowed';
+          }
+          // Disable submit button
+          const submitBtn = changePasswordForm?.querySelector('button[type="submit"]') as HTMLButtonElement;
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            submitBtn.style.cursor = 'not-allowed';
+          }
+        } else {
+          // Regular user - enable everything
+          if (changePasswordError) {
+            changePasswordError.textContent = '';
+            changePasswordError.style.marginBottom = '';
+          }
+          if (oldPasswordInput) {
+            oldPasswordInput.disabled = false;
+            oldPasswordInput.style.opacity = '1';
+            oldPasswordInput.style.cursor = 'text';
+          }
+          if (newPasswordInput) {
+            newPasswordInput.disabled = false;
+            newPasswordInput.style.opacity = '1';
+            newPasswordInput.style.cursor = 'text';
+          }
+          const submitBtn = changePasswordForm?.querySelector('button[type="submit"]') as HTMLButtonElement;
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check OAuth status:', err);
+      }
+    }
+  }
+});
+
 if (cancelChangePasswordBtn && changePasswordModal) {
   cancelChangePasswordBtn.addEventListener('click', () => {
     window.location.hash = '#profile';
