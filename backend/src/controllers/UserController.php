@@ -153,6 +153,12 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
+
+        // Check if this is a Google OAuth user (no password)
+        if ($user['password_hash'] === null) {
+            return $this->jsonBadRequest("This account uses Google login. Please sign in with Google.");
+        }
+
         if (!password_verify($password, $user['password_hash'])) {
             return $this->jsonUnauthorized("Invalid password");
         }
@@ -321,6 +327,11 @@ class UserController extends BaseController
             return $this->jsonNotFound("User not found");
         }
 
+        // Prevent Google OAuth users from changing password
+        if ($user['password_hash'] === null) {
+            return $this->jsonBadRequest("Cannot change password for Google accounts. Password is managed by Google.");
+        }
+
         $old = $request->postParams['oldPassword'] ?? null;
         $new = $request->postParams['newPassword'] ?? null;
         if ($old === null || $new === null) {
@@ -400,6 +411,16 @@ class UserController extends BaseController
         $errors = Validator::validateUpdateUserData($userName, $email, $password);
         if ($errors) {
             return $this->jsonBadRequest(json_encode($errors));
+        }
+
+        $isGoogleUser = $existing['oauth_id'] !== null;
+
+        if ($isGoogleUser && $password !== null) {
+            return $this->jsonBadRequest("Cannot set password for Google accounts. Use Google to sign in.");
+        }
+
+        if ($isGoogleUser && $email !== $existing['email']) {
+            return $this->jsonBadRequest("Cannot change email for Google accounts. Email is managed by Google.");
         }
 
         $displayName = $userName;
