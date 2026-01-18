@@ -1,12 +1,23 @@
+import { getCurrentUserId } from '../auth/authUtils.js';
 
 const toggleBtn = document.getElementById('dropdown-toggle-2fa');
 
 // Track current 2FA state
 let currentlyEnabled = false;
+let isOAuthUser = false;
 
 // Fetch current 2FA status on page load
 async function load2FAStatus() {
   try {
+    // Check if user is OAuth user
+    const userId = getCurrentUserId();
+    if (userId) {
+      const userRes = await fetch(`/api/user/${userId}`, { credentials: 'include' });
+      const userData = await userRes.json();
+      const user = userData?.user || userData;
+      isOAuthUser = !!user?.oauth_id;
+    }
+    
     const response = await fetch('/api/auth/2fa/status', {
       method: 'GET',
       credentials: 'include'
@@ -92,6 +103,12 @@ if (toggleBtn) {
   }
   
   toggleBtn.addEventListener('click', async () => {
+    // Check if user is OAuth user
+    if (isOAuthUser) {
+      alert('Two-factor authentication is not available for Google accounts. Your account is already secured by Google.');
+      return;
+    }
+    
     // Toggle the state
     currentlyEnabled = !currentlyEnabled;
     
