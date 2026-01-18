@@ -1,3 +1,9 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+	const temp = document.createElement('div');
+	temp.textContent = str;
+	return temp.innerHTML;
+}
 // import { updateEmail } from "./api.js";
 import { getCurrentUserId } from '../auth/authUtils.js';
 import { changeEmail } from './api.js';
@@ -52,18 +58,18 @@ if (form) {
 			}
 			const res = await changeEmail({ id: userId, oldEmail, newEmail });
 			console.log(res);
-			if (res && res.email === newEmail) {
-				alert("OK: Email set to " + newEmail);
+			if (res && res.message === "Email changed") {
+				alert("OK: Email changed.");
 				window.location.hash = '#profile';
 			} else if (res && res.message) {
-				if (errorDiv) errorDiv.textContent = res.message;
+				if (errorDiv) errorDiv.textContent = sanitizeString(res.message);
 			} else if (res && res.error) {
-				if (errorDiv) errorDiv.textContent = res.error;
+				if (errorDiv) errorDiv.textContent = sanitizeString(res.error);
 			} else {
 				if (errorDiv) errorDiv.textContent = 'Failed to update email.';
 			}
 		} catch (err: any) {
-			if (errorDiv) errorDiv.textContent = err?.message || 'Error updating username.';
+			if (errorDiv) errorDiv.textContent = sanitizeString(err?.message) || 'Error updating username.';
 		}
 	});
 }

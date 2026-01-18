@@ -68,8 +68,8 @@ class MatchesController extends BaseController
                 return $this->jsonServerError();
             }
 
-            $match["player_one_username"] = $player_one["username"];
-            $match["player_two_username"] = $player_two["username"];
+            $match["player_one_displayname"] = $player_one["displayname"];
+            $match["player_two_displayname"] = $player_two["displayname"];
         }
         return $this->jsonSuccess($all);
     }

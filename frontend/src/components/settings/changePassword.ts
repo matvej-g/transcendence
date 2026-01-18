@@ -1,3 +1,9 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+}
 import { changePassword } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 
@@ -36,10 +42,10 @@ if (changePasswordForm) {
 		alert("OK: Changed password.");
         window.location.hash = '#profile';
       } else {
-        if (changePasswordError) changePasswordError.textContent = result?.error || 'Change failed.';
+        if (changePasswordError) changePasswordError.textContent = sanitizeString(result?.error || 'Change failed.');
       }
     } catch (err: any) {
-      if (changePasswordError) changePasswordError.textContent = err?.message || 'Change failed.';
+      if (changePasswordError) changePasswordError.textContent = sanitizeString(err?.message || 'Change failed.');
     }
   });
 }

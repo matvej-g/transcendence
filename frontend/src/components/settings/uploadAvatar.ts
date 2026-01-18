@@ -1,3 +1,9 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+	const temp = document.createElement('div');
+	temp.textContent = str;
+	return temp.innerHTML;
+}
 import { uploadAvatar } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import { reloadAvatar } from '../profile/profile.js';
@@ -43,15 +49,14 @@ if (uploadAvatarForm) {
 			if (uploadAvatarError) uploadAvatarError.textContent = '';
 			const result = await uploadAvatar(userId, file);
 			if (result && (result.success || result.avatar_filename)) {
+				alert("OK: Uploaded avatar.");
+				window.__profileReload = { avatar: true };
 				window.location.hash = '#profile';
-				setTimeout(() => {
-					reloadAvatar();
-				}, 100);
 			} else {
-				if (uploadAvatarError) uploadAvatarError.textContent = result?.error || 'Upload failed.';
+				if (uploadAvatarError) uploadAvatarError.textContent = result?.error ? sanitizeString(result.error) : 'Upload failed.';
 			}
 		} catch (err: any) {
-			if (uploadAvatarError) uploadAvatarError.textContent = err?.message || 'Upload failed.';
+			if (uploadAvatarError) uploadAvatarError.textContent = err?.message ? sanitizeString(err.message) : 'Upload failed.';
 		}
 	});
 }

@@ -1,3 +1,10 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+  // Remove any HTML tags and encode special characters
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+}
 
 import { getUserByUserId, getUserByUsername } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
@@ -59,10 +66,10 @@ function handleSearchButtonClick() {
         addFriendBtn.classList.add('hidden');
         return;
       }
-      searchResultNickname.textContent = foundDisplayname;
+      searchResultNickname.textContent = sanitizeString(foundDisplayname);
       searchInput.value = "";
       if (user.avatar_filename && searchResultAvatar)
-        searchResultAvatar.src = `/uploads/avatars/${user.avatar_filename}`;
+        searchResultAvatar.src = `/uploads/avatars/${encodeURIComponent(user.avatar_filename)}`;
       searchResultUser.classList.remove('hidden');
       addFriendBtn.classList.remove('hidden');
     } catch (err) {

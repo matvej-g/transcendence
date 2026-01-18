@@ -1,6 +1,6 @@
-import { clearCurrentUserId, setUserOffline, clearCurrentUsername} from '../components/auth/authUtils.js';
+import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId} from '../components/auth/authUtils.js';
 import { initFriendsSection} from '../components/friends/friendsContent.js';
-import { initProfile } from '../components/profile/profile.js';
+import { initProfile, reloadUsername, reloadAvatar, reloadMatchHistory, reloadStats } from '../components/profile/profile.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
@@ -134,7 +134,7 @@ function showSection(sectionId: string): void {
 // Handle hash navigation
 
 
-window.addEventListener('hashchange', () => {
+window.addEventListener('hashchange', async () => {
   const hash = window.location.hash.slice(1);
   // Special case: settings/edit-username
   if (hash.startsWith('settings/edit-username')) {
@@ -157,13 +157,32 @@ window.addEventListener('hashchange', () => {
     return;
   }
   const section = hash.split('/')[0] || 'auth';
+  const isLoggedIn = getCurrentUserId();
+  // If trying to access a protected section and not logged in, redirect to login
+  const protectedSections = ['profile', 'game', 'friends', 'chat'];
+  if (protectedSections.includes(section) && !isLoggedIn) {
+    window.location.hash = '#auth';
+    showSection('auth');
+    return;
+  }
   showSection(section);
+
+  // Handle selective profile reloads
+  if (section === 'profile' && window.__profileReload) {
+    const reload = window.__profileReload;
+    if (reload.username) await reloadUsername();
+    if (reload.avatar) await reloadAvatar();
+    if (reload.matchHistory) await reloadMatchHistory();
+    if (reload.stats) await reloadStats();
+    window.__profileReload = null;
+  }
 });
 
 // Logout button
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   // Call logout endpoint to clear JWT cookie
   try {
+    setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
     await fetch('/api/user/logout', {
       method: 'POST',
       credentials: 'include'
@@ -171,9 +190,8 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   } catch (error) {
     console.error('Logout endpoint failed:', error);
   }
-  
+
   // mark user offline on server (best-effort)
-  setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
   clearCurrentUserId();
   clearCurrentUsername();
   window.location.hash = '#';
@@ -186,7 +204,17 @@ document.getElementById('notfoundHomeBtn')?.addEventListener('click', () => {
 
 // Initial load
 const initialHash = window.location.hash.slice(1);
-if (initialHash.startsWith('settings/edit-username')) {
+const isLoggedIn = getCurrentUserId();
+const protectedSections = ['profile', 'game', 'friends', 'chat'];
+const initialSection = initialHash.split('/')[0] || 'auth';
+
+if (isLoggedIn) {
+  window.location.hash = '#profile';
+  showSection('profile');
+} else if (protectedSections.includes(initialSection)) {
+  window.location.hash = '#auth';
+  showSection('auth');
+} else if (initialHash.startsWith('settings/edit-username')) {
   showSection('settings');
 } else if (initialHash.startsWith('settings/upload-avatar')) {
   showSection('settings');
@@ -195,6 +223,5 @@ if (initialHash.startsWith('settings/edit-username')) {
 } else if (initialHash.startsWith('settings/change-email')) {
   showSection('settings');
 } else {
-  const initialSection = initialHash.split('/')[0] || 'auth';
   showSection(initialSection);
 }
