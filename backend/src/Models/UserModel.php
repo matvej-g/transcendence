@@ -199,7 +199,6 @@ class UserModel {
 		}
 	}
 
-	// Enable 2FA for a user
 	public function enable2FA($userId)
 	{
 		try {
@@ -213,7 +212,6 @@ class UserModel {
 		}
 	}
 
-	// Disable 2FA for a user
 	public function disable2FA($userId)
 	{
 		try {
@@ -227,7 +225,6 @@ class UserModel {
 		}
 	}
 
-	// Check if 2FA is enabled for a user
 	public function is2FAEnabled($userId)
 	{
 		try {
@@ -240,6 +237,38 @@ class UserModel {
 		}
 		catch (\PDOException $e) {
 			return false;
+		}
+	}
+
+	// OAuth Methods (mert)
+	public function getUserByGoogleId($googleId) {
+		try {
+			return $this->db->query(
+				"SELECT * FROM users WHERE oauth_id = ?",
+				[$googleId]
+			)->fetch(PDO::FETCH_ASSOC);
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	public function createGoogleUser($userName, $displayName, $email, $googleId): ?array {
+		try {
+			// Insert Google OAuth user
+			$this->db->query(
+				"INSERT INTO users (username, displayname, email, oauth_id, password_hash) 
+				VALUES (?, ?, ?, ?, NULL)", 
+				[$userName, $displayName, $email, $googleId]
+			);
+			
+			$userId = $this->db->connection->lastInsertId();
+
+			return $this->getUserById($userId);
+		}
+		catch (\PDOException $e) {
+			error_log("Error creating Google user: " . $e->getMessage());
+			return null;
 		}
 	}
 }
