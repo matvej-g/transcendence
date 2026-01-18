@@ -11,6 +11,11 @@ async function load2FAStatus() {
   try {
     // Check if user is OAuth user
     const userId = getCurrentUserId();
+    
+    if (!userId) {
+      return;
+    }
+    
     if (userId) {
       const userRes = await fetch(`/api/user/${userId}`, { credentials: 'include' });
       const userData = await userRes.json();
