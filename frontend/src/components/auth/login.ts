@@ -57,3 +57,32 @@ export async function loginHandle(username: string, password: string): Promise<L
     return { ok: false, error: 'NETWORK_ERROR' };
   }
 }
+
+export async function handleGoogleLogin(): Promise<void> {
+  console.log('[TS] handleGoogleLogin → starting Google OAuth flow');
+  
+  try {
+    // Get Google auth URL from backend
+    const res = await fetch('/api/auth/google', {
+      method: 'GET'
+    });
+
+    if (!res.ok) {
+      console.error('[TS] handleGoogleLogin → failed to get auth URL', res.status);
+      throw new Error('Failed to initialize Google login');
+    }
+
+    const data = await res.json();
+    console.log('[TS] handleGoogleLogin → received auth URL');
+
+    // Redirect to Google
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error('No auth URL received from backend');
+    }
+  } catch (e) {
+    console.error('[TS] handleGoogleLogin → exception', e);
+    alert('Failed to start Google login. Please try again.');
+  }
+}
