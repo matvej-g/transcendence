@@ -9,11 +9,68 @@ const input = document.getElementById('new-email') as HTMLInputElement | null;
 const errorDiv = document.getElementById('change-email-error');
 const cancelBtn = document.getElementById('cancel-change-email');
 
-// Listen for hash change to open modal
-window.addEventListener('hashchange', () => {
+window.addEventListener('hashchange', async () => {
 	if (window.location.hash === '#settings/change-email') {
-		if (input) input.focus(); //puts cursor into input field
 		if (errorDiv) errorDiv.textContent = '';
+		
+		// Check if user is Google OAuth user
+		const userId = getCurrentUserId();
+		if (userId) {
+			try {
+				const res = await fetch(`/api/user/${userId}`, { credentials: 'include' });
+				const userData = await res.json();
+				const user = userData?.user || userData;
+				
+				if (user?.oauth_id) {
+					// User is logged in with Google - show warning and disable form
+					if (errorDiv) {
+						errorDiv.innerHTML = `
+							⚠️ <strong>Cannot change email for Google accounts.</strong><br>
+							Your email is managed by Google.<br><br>
+							<button onclick="window.location.hash='#profile'" 
+									style="background: #10b981; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold;">
+								← Back to Profile
+							</button>
+						`;
+						errorDiv.style.color = '#f59e0b';
+						errorDiv.style.marginBottom = '16px';
+					}
+					// Disable form inputs
+					if (input) {
+						input.disabled = true;
+						input.style.opacity = '0.5';
+						input.style.cursor = 'not-allowed';
+					}
+					// Disable submit button
+					const submitBtn = form?.querySelector('button[type="submit"]') as HTMLButtonElement;
+					if (submitBtn) {
+						submitBtn.disabled = true;
+						submitBtn.style.opacity = '0.5';
+						submitBtn.style.cursor = 'not-allowed';
+					}
+				} else {
+					// Regular user - enable everything
+					if (errorDiv) {
+						errorDiv.textContent = '';
+						errorDiv.style.marginBottom = '';
+					}
+					if (input) {
+						input.disabled = false;
+						input.style.opacity = '1';
+						input.style.cursor = 'text';
+						input.focus();
+					}
+					const submitBtn = form?.querySelector('button[type="submit"]') as HTMLButtonElement;
+					if (submitBtn) {
+						submitBtn.disabled = false;
+						submitBtn.style.opacity = '1';
+						submitBtn.style.cursor = 'pointer';
+					}
+				}
+			} catch (err) {
+				console.error('Failed to check OAuth status:', err);
+			}
+		}
 	}
 });
 
