@@ -8,6 +8,19 @@ import { getFriends, blockUser, getUserStatus } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type { FriendRequest } from '../../common/types.js';
 import { t } from '../languages/i18n.js';
+import { appWs } from '../../ws/appWs.js';
+
+// Listen for friend request websocket events and refresh the list
+appWs.on((ev) => {
+	if (ev.type === 'friend.request.accepted') {
+		const currentUserId = getCurrentUserId();
+		// Only refresh if the current user is the recipient
+		if (currentUserId && String(ev.data?.toUserId) === String(currentUserId)) {
+			alert('your friend request was accepted');
+			populateFriendsList();
+		}
+	}
+});
 
 async function createFriendItem(friend: FriendRequest) {
 	const li = document.createElement('li');

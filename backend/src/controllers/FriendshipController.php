@@ -351,6 +351,8 @@ class FriendshipController extends BaseController
                     return $this->jsonServerError();
                 }
             }
+            // Notify both users about the block
+            $this->notifier->friendRequestBlocked($blockerId, $blockedId);
         }
         return $this->jsonCreated(['id' => (int)$blockedRelation]);
     }

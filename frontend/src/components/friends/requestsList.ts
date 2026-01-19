@@ -4,10 +4,28 @@ function sanitizeString(str: string): string {
 	temp.textContent = str;
 	return temp.innerHTML;
 }
+
 import { getFriends, updateFriendStatus, blockUser, declineFriendRequest } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
-import type {FriendRequest} from '../../common/types.js'
+import type { FriendRequest } from '../../common/types.js';
 import { t } from '../languages/i18n.js';
+import { appWs } from '../../ws/appWs.js';
+
+// Listen for friend request websocket events and refresh the list
+appWs.on((ev) => {
+	if (ev.type === 'friend.request.created' || ev.type === 'friend-request.rejected') {
+		const currentUserId = getCurrentUserId();
+		// Only refresh if the current user is the recipient
+		if (currentUserId && String(ev.data?.toUserId) === String(currentUserId)) {
+			if(ev.type === 'friend-request.rejected')
+				alert('Your friend request was rejected');
+			else {
+				alert('You received a friend request.');
+				populateRequestsList();
+			}
+		}
+	}
+});
 
 
 import { populateFriendsList } from './friendsList.js';
