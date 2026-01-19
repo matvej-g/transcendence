@@ -8,18 +8,22 @@ use src\Models\FriendshipModel;
 use src\Models\UserModel;
 use src\Models\BlockModel;
 use src\Validator;
+use src\Services\MessagingNotifier;
+use src\app_ws\RedisPublisher;
 
 class FriendshipController extends BaseController
 {
     private FriendshipModel $friendships;
     private UserModel $users;
     private BlockModel $blocks;
+	private MessagingNotifier $notifier;
 
     public function __construct(Database $db)
     {
         $this->friendships = new FriendshipModel($db);
         $this->users       = new UserModel($db);
         $this->blocks      = new BlockModel($db);
+		$this->notifier = new MessagingNotifier(new RedisPublisher());
     }
 
     /*-------------------------------------------------------*/
@@ -102,6 +106,7 @@ class FriendshipController extends BaseController
         return $this->jsonSuccess($result);
     }
 
+	// note: handles both sending new requests and accepting existing ones
     public function sendRequest(Request $request, $parameters)
     {
         // validate current user id
@@ -144,6 +149,14 @@ class FriendshipController extends BaseController
                 if ($accepted === null) {
                     return $this->jsonServerError();
                 }
+
+                // WS notify: request accept
+                $this->notifier->friendRequestAccepted(
+                    (int)$accepted['id'],
+                    $userId,
+                    $friendId
+                );
+
                 return $this->jsonCreated(['id' => (int)$accepted['id']]);
             } else if ($status === 'pending') {
                 return $this->jsonConflict('Your already have a pending request');
@@ -167,6 +180,14 @@ class FriendshipController extends BaseController
                     if ($pending === null) {
                         return $this->jsonServerError();
                     }
+
+                    // WS notify: request create (when unblocking and sending request)
+                    $this->notifier->friendRequestCreated(
+                        (int)$pending['id'],
+                        $userId,
+                        $friendId
+                    );
+
                     return $this->jsonCreated(['id' => (int)$pending['id']]);
                 }
             }
@@ -177,10 +198,18 @@ class FriendshipController extends BaseController
             return $this->jsonServerError();
         }
 
+		 // WS notify: request create (normal new request path)
+		$this->notifier->friendRequestCreated(
+			(int)$id,
+			$userId,
+			$friendId
+		);
+
         return $this->jsonCreated(['id' => (int)$id]);
     }
 
-    public function updateStatus(Request $request, $parameters)
+	// damn this should be called updateFriendshipStatus or acceptDeclineRequest
+	public function updateStatus(Request $request, $parameters)
     {
         // get current user id
         $userId = $this->getCurrentUserId($request);
@@ -222,6 +251,17 @@ class FriendshipController extends BaseController
             return $this->jsonServerError();
         }
 
+		// needed to figure out who is the other user
+        $u1 = (int)$existing['user_id'];
+        $u2 = (int)$existing['friend_id'];
+        $otherUserId = ($userId === $u1) ? $u2 : $u1;
+
+		$this->notifier->friendRequestAccepted(
+            $id,
+            $userId,        // actor (the one who accepted)
+            $otherUserId
+        );
+
         return $this->jsonSuccess($updated);
     }
 
@@ -259,6 +299,11 @@ class FriendshipController extends BaseController
         if ($deleted === null) {
             return $this->jsonServerError();
         } else {
+			$this->notifier->friendRequestRejected(
+                $id,
+                $userId,        // actor (the one who rejected)
+                (int)$existing['user_id'] === $userId ? (int)$existing['friend_id'] : (int)$existing['user_id']
+            );
             return $this->jsonSuccess('Friend Request declined');
         }
     }
