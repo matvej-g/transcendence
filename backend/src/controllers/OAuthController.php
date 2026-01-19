@@ -24,21 +24,12 @@ class OAuthController extends BaseController
         $this->googleClient->addScope("profile");
     }
 
-    /**
-     * Step 1: Redirect user to Google's OAuth consent screen
-     * Frontend calls this endpoint, receives Google auth URL, then redirects user
-     */
     public function redirectToGoogle(Request $request, $parameters)
     {
         $authUrl = $this->googleClient->createAuthUrl();
         return $this->jsonSuccess(['url' => $authUrl]);
     }
 
-    /**
-     * Step 2: Handle callback from Google after user authorizes
-     * Google redirects user back to this endpoint with an authorization code
-     * We exchange code for user info, then create/login the user
-     */
     public function handleGoogleCallback(Request $request, $parameters)
     {
         $code = $request->getParams['code'] ?? null;
@@ -48,7 +39,6 @@ class OAuthController extends BaseController
         }
 
         try {
-            // Exchange authorization code for access token
             $token = $this->googleClient->fetchAccessTokenWithAuthCode($code);
             
             if (isset($token['error'])) {
@@ -57,26 +47,21 @@ class OAuthController extends BaseController
 
             $this->googleClient->setAccessToken($token);
             
-            // Get user info from Google
             $google_oauth = new \Google_Service_Oauth2($this->googleClient);
             $google_account_info = $google_oauth->userinfo->get();
             
             $googleId = $google_account_info->id;
             $email = $google_account_info->email;
             $name = $google_account_info->name;
-            
-            // Check if user already exists
+
             $user = $this->userModel->getUserByGoogleId($googleId);
             
             if (!$user) {
-                // Check if email is already used by a local account
                 $existingUser = $this->userModel->getUserByEmail($email);
                 if ($existingUser) {
                     return $this->jsonConflict('Email already registered with password login. Please use password to sign in.');
                 }
-                
-                // Create new Google user
-                // Generate a unique username from email or name
+
                 $username = $this->generateUniqueUsername($name, $email);
                 $displayName = $name;
                 
@@ -106,10 +91,6 @@ class OAuthController extends BaseController
         }
     }
 
-    /**
-     * Generate a unique username from Google account info
-     * Handles collisions by appending numbers
-     */
     private function generateUniqueUsername($name, $email)
     {
         // Try to create username from name first
