@@ -46,67 +46,43 @@ $redis = $factory->createLazyClient($redisUrl);
 
 $redis->subscribe('app-events');
 
-// $redis->on('message', function ($channel, $payload) use ($app) {
-// 	echo "[ws_app] redis message channel={$channel} payload={$payload}\n";
-
-//     $msg = json_decode((string)$payload, true);
-//     if (!is_array($msg)) {
-// 		echo "[ws_app][redis] payload is not valid JSON\n";
-// 		return;
-// 	}
-// 	if (!isset($msg['type'], $msg['data'])){
-// 		echo "[ws_app][redis] missing keys. keys=" . implode(',', array_keys($msg)) . "\n";
-// 		return ;
-// 	} 
-
-//     if ($msg['type'] === 'message.created') {
-//         $cid = (string)($msg['data']['conversationId'] ?? '');
-//         if ($cid === '') {
-// 			echo "[ws_app][redis] message.created without conversationId\n";
-// 			return;
-// 		}
-
-//         $app->broadcastRoom("conversation:$cid", [
-//             'type' => 'message.created',
-//             'data' => $msg['data'],
-//         ]);
-//     }
-// });
-
 $redis->on('message', function ($channel, $payload) use ($app) {
-	echo "[ws_app] redis message channel={$channel} payload={$payload}\n";
+    echo "[ws_app] redis message channel={$channel} payload={$payload}\n";
 
-	$msg = json_decode((string)$payload, true);
-	if (!is_array($msg) || !isset($msg['type'], $msg['data'])) {
-		echo "[ws_app] bad payload (expected {type,data})\n";
-		return;
-	}
+    $msg = json_decode((string)$payload, true);
+    if (!is_array($msg) || !isset($msg['type'], $msg['data'])) {
+        echo "[ws_app] bad payload (expected {type,data})\n";
+        return;
+    }
 
-	if ($msg['type'] !== 'message.created') return;
+    $type = (string)$msg['type'];
+    $data = is_array($msg['data']) ? $msg['data'] : [];
 
-	$cid = (string)($msg['data']['conversationId'] ?? '');
-	if ($cid === '') return;
+    if ($type === '') return;
 
-	// 1) send to everyone who joined the conversation room (chat page open)
-	$app->broadcastRoom("conversation:$cid", [
-		'type' => 'message.created',
-		'data' => $msg['data'],
-	]);
+    // 1) if event has a conversationId -> broadcast to that conversation room
+    $cid = (string)($data['conversationId'] ?? '');
+    if ($cid !== '') {
+        $app->broadcastRoom("conversation:$cid", [
+            'type' => $type,
+            'data' => $data,
+        ]);
+    }
 
-	// 2) send to specific users (for notifications even if they never opened chat)
-	$recipients = $msg['data']['recipientUserIds'] ?? [];
-	if (is_array($recipients)) {
-		foreach ($recipients as $uid) {
-			if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) continue;
-			$uid = (int)$uid;
-			if ($uid <= 0) continue;
+    // 2) if event has recipientUserIds -> broadcast to those user rooms
+    $recipients = $data['recipientUserIds'] ?? [];
+    if (is_array($recipients)) {
+        foreach ($recipients as $uid) {
+            if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) continue;
+            $uid = (int)$uid;
+            if ($uid <= 0) continue;
 
-			$app->broadcastRoom("user:$uid", [
-				'type' => 'message.created',
-				'data' => $msg['data'],
-			]);
-		}
-	}
+            $app->broadcastRoom("user:$uid", [
+                'type' => $type,
+                'data' => $data,
+            ]);
+        }
+    }
 });
 
 // IMPORTANT: use 8082 (game uses 8081)
