@@ -15,12 +15,12 @@ function sendTwoFactorEmail($email, $code) {
     try {
         // Server settings from environment
         $mail->isSMTP();
-        $mail->Host = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
+        $mail->Host = getenv('SMTP_HOST');
         $mail->SMTPAuth = true;
-        $mail->Username = getenv('SMTP_USERNAME') ?: 'mertcode55@gmail.com'; // change later
-        $mail->Password = getenv('SMTP_PASSWORD') ?: 'hgzl wozx jhgc msnu';  //change later
+        $mail->Username = getenv('SMTP_USERNAME');
+        $mail->Password = getenv('SMTP_PASSWORD');
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = (int)(getenv('SMTP_PORT') ?: 587);
+        $mail->Port = (int)(getenv('SMTP_PORT'));
 
         // Fix for Docker Desktop on Windows/Mac - SSL certificate validation issues
         $mail->SMTPOptions = [
@@ -32,8 +32,8 @@ function sendTwoFactorEmail($email, $code) {
         ];
 
         // Recipients
-        $fromEmail = getenv('SMTP_FROM_EMAIL') ?: 'mertcode55@gmail.com';
-        $fromName = getenv('SMTP_FROM_NAME') ?: 'Transcendence 2FA';
+        $fromEmail = getenv('SMTP_FROM_EMAIL') ;
+        $fromName = getenv('SMTP_FROM_NAME');
         $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($email);
 
