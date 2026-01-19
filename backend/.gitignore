@@ -4,6 +4,8 @@
 #composer.json
 #composer.lock
 
+.env
+
 # Documentation
 notes_david1.md
 progress_david1.md
