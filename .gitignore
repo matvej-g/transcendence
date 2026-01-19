@@ -5,3 +5,7 @@ backend/database/
 
 notes_milena
 my_notes
+
+# cloudflared credentials
+/cloudflared/cert.pem
+/cloudflared/*.json

@@ -115,3 +115,39 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  cloudflared:
+    container_name: cloudflared
+    image: cloudflare/cloudflared:2025.11.1
+    command: tunnel --config /etc/cloudflared/config.yaml run
+    restart: unless-stopped
+    volumes:
+      - ./cloudflared:/etc/cloudflared:ro
+    networks:
+      - transcendence
+    depends_on:
+      nginx:
+        condition: service_started
+      cloudflared-precheck:
+        condition: service_completed_successfully
+
+  cloudflared-precheck:
+    image: busybox:1.36
+    container_name: cloudflared-precheck
+    volumes:
+      - ./cloudflared:/etc/cloudflared:ro
+    command:
+      [
+        "sh",
+        "-lc",
+        "for i in $(seq 1 12); do \
+          test -s /etc/cloudflared/config.yaml \
+          -a -s /etc/cloudflared/cert.pem \
+          -a -s /etc/cloudflared/*.json && exit 0; \
+          sleep 5; \
+        done; \
+        echo 'cloudflare credentials missing'; \
+        exit 1"
+      ]
+    restart: "no"
+
