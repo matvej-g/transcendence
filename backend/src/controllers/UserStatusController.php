@@ -54,7 +54,7 @@ class UserStatusController extends BaseController
                 'user_id'        => $id,
                 'online'         => 0,
                 'last_seen'      => null,
-                'current_match_id' => null,
+                // 'current_match_id' => null,
             ];
         }
 
