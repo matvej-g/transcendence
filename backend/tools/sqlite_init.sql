@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS pending_registrations (
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- remove these users later on because of password hash
+-- todo: remove these users later on because of password hash
 INSERT OR IGNORE INTO users(username, displayname, email, password_hash)
 VALUES ('david', 'David', 'dhuss42@heilbron.de', 123);
 
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS matches (
 CREATE TABLE IF NOT EXISTS user_status (
 	user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
 	online INTEGER NOT NULL DEFAULT 0,
-	last_seen DATETIME,
+	last_seen DATETIME
 	-- current_match_id INTEGER REFERENCES matches(id)
 );
 
