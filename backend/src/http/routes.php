@@ -21,6 +21,7 @@ $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
 
 // Authenticated-only: logout (JWT required, 2FA not strictly needed)
 $this->router->post('/api/user/logout', [UserController::class, 'logout'], [AuthMiddleware::class]); //mert
+$this->router->get('/api/me', [UserController::class, 'getMe'], [AuthMiddleware::class]);
 
 // users (protected)
 $this->router->get('/api/users', [UserController::class, 'getUsers'], [Require2FAMiddleware::class]);

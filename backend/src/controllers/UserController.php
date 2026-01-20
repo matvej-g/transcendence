@@ -513,4 +513,25 @@ class UserController extends BaseController
 			'timestamp' => date('Y-m-d H:i:s')
 		]);
 	}
+
+    public function getMe(Request $request, $parameters)
+    {
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId === null) {
+            return $this->jsonForbidden("User not authenticated");
+        }
+
+        $user = $this->users->getUserById($currentUserId);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound("User not found");
+        }
+
+        return $this->jsonSuccess([
+            'id' => $user['id'],
+            'username' => $user['username']
+        ]);
+    }
 }
