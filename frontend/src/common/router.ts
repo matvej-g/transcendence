@@ -1,4 +1,4 @@
-import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId} from '../components/auth/authUtils.js';
+import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId, setCurrentUserId, setCurrentUsername } from '../components/auth/authUtils.js';
 import { initFriendsSection} from '../components/friends/friendsContent.js';
 import { initProfile, reloadUsername, reloadAvatar, reloadMatchHistory, reloadStats } from '../components/profile/profile.js';
 
@@ -11,6 +11,7 @@ const sections: Record<string, HTMLElement | null> = {
   'chat': document.getElementById('chat-section'),
   'verify-2fa': document.getElementById('verify-2fa-section'),
   'verify-registration': document.getElementById('verify-registration-section'),
+  'oauth-callback': document.getElementById('oauth-callback-section'),
   'notfound': document.getElementById('notfound-section'),
 };
 
@@ -126,12 +127,49 @@ function showSection(sectionId: string): void {
   }
 
   // Show/hide navbars and footer based on section
-  if (target === 'auth' || target === 'verify-2fa' || target === 'verify-registration') {
+  if (target === 'auth' || target === 'verify-2fa' || target === 'verify-registration' || target === 'oauth-callback') {
     authNavbar?.classList.remove('hidden');
     navbar?.classList.add('hidden');
   } else {
     authNavbar?.classList.add('hidden');
     navbar?.classList.remove('hidden');
+  }
+}
+
+// Handle OAuth callback
+async function handleOAuthCallback(): Promise<void> {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+  const error = urlParams.get('error');
+
+  if (error) {
+    alert('Google authentication was cancelled or failed.');
+    window.location.href = '/index.html#auth';
+    return;
+  }
+
+  if (!code) {
+    alert('Invalid OAuth response from Google.');
+    window.location.href = '/index.html#auth';
+    return;
+  }
+
+  try {
+    // Forward the code to our backend callback endpoint
+    const res = await fetch(`/api/auth/google/callback?code=${encodeURIComponent(code)}`);
+    const data = await res.json();
+
+    if (data.success && data.user) {
+      setCurrentUserId(data.user.id);
+      setCurrentUsername(data.user.username);
+      window.location.href = '/index.html#profile';
+    } else {
+      throw new Error(data.error || 'Authentication failed');
+    }
+  } catch (err) {
+    console.error('OAuth callback error:', err);
+    alert('Failed to complete Google sign-in: ' + (err as Error).message);
+    window.location.href = '/index.html#auth';
   }
 }
 
@@ -207,25 +245,34 @@ document.getElementById('notfoundHomeBtn')?.addEventListener('click', () => {
 });
 
 // Initial load
-const initialHash = window.location.hash.slice(1);
-const isLoggedIn = getCurrentUserId();
-const protectedSections = ['profile', 'game', 'friends', 'chat'];
-const initialSection = initialHash.split('/')[0] || 'auth';
-
-if (isLoggedIn) {
-  window.location.hash = '#profile';
-  showSection('profile');
-} else if (protectedSections.includes(initialSection)) {
-  window.location.hash = '#auth';
-  showSection('auth');
-} else if (initialHash.startsWith('settings/edit-username')) {
-  showSection('settings');
-} else if (initialHash.startsWith('settings/upload-avatar')) {
-  showSection('settings');
-} else if (initialHash.startsWith('settings/change-password')) {
-  showSection('settings');
-} else if (initialHash.startsWith('settings/change-email')) {
-  showSection('settings');
+// Check if this is an OAuth callback (has ?code= in URL)
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('code') || urlParams.has('error')) {
+  // Show OAuth callback section and handle the callback
+  showSection('oauth-callback');
+  handleOAuthCallback();
 } else {
-  showSection(initialSection);
+  // Normal routing
+  const initialHash = window.location.hash.slice(1);
+  const isLoggedIn = getCurrentUserId();
+  const protectedSections = ['profile', 'game', 'friends', 'chat'];
+  const initialSection = initialHash.split('/')[0] || 'auth';
+
+  if (isLoggedIn) {
+    window.location.hash = '#profile';
+    showSection('profile');
+  } else if (protectedSections.includes(initialSection)) {
+    window.location.hash = '#auth';
+    showSection('auth');
+  } else if (initialHash.startsWith('settings/edit-username')) {
+    showSection('settings');
+  } else if (initialHash.startsWith('settings/upload-avatar')) {
+    showSection('settings');
+  } else if (initialHash.startsWith('settings/change-password')) {
+    showSection('settings');
+  } else if (initialHash.startsWith('settings/change-email')) {
+    showSection('settings');
+  } else {
+    showSection(initialSection);
+  }
 }
