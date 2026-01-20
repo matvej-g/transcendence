@@ -2,8 +2,8 @@
 namespace Pong;
 
 use src\Models\TournamentsModel;
-use src\Models\TournamentPlayerModel;
-use src\Models\TournamentMatchesModel;
+//use src\Models\TournamentPlayerModel;
+//use src\Models\TournamentMatchesModel;
 
 class TournamentLogic {
     private array $waitingPlayers = [];
@@ -14,20 +14,20 @@ class TournamentLogic {
     private array $tournamentCurrentRound = [];
 
     private TournamentsModel $tournamentModel;
-    private TournamentPlayerModel $tournamentPlayerModel;
-    private TournamentMatchesModel $tournamentMatchesModel;
+    //private TournamentPlayerModel $tournamentPlayerModel;
+    //private TournamentMatchesModel $tournamentMatchesModel;
 
     private $onCreateMatch;
     private $onMatchAnnounce;
 
     public function __construct(
         TournamentsModel $tournamentModel,
-        TournamentPlayerModel $tournamentPlayerModel,
-        TournamentMatchesModel $tournamentMatchesModel
+        //TournamentPlayerModel $tournamentPlayerModel,
+        //TournamentMatchesModel $tournamentMatchesModel
     ) {
         $this->tournamentModel = $tournamentModel;
-        $this->tournamentPlayerModel = $tournamentPlayerModel;
-        $this->tournamentMatchesModel = $tournamentMatchesModel;
+        //$this->tournamentPlayerModel = $tournamentPlayerModel;
+        //$this->tournamentMatchesModel = $tournamentMatchesModel;
     }
 
     public function setCallbacks(callable $onCreateMatch, callable $onMatchAnnounce): void {
@@ -182,7 +182,7 @@ class TournamentLogic {
 
     private function onTournamentEnd(int $tournamentID, Player $champion): void {
         echo "[Tournament] Tournament {$tournamentID} finished! Winner: {$champion->userID}\n";
-        
+        $this->tournamentModel->endTournament($tournamentID, $champion->userID);
         $champion->send([
             'type' => 'tournamentWin',
             'data' => ['message' => 'Congratulations! You are the tournament champion! 🏆',

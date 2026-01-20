@@ -32,6 +32,7 @@ class GameServer implements MessageComponentInterface {
     private MatchesModel $matchesModel;
     private UserStatsModel $userStatsModel;
     private UserStatusModel $userStatus;
+    private TournamentMatchesModel $tournamentMatchesModel;
 
     private TournamentLogic $tournament;
 
@@ -48,6 +49,7 @@ class GameServer implements MessageComponentInterface {
         $this->matchesModel = new MatchesModel($this->db);
         $this->userStatsModel = new UserStatsModel($this->db);
         $this->userStatus = new UserStatusModel($this->db);
+        $this->tournamentMatchesModel = new TournamentMatchesModel($this->db);
         $this->tournament = new TournamentLogic(
             new TournamentsModel($this->db),
             new TournamentPlayerModel($this->db),
@@ -113,7 +115,7 @@ class GameServer implements MessageComponentInterface {
         if (!isset($this->games[$gameID])) return;
 
         $game = $this->games[$gameID];
-        if ($game['mode'] === 'remote' && $winnerId) {
+        if ($game['mode'] === 'remote' || $game['mode'] === 'tournament' && $winnerId) {
             $this->recordMatchResults($gameID, $game, $winnerId);
         }
         if ($game['mode'] === 'tournament' && isset($game['tournamentId'])) {
@@ -483,6 +485,13 @@ class GameServer implements MessageComponentInterface {
 
     private function createTournamentMatch(int $tournamentID, Player $player1, Player $player2, int $round): void {
         $gameID = $this->matchesModel->createMatch($player1->userID, $player2->userID);
+
+        // Speichere Tournament-Match in DB für Historie
+        $existingMatches = $this->tournamentMatchesModel->getMatchesForTournament($tournamentID);
+        $matchesInRound = array_filter($existingMatches, fn($m) => $m['round'] == $round);
+        $matchIndex = count($matchesInRound);
+        $this->tournamentMatchesModel->createTournamentMatchWithRound($tournamentID, $gameID, $round, $matchIndex);
+
         $this->initializeGame($gameID, $player1, $player2, 'tournament', $tournamentID, $round);
         $this->notifyMatchTournament([$player1, $player2], $gameID, $tournamentID);
 
