@@ -79,4 +79,16 @@ final class MessagingNotifier
 			'status'    => 'rejected',
 		]);
 	}
+
+	public function friendBlocked(
+		int $blockerId,
+		int $blockedId
+	): void {
+		$this->publisher->publish('friend.request.blocked', [
+			'blockerId' => $blockerId,
+			'blockedId' => $blockedId,
+			'recipientUserIds' => [$blockedId, $blockerId],
+			'status' => 'blocked',
+		]);
+	}
 }

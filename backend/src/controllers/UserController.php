@@ -11,6 +11,8 @@ use src\http\Response;
 use src\Models\UserModel;
 use src\Models\UserStatsModel;
 use src\Models\PendingRegistrationModel;
+use src\Models\BlockModel;
+use src\Models\MatchesModel;
 use src\Sanitiser;
 use src\Validator;
 
@@ -19,12 +21,111 @@ class UserController extends BaseController
     private UserModel $users;
     private UserStatsModel $stats;
     private PendingRegistrationModel $pendingRegistrations;
+    private BlockModel $blocks;
+    private MatchesModel $matches;
 
     public function __construct(Database $db)
     {
         $this->users = new UserModel($db);
         $this->stats = new UserStatsModel($db);
         $this->pendingRegistrations = new PendingRegistrationModel($db);
+        $this->blocks = new BlockModel($db);
+        $this->matches = new MatchesModel($db);
+    }
+
+    public function getPublicProfile(Request $request, $parameters)
+    {
+        $id = $parameters['id'] ?? null;
+        if (!Validator::validateId($id)) {
+            return $this->jsonBadRequest('Invalid id');
+        }
+        $userId = (int)$id;
+
+        $user = $this->users->getUserById($userId);
+        if ($user === null) {
+            return $this->jsonServerError();
+        }
+        if (!$user) {
+            return $this->jsonNotFound('User not found');
+        }
+
+        $token = getJWTFromRequest();
+        $viewerId = null;
+        if ($token !== null) {
+            $payload = verifyJWT($token);
+            if ($payload !== null && isset($payload['user_id'])) {
+                $viewerId = (int)$payload['user_id'];
+            }
+        }
+
+        if ($viewerId !== null && $viewerId !== $userId) {
+            $isBlocked = $this->blocks->isBlocked($userId, $viewerId);
+            if ($isBlocked === null) {
+                return $this->jsonServerError();
+            }
+            if ($isBlocked) {
+                return $this->jsonForbidden('You are blocked by this user');
+            }
+        }
+
+        $avatarFilename = $user['avatar_filename'] ?? 'default.jpg';
+
+        $stats = $this->stats->getStatsForUser($userId);
+        if ($stats === null) {
+            return $this->jsonServerError();
+        }
+        if (!$stats) {
+            $stats = [
+                'user_id'            => $userId,
+                'wins'               => 0,
+                'losses'             => 0,
+                'games_played'       => 0,
+                'goals_scored'       => 0,
+                'goals_conceded'     => 0,
+                'tournaments_played' => 0,
+                'tournaments_won'    => 0,
+                'last_game_at'       => null,
+            ];
+        }
+
+        $matches = $this->matches->getMatchesForUser($userId);
+        if ($matches === null) {
+            return $this->jsonServerError();
+        }
+
+        foreach ($matches as &$match) {
+            $playerOneId = $match['player_one_id'] ?? null;
+            $playerTwoId = $match['player_two_id'] ?? null;
+
+            $playerOne = $this->users->getUserById($playerOneId);
+            if ($playerOne === null) {
+                return $this->jsonServerError();
+            }
+            if (!$playerOne) {
+                continue;
+            }
+
+            $playerTwo = $this->users->getUserById($playerTwoId);
+            if ($playerTwo === null) {
+                return $this->jsonServerError();
+            }
+            if (!$playerTwo) {
+                continue;
+            }
+
+            $match['player_one_displayname'] = $playerOne['displayname'];
+            $match['player_two_displayname'] = $playerTwo['displayname'];
+        }
+
+        $publicUser = user_to_public($user);
+
+        return $this->jsonSuccess([
+            'username'    => $publicUser['username'],
+            'displayname' => $publicUser['displayname'],
+            'avatar_filename'  => $avatarFilename,
+            'stats'       => $stats,
+            'matches'     => $matches,
+        ]);
     }
 
     public function getUser(Request $request, $parameters)

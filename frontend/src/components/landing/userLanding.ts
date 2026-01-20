@@ -64,7 +64,7 @@ async function show2FADialog(): Promise<any> {
         // Handle buttons
         document.getElementById('verify2FABtn')?.addEventListener('click', () => {
             document.body.removeChild(overlay);
-            window.location.href = '/verify-2fa.html';
+            window.location.hash = '#verify-2fa';
             resolve(null);
         });
         

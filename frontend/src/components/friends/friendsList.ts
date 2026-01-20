@@ -65,13 +65,20 @@ async function createFriendItem(friend: FriendRequest) {
 }
 
 // Main logic to populate friends-list
+let friendsListReloading = false;
 export async function populateFriendsList() {
+	if (friendsListReloading) return;
+	friendsListReloading = true;
 	const ul = document.getElementById('friends-list');
-	if (!ul) return;
+	if (!ul) {
+		friendsListReloading = false;
+		return;
+	}
 	ul.innerHTML = '';
 	const userId = getCurrentUserId && getCurrentUserId();
 	if (!userId) {
 		ul.innerHTML = `<li class="text-red-400" data-i18n="friends.no_user_id_found">${t('friends.no_user_id_found')}</li>`;
+		friendsListReloading = false;
 		return;
 	}
 	try {
@@ -91,4 +98,5 @@ export async function populateFriendsList() {
 	} catch (e) {
 		ul.innerHTML = '<li class="text-red-400" data-i18n="friends.failed_to_load">Failed to load friends</li>';
 	}
+	friendsListReloading = false;
 }

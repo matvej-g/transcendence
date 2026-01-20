@@ -9,6 +9,8 @@ const sections: Record<string, HTMLElement | null> = {
   'game': document.getElementById('game-section'),
   'friends': document.getElementById('friends-section'),
   'chat': document.getElementById('chat-section'),
+  'verify-2fa': document.getElementById('verify-2fa-section'),
+  'verify-registration': document.getElementById('verify-registration-section'),
   'notfound': document.getElementById('notfound-section'),
 };
 
@@ -41,8 +43,10 @@ function resolveSection(sectionId: string): string {
   if (sectionId === 'settings' && window.location.hash.includes('change-email')) {
     return 'settings-change-email';
   }
-  if (sections[sectionId]) {
-    return sectionId;
+  // Support hash params: section?param=value
+  const baseSectionId = sectionId.split('?')[0];
+  if (sections[baseSectionId]) {
+    return baseSectionId;
   }
   // Unknown section requested — warn and notify consumers.
   console.warn(`Router: unknown section "${sectionId}", showing 'notfound' section`);
@@ -122,7 +126,7 @@ function showSection(sectionId: string): void {
   }
 
   // Show/hide navbars and footer based on section
-  if (target === 'auth') {
+  if (target === 'auth' || target === 'verify-2fa' || target === 'verify-registration') {
     authNavbar?.classList.remove('hidden');
     navbar?.classList.add('hidden');
   } else {

@@ -36,7 +36,7 @@ function wireRegisterButton() {
     if (res.ok) {
       // Registration initiated - redirect to verification page
       alert('Verification code sent to your email!');
-      window.location.href = `/verify-registration.html?email=${encodeURIComponent(payload.email)}`;
+      window.location.hash = `#verify-registration?email=${encodeURIComponent(payload.email)}`;
     } else {
       alert(msg("registerFailedGeneric") + ` (${res.error})`);
     }

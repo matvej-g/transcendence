@@ -4,13 +4,13 @@ function sanitizeString(str: string): string {
 	temp.textContent = str;
 	return temp.innerHTML;
 }
+
 import { getFriends, updateFriendStatus, blockUser, declineFriendRequest } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
-import type {FriendRequest} from '../../common/types.js'
+import type { FriendRequest } from '../../common/types.js';
 import { t } from '../languages/i18n.js';
-
-
 import { populateFriendsList } from './friendsList.js';
+
 // Helper to create a request list item
 function createRequestItem(request: FriendRequest) {
 	const li = document.createElement('li');
@@ -82,13 +82,20 @@ function createRequestItem(request: FriendRequest) {
 }
 
 // Main logic to populate requests-list
+let requestsListReloading = false;
 export async function populateRequestsList() {
+	if (requestsListReloading) return;
+	requestsListReloading = true;
 	const ul = document.getElementById('requests-list');
-	if (!ul) return;
+	if (!ul) {
+		requestsListReloading = false;
+		return;
+	}
 	ul.innerHTML = '';
 	const userId = getCurrentUserId && getCurrentUserId();
 	if (!userId) {
 		ul.innerHTML = `<li class="text-red-400" data-i18n="friends.no_user_id_found">${t('friends.no_user_id_found')}</li>`;
+		requestsListReloading = false;
 		return;
 	}
 	try {
@@ -109,5 +116,6 @@ export async function populateRequestsList() {
 	} catch (e) {
 		ul.innerHTML = `<li class="text-red-400" data-i18n="friends.failed_to_load_requests">${t('friends.failed_to_load_requests')}</li>`;
 	}
+	requestsListReloading = false;
 }
 

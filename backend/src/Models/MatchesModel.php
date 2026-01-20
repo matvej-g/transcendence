@@ -9,8 +9,22 @@ class MatchesModel {
 
 	public function __construct(
 		private Database $db
-		)
+	)
 	{
+	}
+
+	public function getMatchesForUser(int $userId): ?array
+	{
+		try {
+			return $this->db->query(
+				"SELECT * FROM matches
+				 WHERE player_one_id = ? OR player_two_id = ?
+				 ORDER BY started_at DESC",
+				[$userId, $userId]
+			)->fetchAll(\PDO::FETCH_ASSOC);
+		} catch (\PDOException $e) {
+			return null;
+		}
 	}
 
 	public function getMatchById($id) {
