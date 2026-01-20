@@ -43,8 +43,10 @@ function resolveSection(sectionId: string): string {
   if (sectionId === 'settings' && window.location.hash.includes('change-email')) {
     return 'settings-change-email';
   }
-  if (sections[sectionId]) {
-    return sectionId;
+  // Support hash params: section?param=value
+  const baseSectionId = sectionId.split('?')[0];
+  if (sections[baseSectionId]) {
+    return baseSectionId;
   }
   // Unknown section requested — warn and notify consumers.
   console.warn(`Router: unknown section "${sectionId}", showing 'notfound' section`);
