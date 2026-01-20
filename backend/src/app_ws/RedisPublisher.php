@@ -20,6 +20,8 @@ final class RedisPublisher
 
     public function publish(string $type, array $data): void
     {
+		// actually a notice log
+		error_log("[RedisPublisher] host={$this->host} port={$this->port} channel={$this->channel} type={$type}");
         $payload = json_encode(['type' => $type, 'data' => $data], JSON_UNESCAPED_UNICODE);
         if ($payload === false) return;
 

@@ -34,7 +34,7 @@ class UserStatusModel
                  VALUES (?, ?, ?, CURRENT_TIMESTAMP)
                  ON CONFLICT(user_id) DO UPDATE SET
                    online = excluded.online,
-                   current_match_id = excluded.current_match_id,
+                --    current_match_id = excluded.current_match_id,
                    last_seen = excluded.last_seen",
                 [$userId, $online, $currentMatchId]
             );

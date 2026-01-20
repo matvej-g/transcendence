@@ -1,3 +1,9 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+	const temp = document.createElement('div');
+	temp.textContent = str;
+	return temp.innerHTML;
+}
 import { getFriends, blockUser, getUserStatus } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type { FriendRequest } from '../../common/types.js';
@@ -10,12 +16,12 @@ async function createFriendItem(friend: FriendRequest) {
 
 	const img = document.createElement('img');
 	img.className = 'avatar text-white h-8 w-auto';
-	img.src = `/uploads/avatars/${friend.friend.avatar_filename}`;
+	img.src = `/uploads/avatars/${encodeURIComponent(friend.friend.avatar_filename || '')}`;
 	img.alt = 'Avatar image';
 
 	const h2 = document.createElement('h2');
 	h2.className = 'text-emerald-400';
-	h2.textContent = friend.friend.displayname || '';
+	h2.textContent = sanitizeString(friend.friend.displayname || '');
 
 	// Online status span
 	const statusSpan = document.createElement('span');
@@ -59,13 +65,20 @@ async function createFriendItem(friend: FriendRequest) {
 }
 
 // Main logic to populate friends-list
+let friendsListReloading = false;
 export async function populateFriendsList() {
+	if (friendsListReloading) return;
+	friendsListReloading = true;
 	const ul = document.getElementById('friends-list');
-	if (!ul) return;
+	if (!ul) {
+		friendsListReloading = false;
+		return;
+	}
 	ul.innerHTML = '';
 	const userId = getCurrentUserId && getCurrentUserId();
 	if (!userId) {
 		ul.innerHTML = `<li class="text-red-400" data-i18n="friends.no_user_id_found">${t('friends.no_user_id_found')}</li>`;
+		friendsListReloading = false;
 		return;
 	}
 	try {
@@ -85,4 +98,5 @@ export async function populateFriendsList() {
 	} catch (e) {
 		ul.innerHTML = '<li class="text-red-400" data-i18n="friends.failed_to_load">Failed to load friends</li>';
 	}
+	friendsListReloading = false;
 }

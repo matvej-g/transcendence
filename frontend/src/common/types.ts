@@ -54,3 +54,14 @@ export interface ChangePasswordParams {
   oldPassword: string;
   newPassword: string;
 }
+
+declare global {
+	interface Window {
+		__profileReload?: {
+			username?: boolean;
+			avatar?: boolean;
+			matchHistory?: boolean;
+			stats?: boolean;
+		} | null;
+	}
+}

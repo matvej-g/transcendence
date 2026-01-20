@@ -1,0 +1,17 @@
+tunnel: c43af542-e2d0-41e4-8a0f-2e1e8b17a9d7
+credentials-file: /etc/cloudflared/c43af542-e2d0-41e4-8a0f-2e1e8b17a9d7.json
+no-autoupdate: true
+origincert: /etc/cloudflared/cert.pem
+
+ingress:
+  - hostname: old-swede.com
+    service: http://nginx:80
+  - hostname: www.old-swede.com
+    service: http://nginx:80
+  - hostname: app.old-swede.com
+    service: http://nginx:80
+  - hostname: api.old-swede.com
+    service: http://nginx:80
+  - hostname: ws.old-swede.com
+    service: http://nginx:80
+  - service: http_status:404

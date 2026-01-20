@@ -86,7 +86,7 @@ export async function setUserOffline(options?: { token?: string }): Promise<void
     throw new Error(`setUserOffline failed: ${res.status}`);
   }
 //   console.log("Set user offline.");
-  const re = await fetch(`/api/status/${userId}`);
-	const status = await re.json();
-	console.log('User online:', status.online === 1);
+  // const re = await fetch(`/api/status/${userId}`);
+	// const status = await re.json();
+	// console.log('User online:', status.online === 1);
 }

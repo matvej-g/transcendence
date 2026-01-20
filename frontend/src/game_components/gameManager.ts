@@ -49,12 +49,22 @@ class GameManager {
         window.addEventListener('keyup', (e) => this.keyState[e.key] = false);
     }
 
+	private getWebSocketUrl(): string {
+		const { protocol, host } = window.location;
+		const wsProtocol = protocol === 'https:' ? 'wss:' : 'ws:';
+		return `${wsProtocol}//${host}/ws`;
+	}
+
     private startLocalGame(): void {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
         const userId = getCurrentUserIdNumber() || 1; //need cahnge later
         console.log(userId);
-        this.networkManager.connect('ws://localhost:8080/ws', 'local', userId);
+		this.networkManager.connect(
+			this.getWebSocketUrl(),
+			'local',
+			userId
+		);
     }
 
     private startRemoteGame(): void {
@@ -62,7 +72,11 @@ class GameManager {
         this.gameModeMenu?.classList.add('hidden');
         const userId = getCurrentUserIdNumber() || 1; //need change later
         console.log(userId);
-        this.networkManager.connect('ws://localhost:8080/ws', 'remote', userId);
+		this.networkManager.connect(
+			this.getWebSocketUrl(),
+			'remote',
+			userId
+		);
     }
 
     private exitGame(): void {

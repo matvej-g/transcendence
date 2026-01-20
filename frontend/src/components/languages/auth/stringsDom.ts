@@ -8,7 +8,7 @@ type AuthDomKey =
   | "password"
   | "loginBtn"
   | "registerBtn"
-  | "pretendLoginBtn";
+    // | "pretendLoginBtn"; // Removed pretendLoginBtn
 
 // format of the table for auth dom strings (single language)
 export type AuthDomStringsTableT = Record<AuthDomKey, string>;
@@ -22,7 +22,7 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     password: "Password",
     loginBtn: "Login",
     registerBtn: "Register",
-    pretendLoginBtn: "pretendLogin → landing",
+     // pretendLoginBtn: "pretendLogin → landing", // Removed pretendLoginBtn
   },
   ru: {
     title: "Аутентификация",
@@ -31,7 +31,7 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     password: "Пароль",
     loginBtn: "Войти",
     registerBtn: "Зарегистрироваться",
-    pretendLoginBtn: "Сделать вид, что вошёл → landing",
+     // pretendLoginBtn: "Сделать вид, что вошёл → landing", // Removed pretendLoginBtn
   },
   de: {
 	title: "Authentifizierung",
@@ -40,6 +40,6 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
 	password: "Passwort",
 	loginBtn: "Anmelden",
 	registerBtn: "Registrieren",
-	pretendLoginBtn: "Vortäuschen Anmeldung → Landing",
+     // pretendLoginBtn: "Vortäuschen Anmeldung → Landing", // Removed pretendLoginBtn
   },
 } satisfies Record<Lang, AuthDomStringsTableT>;

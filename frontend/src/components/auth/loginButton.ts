@@ -33,7 +33,7 @@ function wireLoginButton() {
         
         if (twoFAResult.ok && twoFAResult.data.success) {
           alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to your email!`);
-          window.location.href = '/verify-2fa.html';
+          window.location.hash = '#verify-2fa';
         } else {
           alert('Login successful but 2FA failed: ' + (twoFAResult.data.error || 'Unknown error'));
         }

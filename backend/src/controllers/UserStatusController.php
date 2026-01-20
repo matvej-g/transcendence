@@ -54,7 +54,7 @@ class UserStatusController extends BaseController
                 'user_id'        => $id,
                 'online'         => 0,
                 'last_seen'      => null,
-                'current_match_id' => null,
+                // 'current_match_id' => null,
             ];
         }
 
@@ -68,16 +68,7 @@ class UserStatusController extends BaseController
             return $this->jsonBadRequest('Missing or invalid current user id');
         }
 
-        $matchIdRaw = $request->postParams['currentMatchId'] ?? null;
-        $matchId = null;
-        if ($matchIdRaw !== null) {
-            if (!Validator::validateId($matchIdRaw)) {
-                return $this->jsonBadRequest('Invalid match id');
-            }
-            $matchId = (int) $matchIdRaw;
-        }
-
-        $row = $this->status->setCurrentMatch($userId, $matchId);
+        $row = $this->status->setOnline($userId);
         if ($row === null) {
             return $this->jsonServerError();
         }

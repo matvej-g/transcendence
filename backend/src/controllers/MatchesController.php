@@ -10,6 +10,7 @@ use src\Models\MatchesModel;
 use src\Models\UserStatsModel;
 use src\Models\UserStatusModel;
 use src\Validator;
+use Symfony\Component\VarDumper\VarDumper;
 
 class MatchesController extends BaseController
 {
@@ -48,6 +49,27 @@ class MatchesController extends BaseController
         $all = $this->matches->getAllMatches();
         if ($all === null) {
             return $this->jsonServerError();
+        }
+
+        foreach ($all as &$match){
+            $player_one_id = $match["player_one_id"] ?? null;
+            $player_one = $this->users->getUserById($player_one_id);
+            if (!$player_one) {
+                return $this->jsonNotFound("player one not found");
+            } elseif ($player_one == null) {
+                return $this->jsonServerError();
+            }
+
+            $player_two_id = $match["player_two_id"] ?? null;
+            $player_two = $this->users->getUserById($player_two_id);
+            if (!$player_two) {
+                return $this->jsonNotFound("player one not found");
+            } elseif ($player_two == null) {
+                return $this->jsonServerError();
+            }
+
+            $match["player_one_displayname"] = $player_one["displayname"];
+            $match["player_two_displayname"] = $player_two["displayname"];
         }
         return $this->jsonSuccess($all);
     }
@@ -90,9 +112,6 @@ class MatchesController extends BaseController
             return $this->jsonServerError();
         }
 
-        $inMatch = $this->status->isInMatch($playerOneId);
-        var_dump($inMatch);
-
         $statusPlayerOne = $this->status->setCurrentMatch($playerOneId, $id);
         if ($statusPlayerOne === null) {
             return $this->jsonServerError();
@@ -102,9 +121,6 @@ class MatchesController extends BaseController
         if ($statusPlayerTwo === null) {
             return $this->jsonServerError();
         }
-
-        $inMatch = $this->status->isInMatch($playerOneId);
-        var_dump($inMatch);
 
         return $this->jsonCreated(['id' => $id]);
     }

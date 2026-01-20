@@ -1,18 +1,12 @@
-import { getCurrentUserId } from '../auth/authUtils.js';
-import { getUserByUserId, getMatches } from './api.js';
-
-// Helper to fetch username by userId (cache to avoid duplicate requests)
-const usernameCache: Record<string, string> = {};
-async function fetchUsername(userId: number | string): Promise<string> {
-  if (usernameCache[userId]) return usernameCache[userId];
-  try {
-    const user = await getUserByUserId(String(userId));
-    usernameCache[userId] = user.displayname;
-    return user.displayname;
-  } catch {
-    return `User#${userId}`;
-  }
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
 }
+
+import { getCurrentUserId } from '../auth/authUtils.js';
+import { getMatches } from './api.js';
 
 // Render match history for the current user
 export async function renderMatchHistory(): Promise<void> {
@@ -36,22 +30,21 @@ export async function renderMatchHistory(): Promise<void> {
   list.innerHTML = '';
   for (const match of userMatches) {
     const isPlayerOne = match.player_one_id == userIdNum;
-    const opponentId = isPlayerOne ? match.player_two_id : match.player_one_id;
     const playerScore = isPlayerOne ? match.score_player_one : match.score_player_two;
     const opponentScore = isPlayerOne ? match.score_player_two : match.score_player_one;
     const date = match.started_at ? new Date(match.started_at).toLocaleString() : '';
-    const playerUsername = await fetchUsername(isPlayerOne ? match.player_one_id : match.player_two_id);
-    const opponentUsername = await fetchUsername(opponentId);
+    const playerUsername = isPlayerOne ? match.player_one_displayname : match.player_two_displayname;
+    const opponentUsername = isPlayerOne ? match.player_two_displayname : match.player_one_displayname;
     // Truncate usernames if too long
-    const trunc = (s: string) => s.length > 12 ? s.slice(0, 10) + '…' : s;
+    const trunc = (s: string) => s && s.length > 12 ? s.slice(0, 10) + '…' : s;
     const li = document.createElement('li');
     li.className = 'match-item w-full flex justify-between py-1';
     li.innerHTML = `
-      <div class="date-time text-emerald-400 flex w-[50%]">${date}</div>
+      <div class="date-time text-emerald-400 flex w-[50%]">${sanitizeString(date)}</div>
       <div class="match-middle flex gap-4 w-[50%] mx-5">
-        <div class="truncate">${trunc(playerUsername)}</div>
+        <div class="truncate">${sanitizeString(trunc(playerUsername))}</div>
         <div>:</div>
-        <div class="truncate">${trunc(opponentUsername)}</div>
+        <div class="truncate">${sanitizeString(trunc(opponentUsername))}</div>
       </div>
       <div class="text-emerald-400">${playerScore}:${opponentScore}</div>
     `;

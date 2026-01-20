@@ -23,9 +23,10 @@ $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
 
 // Authenticated-only: logout (JWT required, 2FA not strictly needed)
 $this->router->post('/api/user/logout', [UserController::class, 'logout'], [AuthMiddleware::class]); //mert
+$this->router->get('/api/me', [UserController::class, 'getMe'], [AuthMiddleware::class]);
 
 // users (protected)
-$this->router->get('/api/users', [UserController::class, 'getUsers'], /* [Require2FAMiddleware::class] */);
+$this->router->get('/api/users', [UserController::class, 'getUsers'], [Require2FAMiddleware::class]);
 $this->router->get('/api/user/{id}', [UserController::class, 'getUser'], [Require2FAMiddleware::class]);
 $this->router->get('/api/user/{id}/stats', [UserController::class, 'getUserStats'], [Require2FAMiddleware::class]);
 $this->router->get('/api/user/{email}', [UserController::class, 'getUserByEmail'], [Require2FAMiddleware::class]);
@@ -33,9 +34,12 @@ $this->router->get('/api/user/{userName}', [UserController::class, 'getUserByUse
 $this->router->post('/api/user/{id}/uploadAvatar', [UserController::class, 'uploadAvatar'], [Require2FAMiddleware::class]);
 $this->router->patch('/api/user/update', [UserController::class, 'updateUser'], [Require2FAMiddleware::class]);
 $this->router->patch('/api/user/changePassword', [UserController::class, 'changePassword'], [Require2FAMiddleware::class]);
-$this->router->patch('/api/user/changeEmail', [UserController::class, 'changeEmail'], /* [Require2FAMiddleware::class] */);
+$this->router->patch('/api/user/changeEmail', [UserController::class, 'changeEmail'], [Require2FAMiddleware::class]);
 $this->router->delete('/api/user/{id}', [UserController::class, 'deleteUser'], [Require2FAMiddleware::class]);
 $this->router->delete('/api/user/{id}/avatar', [UserController::class, 'deleteAvatar'], [Require2FAMiddleware::class]);
+
+// public profile (no auth / 2FA required, but block-aware)
+$this->router->get('/api/public/profile/{id}', [UserController::class, 'getPublicProfile']);
 
 // matches (protected)
 $this->router->get('/api/matches', [MatchesController::class, 'getMatches'], [Require2FAMiddleware::class]);
@@ -80,11 +84,11 @@ $this->router->post('/api/auth/2fa/disable', [AuthController::class, 'disable2FA
 $this->router->get('/api/auth/2fa/status', [AuthController::class, 'get2FAStatus'], [AuthMiddleware::class]);
 
 // messaging (protected)
-$this->router->get('/api/conversations', [MessagingController::class, 'getConversations'], /* [Require2FAMiddleware::class] */);
-$this->router->get('/api/conversations/{id}', [MessagingController::class, 'getConversation'], /* [Require2FAMiddleware::class] */);
-$this->router->post('/api/conversations', [MessagingController::class, 'createConversation'], /* [Require2FAMiddleware::class] */);
-$this->router->post('/api/conversations/{id}/messages', [MessagingController::class, 'sendMessage'], /* [Require2FAMiddleware::class] */);
-$this->router->patch('/api/messages/{id}', [MessagingController::class, 'editMessage'], /* [Require2FAMiddleware::class] */);
+$this->router->get('/api/conversations', [MessagingController::class, 'getConversations'], [Require2FAMiddleware::class]);
+$this->router->get('/api/conversations/{id}', [MessagingController::class, 'getConversation'], [Require2FAMiddleware::class]);
+$this->router->post('/api/conversations', [MessagingController::class, 'createConversation'], [Require2FAMiddleware::class]);
+$this->router->post('/api/conversations/{id}/messages', [MessagingController::class, 'sendMessage'], [Require2FAMiddleware::class]);
+$this->router->patch('/api/messages/{id}', [MessagingController::class, 'editMessage'], [Require2FAMiddleware::class]);
 
 // friendships & blocks (protected)
 $this->router->get('/api/friends', [FriendshipController::class, 'getFriends'], [Require2FAMiddleware::class]);
