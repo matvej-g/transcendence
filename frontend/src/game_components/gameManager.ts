@@ -19,7 +19,8 @@ class GameManager {
     private gameCanvas: GameCanvas;
     private tournamentCanvas: TournamentCanvas;
     private networkManager: NetworkManager;
-    private keyState: {[key: string]: boolean} = {}; 
+    private keyState: {[key: string]: boolean} = {};
+    private isGameActive: boolean = false; 
 
     //document.getElementById('') searches for an Element inside the HTML  
     constructor() {
@@ -45,17 +46,16 @@ class GameManager {
         this.exitGameButton?.addEventListener('click', () => this.exitGame());
         this.exitTournamentButton?.addEventListener('click', () => this.exitTournament());
 
-        window.addEventListener('hashchange', () => {
+        const handleHashChange = () => {
             if (window.location.hash === '#game') {
-                // Zeige GameMode Menu wieder an
-                this.gameModeMenu?.classList.remove('hidden');
-                this.gameCanvas.hide();
-            } else if (window.location.hash !== '#game') {
-                // User hat #game verlassen
-                this.gameModeMenu?.classList.remove('hidden');
-                this.gameCanvas.hide();
+                if (!this.isGameActive) {
+                    this.gameModeMenu?.classList.remove('hidden');
+                }
             }
-        });
+        };
+        window.addEventListener('hashchange', handleHashChange);
+        handleHashChange();
+
         //Keyboard events
         window.addEventListener('keydown', (e) => this.keyState[e.key] = true);
         window.addEventListener('keyup', (e) => this.keyState[e.key] = false);
@@ -64,6 +64,7 @@ class GameManager {
     private startLocalGame(): void {
         console.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
+        this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need cahnge later
         console.log(userId);
         this.networkManager.connect('ws://localhost:8080/ws', 'local', userId);
@@ -72,6 +73,7 @@ class GameManager {
     private startRemoteGame(): void {
         console.log('Starting remote game...');
         this.gameModeMenu?.classList.add('hidden');
+        this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need change later
         console.log(userId);
         this.networkManager.connect('ws://localhost:8080/ws', 'remote', userId);
@@ -80,6 +82,7 @@ class GameManager {
     private joinTournament(): void {
         console.log('Join Tournament...');
         this.gameModeMenu?.classList.add('hidden');
+        this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need change later
         console.log(userId);
         this.networkManager.connect('ws://localhost:8080/ws', 'joinT', userId);
@@ -88,6 +91,7 @@ class GameManager {
     private hostTournament(): void {
         console.log('Host Tournament...');
         this.gameModeMenu?.classList.add('hidden');
+        this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need change later
         console.log(userId);
         this.networkManager.connect('ws://localhost:8080/ws', 'joinT', userId);
@@ -98,6 +102,7 @@ class GameManager {
 
         this.networkManager.disconnect();
         this.gameCanvas.hide();
+        this.isGameActive = false;
         this.gameModeMenu?.classList.remove('hidden');
     }
 
@@ -106,6 +111,7 @@ class GameManager {
         this.networkManager.disconnect();
         this.tournamentCanvas.hide();
         this.gameCanvas.hide();
+        this.isGameActive = false;
         this.gameModeMenu?.classList.remove('hidden');
     }
 
