@@ -1,6 +1,7 @@
 <?php
 namespace Pong;
 
+use Pong\TournamentLogic;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 //Database Models
@@ -9,10 +10,17 @@ use src\Models\UserModel;
 use src\Models\MatchesModel;
 use src\Models\UserStatsModel;
 use src\Models\UserStatusModel;
+//for Tournament
+use src\Models\TournamentsModel;
+use src\Models\TournamentPlayerModel;
+use src\Models\TournamentMatchesModel;
+
+
 
 class GameServer implements MessageComponentInterface {
     private const GAME_TICK = 0.016;
     private const COUNTDOWN_DURATION = 4;
+    private const TOURNAMENT_COUNTDOWN = 30;
 
     protected \SplObjectStorage $players;
     private array $waitingPlayers = [];
@@ -24,6 +32,8 @@ class GameServer implements MessageComponentInterface {
     private MatchesModel $matchesModel;
     private UserStatsModel $userStatsModel;
     private UserStatusModel $userStatus;
+
+    private TournamentLogic $tournament;
 
     public function __construct($loop = null) {
         $this->players = new \SplObjectStorage;
@@ -38,8 +48,17 @@ class GameServer implements MessageComponentInterface {
         $this->matchesModel = new MatchesModel($this->db);
         $this->userStatsModel = new UserStatsModel($this->db);
         $this->userStatus = new UserStatusModel($this->db);
+        $this->tournament = new TournamentLogic(
+            new TournamentsModel($this->db),
+            new TournamentPlayerModel($this->db),
+            new TournamentMatchesModel($this->db)
+        );
 
-        $this->cleanupOrphanedLocalGames();
+        //callbacks for tournament
+        $this->tournament->setCallbacks(
+            fn($tID, $p1, $p2, $round) => $this->createTournamentMatch($tID, $p1, $p2, $round),
+            fn($pair, $gameID, $tID) => $this->notifyMatchTournament($pair, $gameID, $tID)
+        );
         echo "GameServer initialized\n";
     }
 
@@ -47,11 +66,9 @@ class GameServer implements MessageComponentInterface {
         if ($this->loop) {
             $this->loop->addPeriodicTimer(self::GAME_TICK, function() {
                 $this->updateAllGames();
-            }
-        );
+                }
+            );
             echo "Game loop timer registered\n";
-        } else {
-            echo "WARNING: No event loop provided!\n";
         }
     }
 
@@ -79,9 +96,12 @@ class GameServer implements MessageComponentInterface {
 
         $player = $this->players[$conn];
         $this->removePlayerFromQueue($player);
+
+        $this->tournament->onPlayerDisconnect($player);
         $this->handlePlayerDisconnect($player);
+        $userId = $player->userID ?? $conn->resourceId;
         unset($this->players[$conn]);
-        echo "Connection closed: {$player->userID}\n";
+        echo "Connection closed: {$userId}\n";
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
@@ -93,12 +113,33 @@ class GameServer implements MessageComponentInterface {
         if (!isset($this->games[$gameID])) return;
 
         $game = $this->games[$gameID];
-        
-        if ($game['mode'] === 'remote' && $winnerId) { //evtl auch fuer localGame nutzen
+        if ($game['mode'] === 'remote' && $winnerId) {
             $this->recordMatchResults($gameID, $game, $winnerId);
+        }
+        if ($game['mode'] === 'tournament' && isset($game['tournamentId'])) {
+            $tournamentID = $game['tournamentId'];
+            $round = $game['round'] ?? 1;
+            $winnerPlayer = ($winnerId === $game['player1']->userID) 
+                ? $game['player1'] 
+                : $game['player2'];
+            $this->tournament->onMatchEnd($tournamentID, $round, $winnerPlayer);
+            $this->notifyResultTournamentMatch($tournamentID, $round, $game['player1'], $game['player2']);
         }
         $this->cleanupGame($game);
         unset($this->games[$gameID]);
+
+        if ($game['mode'] === 'tournament' && isset($game['tournamentId'])) {
+            $activeGames = $this->countActiveTournamentGames($tournamentID, $round);
+             $this->tournament->checkRoundComplete($tournamentID, $round, $activeGames);
+        }
+    }
+
+    private function countActiveTournamentGames(int $tournamentID, int $round): int {
+        return count(array_filter($this->games, fn($g) => 
+            $g['mode'] === 'tournament' && 
+            ($g['tournamentId'] ?? null) === $tournamentID && 
+            ($g['round'] ?? 1) === $round
+        ));
     }
 
     private function recordMatchResults(string $gameID, array $game, string $winnerId): void {
@@ -146,24 +187,38 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function isPlayerBusy(Player $player): bool {
-    foreach ($this->games as $game) {
-        if ($game['player1']->userID === $player->userID) {
-            $this->sendAlreadyInGame($player);
-            return true;
-        }
-        if ($game['player2'] && $game['player2']->userID === $player->userID) {
-            $this->sendAlreadyInGame($player);
-            return true;
+        foreach ($this->games as $game) {
+            if ($game['player1']->userID === $player->userID ||
+                ($game['player2'] && $game['player2']->userID === $player->userID)) {
+                    $player->send([
+                        'type' => 'alreadySearching',
+                        'data' => ['message' => 'You are Already in a game.',]
+                    ]);
+                return true;
+            }
+        } 
+        foreach ($this->waitingPlayers as $p) {
+            if ($p->userID === $player->userID) {
+                $player->send([
+                    'type' => 'alreadySearching',
+                    'data' => ['message' => 'You are already searching for a game.']
+                ]);
+                return true;
             }
         }
-    foreach ($this->waitingPlayers as $waitingPlayer) {
-        if ($waitingPlayer->userID === $player->userID) {
+        if ($this->tournament->isPlayerWaiting($player)) {
             $player->send([
                 'type' => 'alreadySearching',
-                'data' => ['message' => 'You are already searching for a game.']
+                'data' => ['message' => 'You are already in the tournament queue.']
             ]);
             return true;
-            }
+        }
+        if ($this->tournament->getPlayerTournamentId($player) !== null) {
+            $player->send([
+                'type' => 'alreadySearching',
+                'data' => ['message' => 'You are already in a tournament.']
+            ]);
+            return true;
         }
         return false;
     }
@@ -180,7 +235,7 @@ class GameServer implements MessageComponentInterface {
         echo "Match created: {$player1->userID} vs {$player2->userID} (ID: {$gameID})\n";
     }
 
-    private function initializeGame(string $gameID, Player $player1, ?Player $player2, string $mode): void {
+    private function initializeGame(string $gameID, Player $player1, ?Player $player2, string $mode, ?int $tournamentId = null, ?int $round = 1): void {
         $player1->gameID = $gameID;
         $player1->paddle = $mode === 'local' ? 'both' : 'left';
         
@@ -203,10 +258,14 @@ class GameServer implements MessageComponentInterface {
             'lastLeftScore' => 0,
             'lastRightScore' => 0,
             'countdownFinished' => false,
-            'isLocalGame' => $mode === 'local'
+            'isLocalGame' => $mode === 'local',
+            'tournamentId' => $tournamentId,
+            'round' => $round
         ];
 
-        $this->notifyMatchStart($player1, $player2, $gameID, $mode);
+        if ($mode !== 'tournament') {
+            $this->notifyMatchStart($player1, $player2, $gameID, $mode);
+        }
     }
 
     private function notifyMatchStart(Player $player1, ?Player $player2, string $gameID, string $mode): void {
@@ -280,6 +339,10 @@ class GameServer implements MessageComponentInterface {
         if ($game['countdownFinished']) {
             return true;
         }
+        // tournament games, has its own timer
+        if ($game['mode'] === 'tournament') {
+            return false;
+        }
 
         if (time() - $game['started'] >= self::COUNTDOWN_DURATION) {
             $this->games[$gameID]['countdownFinished'] = true;
@@ -347,7 +410,7 @@ class GameServer implements MessageComponentInterface {
         ];
 
         $game['player1']->send($message);
-        if ($game['player2']) {
+        if ($game['player2'] && $game['mode'] !== 'local') {
             $game['player2']->send($message);
         }
     }
@@ -377,7 +440,7 @@ class GameServer implements MessageComponentInterface {
         $player->userID = $user['id'];
         $player->username = $user['username'];
         if ($this->isPlayerBusy($player)) {
-            echo "Player {$player->userID} tried to connect but is already in a game. Closing connection.\n";
+            //echo "Player {$player->userID} tried to connect but is already in a game.\n";
             $player->conn->close();
             return;
         }
@@ -393,14 +456,96 @@ class GameServer implements MessageComponentInterface {
 
     private function handleJoin(Player $player, array $data): void {
         $gameMode = $data['gameMode'] ?? 'remote';
-        if ($gameMode === 'local') {
-            $this->startLocalGame($player);
-        } elseif ($gameMode === 'remote') {
-            $this->startRemoteGame($player);
-        } else if ($gameMode === 'joinT') {
+        
+        match($gameMode) {
+            'local' => $this->startLocalGame($player),
+            'remote' => $this->startRemoteGame($player),
+            'joinT' => $this->handleJoinTournament($player),
+            default => null
+        };
+    }
+
+    private function handleJoinTournament(Player $player): void {
+        if ($this->isPlayerBusy($player)) {
             return;
-        } else if ($gameMode === 'hostT') {
-            return;
+        }
+        $this->tournament->joinTournament($player);
+        foreach ($this->tournament->getWaitingPlayers() as $player) {
+            $player->send([
+                'type' => 'tournamentQueue',
+                'data' => [
+                    'message' => 'Joined tournament queue',
+                    'waiting' => $this->tournament->getWaitingCount()
+                ]
+            ]);
+        }
+    }
+
+    private function createTournamentMatch(int $tournamentID, Player $player1, Player $player2, int $round): void {
+        $gameID = $this->matchesModel->createMatch($player1->userID, $player2->userID);
+        $this->initializeGame($gameID, $player1, $player2, 'tournament', $tournamentID, $round);
+        $this->notifyMatchTournament([$player1, $player2], $gameID, $tournamentID);
+
+        if ($this->loop) {
+            $this->loop->addTimer(self::TOURNAMENT_COUNTDOWN, function() use ($gameID) {
+                if (isset($this->games[$gameID])) {
+                    $this->games[$gameID]['countdownFinished'] = true;
+                    $this->games[$gameID]['engine'] = new GameEngine($gameID);
+                }
+            });
+        }
+    }
+
+    private function notifyMatchTournament(array $pair, string $gameID, int $tournamentID): void {
+        [$player1, $player2] = $pair;
+        $player1->send([
+            'type' => 'tournamentMatchAnnounce',
+            'data' => [
+                'message' => 'Tournament match found! Starting game.',
+                'paddle' => 'left',
+                'gameID' => $gameID,
+                'player1' => $player1->username ?? 'Player 1',
+                'player2' => $player2->username ?? 'Player 2'
+            ]
+        ]);
+        $player2->send([
+            'type' => 'tournamentMatchAnnounce',
+            'data' => [
+                'message' => 'Tournament match found! Starting game.',
+                'paddle' => 'right',
+                'gameID' => $gameID,
+                'player1' => $player1->username ?? 'Player 1',
+                'player2' => $player2->username ?? 'Player 2'
+            ]
+        ]);
+    }
+
+    private function notifyResultTournamentMatch(int $tournamentId, int $currentRound, Player $finishedPlayer1, Player $finishedPlayer2): void {
+        $rounds = $this->tournament->getBracketData($tournamentId);
+        $currentRoundNum = $this->tournament->getCurrentRound($tournamentId);
+        $tournamentPlayers = $this->tournament->getTournamentPlayers($tournamentId);
+        
+        foreach ($tournamentPlayers as $player) {
+            if ($player === null) continue;
+
+            if ($player->userID === $finishedPlayer1->userID || 
+                $player->userID === $finishedPlayer2->userID) {
+                $player->send([
+                    'type' => 'tournamentMatchEnd',
+                    'data' => [
+                        'rounds' => $rounds,
+                        'currentRound' => $currentRoundNum
+                    ]
+                ]);
+            } else {
+                $player->send([
+                    'type' => 'tournamentUpdate',
+                    'data' => [
+                        'rounds' => $rounds,
+                        'currentRound' => $currentRoundNum
+                    ]
+                ]);
+            }
         }
     }
 
@@ -423,17 +568,20 @@ class GameServer implements MessageComponentInterface {
         //set movement direction for paddle when buttom pressed / released
         if ($action === 'keydown') {
             $direction = $data['direction'] ?? null;
-            if ($direction === 'up') {
-                $engine->setPaddleVelocity($paddle, -1);
-            } elseif ($direction === 'down') {
-                $engine->setPaddleVelocity($paddle, 1);
-            }
+            $velocity = match($direction) {
+                'up' => -1,
+                'down' => 1,
+                default => 0
+            };
+            $engine->setPaddleVelocity($paddle, $velocity);
         } elseif ($action === 'keyup') {
             $engine->setPaddleVelocity($paddle, 0);
         }
     }
 
     private function removePlayerFromQueue(Player $player): void {
+        if (!isset($player->userID)) return;
+
         $this->waitingPlayers = array_filter(
             $this->waitingPlayers,
             fn($p) => $p->userID !== $player->userID
@@ -446,11 +594,23 @@ class GameServer implements MessageComponentInterface {
         $game = $this->games[$player->gameID];
         $opponent = $this->getOpponent($player, $game);
 
-        if ($opponent) {
-            $this->notifyOpponentDisconnect($opponent, $player, $game);
-        }
+        $opponentConnected = $opponent && $this->isPlayerConnected($opponent);
 
-        $this->endGame($player->gameID, $opponent?->userID, true);
+        if ($opponentConnected) {
+            $this->notifyOpponentDisconnect($opponent, $player, $game);
+            $this->endGame($player->gameID, $opponent->userID, true);
+        } else {
+            $this->endGame($player->gameID, null, true);
+        }
+    }
+
+    private function isPlayerConnected(Player $player): bool {
+        foreach ($this->players as $conn => $p) {
+            if ($p->userID === $player->userID) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function getOpponent(Player $player, array $game): ?Player {
@@ -471,20 +631,5 @@ class GameServer implements MessageComponentInterface {
                 'winner' => $opponent->paddle
             ]
         ]);
-    }
-
-    private function sendAlreadyInGame(Player $player): void {
-        $player->send([
-            'type' => 'alreadyInGame',
-            'data' => [
-                'message' => 'You are Already in a game.',
-            ]
-        ]);
-    }
-
-    private function cleanupOrphanedLocalGames(): void {
-        $query = "DELETE FROM matches WHERE player_one_id = player_two_id";
-        $this->db->query($query);
-        echo "Cleaned up orphaned local games\n";
     }
 }
