@@ -1,7 +1,7 @@
 import { DEFAULT_GAME_CONFIG, GameState, DEFAULT_TOURNAMENT_CONFIG, TournamentState } from "./gameEntities.js";
 import { GameCanvas } from "./gameCanvas";
 import { TournamentCanvas } from "./tournamentCanvas.js";
-import { reloadMatchHistory, reloadStats } from "../components/profile/profile.js";
+//import { reloadMatchHistory, reloadStats } from "../components/profile/profile.js";
 
 export class NetworkManager {
 	private canvas: GameCanvas;
@@ -20,40 +20,10 @@ export class NetworkManager {
 	constructor(canvas: GameCanvas, t_canvas: TournamentCanvas) {
 		this.canvas = canvas;
 		this.t_canvas = t_canvas;
-
-		this.localGameState = {
-			leftPaddle: {
-				x: 20,
-				y: DEFAULT_GAME_CONFIG.canvasHeight / 2 - DEFAULT_GAME_CONFIG.paddleHeight / 2,
-				width: DEFAULT_GAME_CONFIG.paddleWidth,
-				height: DEFAULT_GAME_CONFIG.paddleHeight,
-				score: 0
-			},
-			rightPaddle: {
-				x: DEFAULT_GAME_CONFIG.canvasWidth - 20 - DEFAULT_GAME_CONFIG.paddleWidth,
-				y: DEFAULT_GAME_CONFIG.canvasHeight / 2 - DEFAULT_GAME_CONFIG.paddleHeight / 2,
-				width: DEFAULT_GAME_CONFIG.paddleWidth,
-				height: DEFAULT_GAME_CONFIG.paddleHeight,
-				score: 0
-			},
-			ball: {
-				x: DEFAULT_GAME_CONFIG.canvasWidth / 2,
-				y: DEFAULT_GAME_CONFIG.canvasHeight / 2,
-				radius: DEFAULT_GAME_CONFIG.ballRadius
-			},
-			isRunning: false,
-			winner: null,
-			leftPlayerName: undefined,
-			rightPlayerName: undefined
-		};
-
-		this.localTournamentState = {
-			isRunning: false,
-			winner: null,
-			rounds: [],
-			players: [],
-			currentRound: 0
-		};
+		this.localGameState = {} as GameState;
+		this.localTournamentState = {} as TournamentState;
+		this.resetlocalMatchState();
+		this.resetlocalTournamentState();
 	}
 
 	public connect(url: string, mode: 'local' | 'remote' | 'joinT' | 'hostT' , userId: number): void {
@@ -66,10 +36,8 @@ export class NetworkManager {
 			this.canvas.showSearching();
 		} else if (mode == 'joinT') {
 			this.t_canvas.show();
-			this.t_canvas.render(this.localTournamentState);
 		} else if (mode == 'hostT') {
 			this.t_canvas.show();
-			this.t_canvas.render(this.localTournamentState);
 		}
 		this.socket = new WebSocket(url);
 		this.socket.onopen = () => this.onConnected();
@@ -107,6 +75,7 @@ export class NetworkManager {
 				break;
 			case 'matchFound':
 				console.log('Match found!');
+				this.resetlocalMatchState();
 				if (message.data.leftPlayerName) {
 					this.localGameState.leftPlayerName = message.data.leftPlayerName;
 				}
@@ -138,23 +107,93 @@ export class NetworkManager {
 				console.log('Winner received:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
-				reloadStats();
-				reloadMatchHistory();
+				//reloadStats();
+				//reloadMatchHistory();
 				break;
 
 			case 'opponentDisconnected':
 				console.log('Opponent disconnected:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
-				reloadStats();
-				reloadMatchHistory();
-				break;
-			case 'alreadyInGame':
-				alert(message.data.message);
-				window.location.hash = 'profile';
+				//reloadStats();
+				//reloadMatchHistory();
 				break;
 			case 'alreadySearching':
 				alert(message.data.message);
+				window.location.hash = 'profile';
+				break;
+			case 'tournamentStart':
+				console.log('Tournament starting:', message.data);
+				this.localTournamentState = {
+					isRunning: true,
+					winner: null,
+					rounds: message.data.rounds,
+					players: message.data.players,
+					currentRound: 0
+				};
+				this.t_canvas.show();
+				this.t_canvas.render(this.localTournamentState);
+				break;
+			case 'tournamentQueue':
+				console.log('Tournament queue update:', message.data);
+				this.canvas.hide();
+				this.t_canvas.show();
+				this.t_canvas.showSearching(message.data.waiting);
+				break;
+			case 'tournamentUpdate':
+				console.log('Tournament update:', message.data);
+				this.localTournamentState.rounds = message.data.rounds;
+				this.localTournamentState.currentRound = message.data.currentRound;
+				if (!this.localGameState.isRunning) {
+					this.t_canvas.render(this.localTournamentState);
+				}
+				break;
+			case 'tournamentMatchEnd':
+				console.log('Tournament update:', message.data);
+				this. resetlocalMatchState();
+				this.localTournamentState.rounds = message.data.rounds;
+				this.localTournamentState.currentRound = message.data.currentRound;
+				this.removeInputHandlers();
+				this.canvas.hide();
+				this.t_canvas.show();
+				this.t_canvas.render(this.localTournamentState);
+				break;
+			case 'tournamentMatchAnnounce':
+				console.log('Match announce:', message.data);
+				this.resetlocalMatchState();
+				this.localGameState.leftPlayerName = message.data.player1;
+				this.localGameState.rightPlayerName = message.data.player2;
+				this.t_canvas.showCountdown(
+					this.localTournamentState,
+					() => {
+						this.canvas.show();
+						this.t_canvas.hide();
+						this.setupInputHandlers();
+					}, 30
+				);
+				break;
+			case 'tournamentWin':
+				console.log('Tournament winner:', message.data);
+				this.canvas.hide();
+				this.t_canvas.show();
+				this.localTournamentState.winner = message.data.winner;
+				this.localTournamentState.isRunning = false;
+				this.t_canvas.render(this.localTournamentState);
+				alert(`🏆 Tournament Winner: ${message.data.winner}!`);
+				break;
+			case 'tournamentDC':
+				console.log('Tournament disconnection:', message.data);
+				alert(message.data.message);
+				this.canvas.hide();
+				this.removeInputHandlers();
+				this.localTournamentState = {
+					isRunning: false,
+					winner: null,
+					rounds: [],
+					players: [],
+					currentRound: 0
+				};
+				this.t_canvas.hide();
 				window.location.hash = 'profile';
 				break;
 			case 'error':
@@ -282,4 +321,41 @@ export class NetworkManager {
 		}
 	}
 
+	private resetlocalMatchState(): void {
+		this.localGameState = {
+			leftPaddle: {
+				x: 20,
+				y: DEFAULT_GAME_CONFIG.canvasHeight / 2 - DEFAULT_GAME_CONFIG.paddleHeight / 2,
+				width: DEFAULT_GAME_CONFIG.paddleWidth,
+				height: DEFAULT_GAME_CONFIG.paddleHeight,
+				score: 0
+			},
+			rightPaddle: {
+				x: DEFAULT_GAME_CONFIG.canvasWidth - 20 - DEFAULT_GAME_CONFIG.paddleWidth,
+				y: DEFAULT_GAME_CONFIG.canvasHeight / 2 - DEFAULT_GAME_CONFIG.paddleHeight / 2,
+				width: DEFAULT_GAME_CONFIG.paddleWidth,
+				height: DEFAULT_GAME_CONFIG.paddleHeight,
+				score: 0
+			},
+			ball: {
+				x: DEFAULT_GAME_CONFIG.canvasWidth / 2,
+				y: DEFAULT_GAME_CONFIG.canvasHeight / 2,
+				radius: DEFAULT_GAME_CONFIG.ballRadius
+			},
+			isRunning: false,
+			winner: null,
+			leftPlayerName: undefined,
+			rightPlayerName: undefined
+		};
+	}
+
+	private resetlocalTournamentState(): void {
+		this.localTournamentState = {
+			isRunning: false,
+			winner: null,
+			rounds: [],
+			players: [],
+			currentRound: 0
+		};
+	}
 }

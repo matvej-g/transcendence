@@ -31,7 +31,7 @@ class GameManager {
         this.exitGameButton = document.getElementById('exitGameButton');
         this.exitTournamentButton = document.getElementById('exitTournamentButton');
         this.gameCanvas = new GameCanvas();
-        this.tournamentCanvas = new TournamentCanvas();
+        this.tournamentCanvas = new TournamentCanvas('tournamentCanvas');
         this.networkManager = new NetworkManager(this.gameCanvas, this.tournamentCanvas);
 
         this.initEventListeners();
@@ -90,7 +90,7 @@ class GameManager {
         this.gameModeMenu?.classList.add('hidden');
         const userId = getCurrentUserIdNumber() || 1; //need change later
         console.log(userId);
-        this.networkManager.connect('ws://localhost:8080/ws', 'hostT', userId);
+        this.networkManager.connect('ws://localhost:8080/ws', 'joinT', userId);
     }
 
     private exitGame(): void {
@@ -103,6 +103,7 @@ class GameManager {
 
     private exitTournament(): void {
         console.log('Exit Tournament, back to GameModeSelection');
+        this.networkManager.disconnect();
         this.tournamentCanvas.hide();
         this.gameCanvas.hide();
         this.gameModeMenu?.classList.remove('hidden');
