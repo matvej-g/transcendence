@@ -1,14 +1,3 @@
-	public function friendRequestBlocked(
-		int $blockerId,
-		int $blockedId
-	): void {
-		$this->publisher->publish('friend.request.blocked', [
-			'blockerId' => $blockerId,
-			'blockedId' => $blockedId,
-			'recipientUserIds' => [$blockedId, $blockerId],
-			'status' => 'blocked',
-		]);
-	}
 <?php declare(strict_types=1);
 
 namespace src\Services;
@@ -88,6 +77,18 @@ final class MessagingNotifier
 			'toUserId'  => $toUserId,     // the other user
 			'recipientUserIds' => [$toUserId, $fromUserId],
 			'status'    => 'rejected',
+		]);
+	}
+
+	public function friendBlocked(
+		int $blockerId,
+		int $blockedId
+	): void {
+		$this->publisher->publish('friend.request.blocked', [
+			'blockerId' => $blockerId,
+			'blockedId' => $blockedId,
+			'recipientUserIds' => [$blockedId, $blockerId],
+			'status' => 'blocked',
 		]);
 	}
 }

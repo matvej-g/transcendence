@@ -8,19 +8,6 @@ import { getFriends, blockUser, getUserStatus } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
 import type { FriendRequest } from '../../common/types.js';
 import { t } from '../languages/i18n.js';
-import { appWs } from '../../ws/appWs.js';
-
-// Listen for friend request websocket events and refresh the list
-appWs.on((ev) => {
-	if (ev.type === 'friend.request.accepted') {
-		const currentUserId = getCurrentUserId();
-		// Only refresh if the current user is the recipient
-		if (currentUserId && String(ev.data?.toUserId) === String(currentUserId)) {
-			alert('your friend request was accepted');
-			populateFriendsList();
-		}
-	}
-});
 
 async function createFriendItem(friend: FriendRequest) {
 	const li = document.createElement('li');
@@ -78,13 +65,20 @@ async function createFriendItem(friend: FriendRequest) {
 }
 
 // Main logic to populate friends-list
+let friendsListReloading = false;
 export async function populateFriendsList() {
+	if (friendsListReloading) return;
+	friendsListReloading = true;
 	const ul = document.getElementById('friends-list');
-	if (!ul) return;
+	if (!ul) {
+		friendsListReloading = false;
+		return;
+	}
 	ul.innerHTML = '';
 	const userId = getCurrentUserId && getCurrentUserId();
 	if (!userId) {
 		ul.innerHTML = `<li class="text-red-400" data-i18n="friends.no_user_id_found">${t('friends.no_user_id_found')}</li>`;
+		friendsListReloading = false;
 		return;
 	}
 	try {
@@ -104,4 +98,5 @@ export async function populateFriendsList() {
 	} catch (e) {
 		ul.innerHTML = '<li class="text-red-400" data-i18n="friends.failed_to_load">Failed to load friends</li>';
 	}
+	friendsListReloading = false;
 }

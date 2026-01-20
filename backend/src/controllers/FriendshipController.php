@@ -244,7 +244,7 @@ class FriendshipController extends BaseController
         if ((int)$existing['user_id'] !== $userId && (int)$existing['friend_id'] !== $userId) {
             return $this->jsonUnauthorized('Not a participant of this friendship');
         }
-        
+
         // update status
         $updated = $this->friendships->updateStatus($id, $status);
         if ($updated === null) {
@@ -352,7 +352,7 @@ class FriendshipController extends BaseController
                 }
             }
             // Notify both users about the block
-            $this->notifier->friendRequestBlocked($blockerId, $blockedId);
+            $this->notifier->friendBlocked($blockerId, $blockedId);
         }
         return $this->jsonCreated(['id' => (int)$blockedRelation]);
     }
