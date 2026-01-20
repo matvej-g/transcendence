@@ -32,7 +32,7 @@ function sendTwoFactorEmail($email, $code) {
         ];
 
         // Recipients
-        $fromEmail = getenv('SMTP_FROM_EMAIL') ;
+        $fromEmail = getenv('SMTP_FROM_EMAIL');
         $fromName = getenv('SMTP_FROM_NAME');
         $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($email);
