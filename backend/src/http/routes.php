@@ -35,6 +35,9 @@ $this->router->patch('/api/user/changeEmail', [UserController::class, 'changeEma
 $this->router->delete('/api/user/{id}', [UserController::class, 'deleteUser'], [Require2FAMiddleware::class]);
 $this->router->delete('/api/user/{id}/avatar', [UserController::class, 'deleteAvatar'], [Require2FAMiddleware::class]);
 
+// public profile (no auth / 2FA required, but block-aware)
+$this->router->get('/api/public/profile/{id}', [UserController::class, 'getPublicProfile']);
+
 // matches (protected)
 $this->router->get('/api/matches', [MatchesController::class, 'getMatches'], [Require2FAMiddleware::class]);
 $this->router->get('/api/match/{id}', [MatchesController::class, 'getMatch'], [Require2FAMiddleware::class]);
