@@ -9,6 +9,7 @@ const sections: Record<string, HTMLElement | null> = {
   'game': document.getElementById('game-section'),
   'friends': document.getElementById('friends-section'),
   'chat': document.getElementById('chat-section'),
+  'verify-2fa': document.getElementById('verify-2fa-section'),
   'notfound': document.getElementById('notfound-section'),
 };
 
@@ -122,7 +123,7 @@ function showSection(sectionId: string): void {
   }
 
   // Show/hide navbars and footer based on section
-  if (target === 'auth') {
+  if (target === 'auth' || target === 'verify-2fa') {
     authNavbar?.classList.remove('hidden');
     navbar?.classList.add('hidden');
   } else {
