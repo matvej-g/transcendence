@@ -1,4 +1,4 @@
-import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId, setCurrentUserId, setCurrentUsername } from '../components/auth/authUtils.js';
+import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId, setCurrentUserId, setCurrentUsername, setUserOnline } from '../components/auth/authUtils.js';
 import { initFriendsSection} from '../components/friends/friendsContent.js';
 import { initProfile, reloadUsername, reloadAvatar, reloadMatchHistory, reloadStats } from '../components/profile/profile.js';
 
@@ -162,6 +162,9 @@ async function handleOAuthCallback(): Promise<void> {
     if (data.success && data.user) {
       setCurrentUserId(data.user.id);
       setCurrentUsername(data.user.username);
+
+      try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
+
       window.location.href = '/index.html#profile';
     } else {
       throw new Error(data.error || 'Authentication failed');
