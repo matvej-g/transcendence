@@ -11,19 +11,29 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Canvas Styles -->
     <style>
+        #tournamentCanvas,
         #gameCanvas {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            image-rendering: crisp-edges;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          image-rendering: crisp-edges;
         }
 
+        #tournamentContainer,
         #gameContainer {
-            max-height: calc(100vh - 150px);
+          max-height: calc(100vh - 150px);
+          position: relative;
         }
 
+        #tournamentContainer canvas,
         #gameContainer canvas {
-          max-height: calc(100% - 60px);
+          max-height: 100%;
+        }
+
+        #exitTournamentButton,
+        #exitGameButton {
+          padding: 1vh 3vw;
+          font-size: clamp(0.875rem, 1.5vw, 1.125rem);
         }
     </style>
   </head>
@@ -226,11 +236,10 @@
 
       <!-- GAME SECTION (hidden by default) -->
       <section id="game-section" class="hidden w-full h-full flex flex-col items-center justify-center text-white">
-        <!-- Edited by Matthias for testing:
-        Game Mode Menu (direkt sichtbar) -->
+        <!-- Game Mode Menu (shown initially) -->
         <div id="gameModeMenu" class="flex-column m-8">
           <h2 class="mb-8 text-4xl font-bold" data-i18n="game.choose_game_mode">Choose Game Mode</h2>
-          <div class="flex gap-4">
+          <div class="flex flex-col gap-4">
             <button
               id="playLocalButton"
               class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_local">
@@ -238,18 +247,31 @@
             </button>
             <button
               id="playRemoteButton"
-              class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_vs_player">
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_vs_player">
               Play vs Player
+            </button>
+            <button
+              id="playTournamentButton"
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_tournament">
+              Join Tournement
             </button>
           </div>
         </div>
         <!-- Game Canvas (hidden initially) -->
-        <div id="gameContainer" class="hidden w-full flex-1 flex flex-col items-center justify-start gap-4 p-4 pt-16">
+        <div id="gameContainer" class="hidden w-full flex-1 flex flex-col items-center justify-center p-4">
           <canvas id="gameCanvas" class="max-w-full max-h-full"></canvas>
           <button
             id="exitGameButton"
-            class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors" data-i18n="game.exit_game">
+            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors mt-8" data-i18n="game.exit_game">
             Exit Game
+          </button>
+        </div>
+        <div id="tournamentContainer" class="hidden w-full flex-1 flex flex-col items-center justify-center p-4">
+          <canvas id="tournamentCanvas" class="max-w-full max-h-full"></canvas>
+          <button
+            id="exitTournamentButton"
+            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors mt-8" data-i18n="game.exit_tournament">
+            Exit Tournement
           </button>
         </div>
       </section>

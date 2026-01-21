@@ -130,9 +130,15 @@ function showSection(sectionId: string): void {
   if (target === 'auth' || target === 'verify-2fa' || target === 'verify-registration' || target === 'oauth-callback') {
     authNavbar?.classList.remove('hidden');
     navbar?.classList.add('hidden');
+    footer?.classList.remove('hidden');
+  } else if (target === 'game') {
+    authNavbar?.classList.add('hidden');
+    navbar?.classList.remove('hidden');
+    footer?.classList.add('hidden');
   } else {
     authNavbar?.classList.add('hidden');
     navbar?.classList.remove('hidden');
+    footer?.classList.remove('hidden');
   }
 }
 
