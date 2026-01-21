@@ -2,6 +2,7 @@
 namespace Pong;
 
 use src\Models\TournamentsModel;
+use src\Models\UserStatsModel;
 //use src\Models\TournamentPlayerModel;
 //use src\Models\TournamentMatchesModel;
 
@@ -14,6 +15,7 @@ class TournamentLogic {
     private array $tournamentCurrentRound = [];
 
     private TournamentsModel $tournamentModel;
+    private UserStatsModel $userStatsModel;
     //private TournamentPlayerModel $tournamentPlayerModel;
     //private TournamentMatchesModel $tournamentMatchesModel;
 
@@ -22,10 +24,12 @@ class TournamentLogic {
 
     public function __construct(
         TournamentsModel $tournamentModel,
+        UserStatsModel $userStatsModel
         //TournamentPlayerModel $tournamentPlayerModel,
         //TournamentMatchesModel $tournamentMatchesModel
     ) {
         $this->tournamentModel = $tournamentModel;
+        $this->userStatsModel = $userStatsModel;
         //$this->tournamentPlayerModel = $tournamentPlayerModel;
         //$this->tournamentMatchesModel = $tournamentMatchesModel;
     }
@@ -120,6 +124,9 @@ class TournamentLogic {
         $this->tournamentPlayers[$tournamentID] = $flatPlayers;
         $this->tournamentRoundWinners[$tournamentID] = [];
         $this->initializeBracket($tournamentID, $flatPlayers);
+        // Record participation for all players
+        $participantIds = array_map(fn($player) => $player->userID, $flatPlayers);
+        $this->userStatsModel->recordTournamentParticipation($participantIds);
         echo "Tournament {$tournamentID} started with 8 players\n";
         $this->tournamentCurrentRound[$tournamentID] = 1;
         $this->startRound($tournamentID, $flatPlayers, 1);     
@@ -187,6 +194,7 @@ class TournamentLogic {
     private function onTournamentEnd(int $tournamentID, Player $champion): void {
         echo "[Tournament] Tournament {$tournamentID} finished! Winner: {$champion->userID}\n";
         $this->tournamentModel->endTournament($tournamentID, $champion->userID);
+        $this->userStatsModel->recordTournamentWin((int) $champion->userID);
         $champion->send([
             'type' => 'tournamentWin',
             'data' => ['message' => 'Congratulations! You are the tournament champion! 🏆',

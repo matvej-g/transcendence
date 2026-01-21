@@ -52,8 +52,7 @@ class GameServer implements MessageComponentInterface {
         $this->tournamentMatchesModel = new TournamentMatchesModel($this->db);
         $this->tournament = new TournamentLogic(
             new TournamentsModel($this->db),
-            new TournamentPlayerModel($this->db),
-            new TournamentMatchesModel($this->db)
+            $this->userStatsModel
         );
 
         //callbacks for tournament
