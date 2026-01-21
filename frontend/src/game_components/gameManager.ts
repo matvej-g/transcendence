@@ -11,8 +11,7 @@ class GameManager {
     private gameModeMenu: HTMLElement | null;
     private playLocalButton: HTMLElement | null;
     private playRemoteButton: HTMLElement | null;
-    private joinTournamentButton: HTMLElement | null;
-    private hostTournamentButton: HTMLElement | null;
+    private playTournamentButton: HTMLElement | null;
     private exitGameButton: HTMLElement | null;
     private exitTournamentButton: HTMLElement | null;
     
@@ -27,8 +26,7 @@ class GameManager {
         this.gameModeMenu = document.getElementById('gameModeMenu');
         this.playLocalButton = document.getElementById('playLocalButton');
         this.playRemoteButton = document.getElementById('playRemoteButton');
-        this.joinTournamentButton = document.getElementById('joinTournamentButton');
-        this.hostTournamentButton = document.getElementById('hostTournamentButton');
+        this.playTournamentButton = document.getElementById('playTournamentButton');
         this.exitGameButton = document.getElementById('exitGameButton');
         this.exitTournamentButton = document.getElementById('exitTournamentButton');
         this.gameCanvas = new GameCanvas();
@@ -41,8 +39,7 @@ class GameManager {
     private initEventListeners(): void {
         this.playLocalButton?.addEventListener('click', () => this.startLocalGame());
         this.playRemoteButton?.addEventListener('click', () => this.startRemoteGame());
-        this.joinTournamentButton?.addEventListener('click', () => this.joinTournament());
-        this.hostTournamentButton?.addEventListener('click', () => this.hostTournament());
+        this.playTournamentButton?.addEventListener('click', () => this.startTournament());
         this.exitGameButton?.addEventListener('click', () => this.exitGame());
         this.exitTournamentButton?.addEventListener('click', () => this.exitTournament());
 
@@ -79,17 +76,8 @@ class GameManager {
         this.networkManager.connect('ws://localhost:8080/ws', 'remote', userId);
     }
 
-    private joinTournament(): void {
+    private startTournament(): void {
         console.log('Join Tournament...');
-        this.gameModeMenu?.classList.add('hidden');
-        this.isGameActive = true;
-        const userId = getCurrentUserIdNumber() || 1; //need change later
-        console.log(userId);
-        this.networkManager.connect('ws://localhost:8080/ws', 'joinT', userId);
-    }
-
-    private hostTournament(): void {
-        console.log('Host Tournament...');
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need change later
