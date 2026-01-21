@@ -44,11 +44,6 @@ export class TournamentCanvas {
                 this.drawMatch(match, roundIndex, matchIndex, state.rounds.length, isCurrentMatch);
             });
         });
-
-        // Draw tournament winner
-        if (state.winner) {
-            this.drawTournamentWinner(state.winner, state.rounds.length);
-        }
     }
 
     private drawTitle(): void {
@@ -76,20 +71,19 @@ export class TournamentCanvas {
     }
 
     private getRoundLabels(totalRounds: number): string[] {
-        // For 8 players: 3 rounds -> QF, SF, Final, Winner
+        // For 8 players: 3 rounds -> QF, SF, Final
         if (totalRounds === 3) {
-            return ['Quarterfinals', 'Semifinals', 'Final', 'Winner'];
+            return ['Quarterfinals', 'Semifinals', 'Final'];
         }
-        // For 4 players: 2 rounds -> SF, Final, Winner
+        // For 4 players: 2 rounds -> SF, Final
         if (totalRounds === 2) {
-            return ['Semifinals', 'Final', 'Winner'];
+            return ['Semifinals', 'Final'];
         }
         // Generic fallback
         const labels = [];
         for (let i = 0; i < totalRounds; i++) {
             labels.push(`Round ${i + 1}`);
         }
-        labels.push('Winner');
         return labels;
     }
 
@@ -197,13 +191,6 @@ export class TournamentCanvas {
             }
         }
 
-        // Connect final to winner position
-        const finalPos = this.getMatchPosition(totalRounds - 1, 0, totalRounds);
-        const winnerX = this.PADDING + totalRounds * (this.MATCH_WIDTH + this.ROUND_GAP);
-        this.renderingContext.beginPath();
-        this.renderingContext.moveTo(finalPos.x + this.MATCH_WIDTH, finalPos.y + this.MATCH_HEIGHT / 2);
-        this.renderingContext.lineTo(winnerX, finalPos.y + this.MATCH_HEIGHT / 2);
-        this.renderingContext.stroke();
     }
 
     private drawConnector(
@@ -237,26 +224,6 @@ export class TournamentCanvas {
         this.renderingContext.lineTo(target.x, target.y + this.MATCH_HEIGHT / 2);
 
         this.renderingContext.stroke();
-    }
-
-    private drawTournamentWinner(winner: string, totalRounds: number): void {
-        if (!this.renderingContext || !this.canvas) return;
-
-        const x = this.PADDING + totalRounds * (this.MATCH_WIDTH + this.ROUND_GAP);
-        const finalPos = this.getMatchPosition(totalRounds - 1, 0, totalRounds);
-        const y = finalPos.y + this.MATCH_HEIGHT / 2;
-
-        // Trophy icon (simple)
-        this.renderingContext.fillStyle = '#FFD700';
-        this.renderingContext.font = '24px Arial';
-        this.renderingContext.textAlign = 'left';
-        this.renderingContext.textBaseline = 'middle';
-        this.renderingContext.fillText('🏆', x + 10, y - 15);
-
-        // Winner name
-        this.renderingContext.fillStyle = '#FFD700';
-        this.renderingContext.font = 'bold 14px Arial';
-        this.renderingContext.fillText(winner, x + 10, y + 10);
     }
 
     // Helper to create initial tournament state

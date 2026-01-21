@@ -164,6 +164,8 @@ export class NetworkManager {
 				this.resetlocalMatchState();
 				this.localGameState.leftPlayerName = message.data.player1;
 				this.localGameState.rightPlayerName = message.data.player2;
+				this.localTournamentState.rounds = message.data.rounds;
+				this.localTournamentState.currentRound = message.data.currentRound;
 				this.t_canvas.showCountdown(
 					this.localTournamentState,
 					() => {
@@ -225,6 +227,8 @@ export class NetworkManager {
 
 	public disconnect(): void {
 		this.removeInputHandlers();
+		this.canvas.cancelCountdown();
+		this.t_canvas.cancelCountdown();
 		this.socket?.close();
 	}
 

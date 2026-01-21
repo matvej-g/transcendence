@@ -4,6 +4,7 @@ export class GameCanvas {
     private canvas: HTMLCanvasElement | null;
     private renderingContext: CanvasRenderingContext2D | null;
     private config: GameConfig;
+    private countdownTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
     constructor(canvasId: string = 'gameCanvas', config: GameConfig = DEFAULT_GAME_CONFIG) {
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -188,6 +189,7 @@ export class GameCanvas {
     // Show countdown timer (3, 2, 1, GO!)
     public showCountdown(callback: () => void): void {
         if (!this.renderingContext || !this.canvas) return;
+        this.cancelCountdown();
         let count = 3;
         const showNumber = () => {
             this.clear();
@@ -210,13 +212,21 @@ export class GameCanvas {
             }
             count--;
             if (count >= 0) {
-                setTimeout(showNumber, 1000);
+                this.countdownTimeoutId = setTimeout(showNumber, 1000);
             } else {
-                setTimeout(() => {
+                this.countdownTimeoutId = setTimeout(() => {
+                    this.countdownTimeoutId = null;
                     callback();
                 }, 500);
             }
         };
         showNumber();
+    }
+
+    public cancelCountdown(): void {
+        if (this.countdownTimeoutId !== null) {
+            clearTimeout(this.countdownTimeoutId);
+            this.countdownTimeoutId = null;
+        }
     }
 }

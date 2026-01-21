@@ -100,6 +100,15 @@ class GameServer implements MessageComponentInterface {
         $this->removePlayerFromQueue($player);
 
         $this->tournament->onPlayerDisconnect($player);
+        foreach ($this->tournament->getWaitingPlayers() as $player) {
+            $player->send([
+                'type' => 'tournamentQueue',
+                'data' => [
+                    'message' => 'Joined tournament queue',
+                    'waiting' => $this->tournament->getWaitingCount()
+                ]
+            ]);
+        }
         $this->handlePlayerDisconnect($player);
         $userId = $player->userID ?? $conn->resourceId;
         unset($this->players[$conn]);
@@ -507,6 +516,8 @@ class GameServer implements MessageComponentInterface {
 
     private function notifyMatchTournament(array $pair, string $gameID, int $tournamentID): void {
         [$player1, $player2] = $pair;
+        $rounds = $this->tournament->getBracketData($tournamentID);
+        $currentRound = $this->tournament->getCurrentRound($tournamentID);
         $player1->send([
             'type' => 'tournamentMatchAnnounce',
             'data' => [
@@ -514,7 +525,9 @@ class GameServer implements MessageComponentInterface {
                 'paddle' => 'left',
                 'gameID' => $gameID,
                 'player1' => $player1->username ?? 'Player 1',
-                'player2' => $player2->username ?? 'Player 2'
+                'player2' => $player2->username ?? 'Player 2',
+                'rounds' => $rounds,
+                'currentRound' => $currentRound
             ]
         ]);
         $player2->send([
@@ -524,7 +537,9 @@ class GameServer implements MessageComponentInterface {
                 'paddle' => 'right',
                 'gameID' => $gameID,
                 'player1' => $player1->username ?? 'Player 1',
-                'player2' => $player2->username ?? 'Player 2'
+                'player2' => $player2->username ?? 'Player 2',
+                'rounds' => $rounds,
+                'currentRound' => $currentRound
             ]
         ]);
     }

@@ -132,6 +132,10 @@ class TournamentLogic {
         foreach ($pairs as $pair) {
             if (count($pair) === 2) {
                 $this->setBracketMatch($tournamentID, $round, $pair[0], $pair[1]);
+            }
+        }
+        foreach ($pairs as $pair) {
+            if (count($pair) === 2) {
                 ($this->onCreateMatch)($tournamentID, $pair[0], $pair[1], $round);
             } else {
                 // if a player leaves (dc) opponent wins
