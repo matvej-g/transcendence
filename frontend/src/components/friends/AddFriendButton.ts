@@ -9,21 +9,21 @@ export function setupAddFriendButton(addFriendBtn: HTMLElement, searchResultUser
     e.preventDefault();
     const friendUser = getFriendUser();
     if (!friendUser || !friendUser.id) {
-      showMessage('No user selected.', 'text-red-400');
+      showMessage('No user selected.', 'text-red-400'); // todo translate
       return;
     }
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
-      showMessage('Current user not found.', 'text-red-400');
+      showMessage('Current user not found.', 'text-red-400'); //todo translate
       return;
     }
     try {
       await sendFriendRequest(Number(friendUser.id), Number(currentUserId));
-      showMessage('Friend request sent!', 'text-green-500');
+      showMessage('Friend request sent!', 'text-green-500'); //todo translate
       addFriendBtn.classList.add('hidden');
       searchResultUser.classList.add('hidden');
     } catch (err) {
-      const errorMsg = (err as any)?.message || 'Friend request already exists or invalid';
+      const errorMsg = (err as any)?.message || 'Friend request already exists or invalid'; // todo translate
       showMessage(errorMsg, 'text-red-400');
       searchResultUser.classList.add('hidden');
     }

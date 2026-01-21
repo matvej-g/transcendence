@@ -46,7 +46,7 @@ function handleSearchButtonClick() {
     searchResultUser.classList.add('hidden');
     addFriendBtn.classList.remove('hidden');
     if (!username) {
-      showMessage('Please enter a username.', 'text-red-400');
+      showMessage('Please enter a username.', 'text-red-400'); // todo translate
       return;
     }
     try {
@@ -61,7 +61,7 @@ function handleSearchButtonClick() {
         (currentUserId && (user.id === currentUserId || user.userId === currentUserId)) ||
         (currentNickname && foundNickname && currentNickname === foundNickname)
       ) {
-        showMessage('You cannot send a friend request to yourself.', 'text-red-400');
+        showMessage('You cannot send a friend request to yourself.', 'text-red-400'); // todo translate
         searchResultUser.classList.add('hidden');
         addFriendBtn.classList.add('hidden');
         return;
@@ -74,7 +74,7 @@ function handleSearchButtonClick() {
       addFriendBtn.classList.remove('hidden');
     } catch (err) {
       friendUser = null;
-      showMessage('User not found.', 'text-red-400');
+      showMessage('User not found.', 'text-red-400'); // todo translate
       searchResultUser.classList.add('hidden');
       addFriendBtn.classList.add('hidden');
       searchInput.value = "";
