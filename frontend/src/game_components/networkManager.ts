@@ -150,7 +150,8 @@ export class NetworkManager {
 				break;
 			case 'tournamentMatchEnd':
 				console.log('Tournament update:', message.data);
-				this. resetlocalMatchState();
+				this.t_canvas.cancelCountdown();
+				this.resetlocalMatchState();
 				this.localTournamentState.rounds = message.data.rounds;
 				this.localTournamentState.currentRound = message.data.currentRound;
 				this.removeInputHandlers();

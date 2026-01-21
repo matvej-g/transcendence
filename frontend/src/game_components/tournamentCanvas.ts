@@ -4,6 +4,7 @@ export class TournamentCanvas {
     private canvas: HTMLCanvasElement | null;
     private renderingContext: CanvasRenderingContext2D | null;
     private config: TournamentConfig;
+    private countdownTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
     // Layout constants
     private readonly MATCH_WIDTH = 160;
@@ -323,6 +324,7 @@ export class TournamentCanvas {
 		count: number = 30
 	): void {
         if (!this.renderingContext || !this.canvas) return;
+        this.cancelCountdown();
         const showNumber = () => {
             this.render(state);
 
@@ -357,14 +359,22 @@ export class TournamentCanvas {
 
             count--;
             if (count >= 0) {
-                setTimeout(showNumber, 1000);
+                this.countdownTimeoutId = setTimeout(showNumber, 1000);
             } else {
-                setTimeout(() => {
+                this.countdownTimeoutId = setTimeout(() => {
+                    this.countdownTimeoutId = null;
                     callback();
                 }, 500);
             }
         };
         showNumber();
+    }
+
+    public cancelCountdown(): void {
+        if (this.countdownTimeoutId !== null) {
+            clearTimeout(this.countdownTimeoutId);
+            this.countdownTimeoutId = null;
+        }
     }
 
     public show(): void {

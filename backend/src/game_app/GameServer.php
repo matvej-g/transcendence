@@ -115,7 +115,7 @@ class GameServer implements MessageComponentInterface {
         if (!isset($this->games[$gameID])) return;
 
         $game = $this->games[$gameID];
-        if ($game['mode'] === 'remote' || $game['mode'] === 'tournament' && $winnerId) {
+        if (($game['mode'] === 'remote' || $game['mode'] === 'tournament') && $winnerId && $game['engine'] !== null) {
             $this->recordMatchResults($gameID, $game, $winnerId);
         }
         if ($game['mode'] === 'tournament' && isset($game['tournamentId'])) {
@@ -382,7 +382,7 @@ class GameServer implements MessageComponentInterface {
             $message['data']['leftScore'] = $leftScore;
             $message['data']['rightScore'] = $rightScore;
 
-            if ($game['mode'] === 'remote') {
+            if ($game['mode'] === 'remote' || $game['mode'] === 'tournament') {
                 $this->matchesModel->updateScore($game['matchId'], $leftScore, $rightScore);
             }
 
@@ -614,7 +614,8 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function isPlayerConnected(Player $player): bool {
-        foreach ($this->players as $conn => $p) {
+        foreach ($this->players as $conn) {
+            $p = $this->players[$conn];
             if ($p->userID === $player->userID) {
                 return true;
             }
@@ -633,12 +634,26 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function notifyOpponentDisconnect(Player $opponent, Player $disconnectedPlayer, array $game): void {
-        $opponent->send([
-            'type' => 'opponentDisconnected',
-            'data' => [
-                'message' => 'Opponent disconnected. You win!',
-                'winner' => $opponent->paddle
-            ]
-        ]);
+        if ($game['mode'] === 'tournament' && isset($game['tournamentId'])) {
+            $tournamentID = $game['tournamentId'];
+            $rounds = $this->tournament->getBracketData($tournamentID);
+            $currentRound = $this->tournament->getCurrentRound($tournamentID);
+            $opponent->send([
+                'type' => 'tournamentMatchEnd',
+                'data' => [
+                    'message' => 'Opponent disconnected. You advance!',
+                    'rounds' => $rounds,
+                    'currentRound' => $currentRound
+                ]
+            ]);
+        } else {
+            $opponent->send([
+                'type' => 'opponentDisconnected',
+                'data' => [
+                    'message' => 'Opponent disconnected. You win!',
+                    'winner' => $opponent->paddle
+                ]
+            ]);
+        }
     }
 }
