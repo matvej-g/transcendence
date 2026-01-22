@@ -26,6 +26,7 @@ class GameServer implements MessageComponentInterface {
     private array $waitingPlayers = [];
     private array $games = [];
     private $loop;
+    private array $pendingInvites = [];
 
     private Database $db;
     private UserModel $userModel;
@@ -88,6 +89,7 @@ class GameServer implements MessageComponentInterface {
             'authenticate' => $this->handleAuthentication($player, $data['data'] ?? []),
             'join' => $this->handleJoin($player, $data['data'] ?? []),
             'input' => $this->handleInput($player, $data['data'] ?? []),
+            'invite' => $this->handleInvite($player, $data['data'] ?? []),
             default => null
         };
     }
@@ -599,6 +601,19 @@ class GameServer implements MessageComponentInterface {
             $engine->setPaddleVelocity($paddle, $velocity);
         } elseif ($action === 'keyup') {
             $engine->setPaddleVelocity($paddle, 0);
+        }
+    }
+
+    private function handleInvite(Player $player, array $data): void {
+        $inviteCode = $data['inviteCode'] ?? null;
+        if (!$inviteCode) return;
+
+        if (isset($this->pendingInvites[$inviteCode])) {
+            $opponent = $this->pendingInvites[$inviteCode];
+            unset($this->pendingInvites[$inviteCode]);
+            $this->createRemoteMatch($player, $opponent);
+        } else {
+            $this->pendingInvites[$inviteCode] = $player;
         }
     }
 

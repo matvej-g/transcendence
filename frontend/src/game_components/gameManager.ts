@@ -96,8 +96,26 @@ class GameManager {
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need change later
         console.log(userId);
-        this.networkManager.connect('ws://localhost:8080/ws', 'joinT', userId);
+        this.networkManager.connect(
+			this.getWebSocketUrl(),
+			'joinT',
+			userId
+		);
     }
+
+    private startInviteGame(inviteCode: string): void {
+        console.log('Starting invite game with code:', inviteCode);
+        this.gameModeMenu?.classList.add('hidden');
+        this.isGameActive = true;
+        const userId = getCurrentUserIdNumber() || 1;
+        this.networkManager.connect(
+			this.getWebSocketUrl(),
+			'invite',
+			userId,
+            inviteCode
+		);
+    }
+
 
     private exitGame(): void {
         console.log('Exit game, back to GameModeSelection');

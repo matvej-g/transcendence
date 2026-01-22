@@ -14,8 +14,9 @@ export class NetworkManager {
 	private currentGameState: any = null;
 	private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 	private keyupHandler: ((e: KeyboardEvent) => void) | null = null;
-	private gameMode: 'local' | 'remote' | 'joinT' | 'hostT' | null = null;
+	private gameMode: 'local' | 'remote' | 'joinT' | 'invite' | null = null;
 	private userId: number | null = null;
+	private inviteCode: string | null = null;
 
 	constructor(canvas: GameCanvas, t_canvas: TournamentCanvas) {
 		this.canvas = canvas;
@@ -26,18 +27,19 @@ export class NetworkManager {
 		this.resetlocalTournamentState();
 	}
 
-	public connect(url: string, mode: 'local' | 'remote' | 'joinT' | 'hostT' , userId: number): void {
+	public connect(url: string, mode: 'local' | 'remote' | 'joinT' | 'invite' , userId: number, inviteCode?: string): void {
 		console.log(`Connecting to ${url}...`);
 		this.gameMode = mode;
 		this.userId = userId;
+		this.inviteCode = inviteCode ?? null;
 		if (mode == 'local') {
 			this.canvas.show();
 		} else if (mode == 'remote') {
 			this.canvas.showSearching();
 		} else if (mode == 'joinT') {
 			this.t_canvas.show();
-		} else if (mode == 'hostT') {
-			this.t_canvas.show();
+		} else if (mode == 'invite') {
+			this.canvas.show();
 		}
 		this.socket = new WebSocket(url);
 		this.socket.onopen = () => this.onConnected();
@@ -65,11 +67,18 @@ export class NetworkManager {
 			case 'connected':
 				console.log('Server confirmed:', message.data);
 				//send join after authentication
-				this.send({
-					type: 'join',
-					data: { gameMode: this.gameMode }
-				});
-				if (this.gameMode === 'local' || this.gameMode === 'remote') {
+				if (this.gameMode === 'invite' && this.inviteCode) {
+					this.send({
+						type: 'invite',
+						data: { inviteCode: this.inviteCode }
+					});
+				} else {
+					this.send({
+						type: 'join',
+						data: { gameMode: this.gameMode }
+					});
+				}
+				if (this.gameMode === 'local' || this.gameMode === 'remote' || this.gameMode === 'invite') {
 					this.canvas.show();
 				}
 				break;
