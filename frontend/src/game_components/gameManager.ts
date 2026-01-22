@@ -103,7 +103,7 @@ class GameManager {
 		);
     }
 
-    private startInviteGame(inviteCode: string): void {
+    public startInviteGame(inviteCode: string): void {
         console.log('Starting invite game with code:', inviteCode);
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
@@ -141,6 +141,7 @@ class GameManager {
 }
 
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    new GameManager();
-});
+export const gameManager = new GameManager();
+// document.addEventListener('DOMContentLoaded', () => {
+//     new GameManager();
+// });
