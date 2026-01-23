@@ -579,6 +579,9 @@ class GameServer implements MessageComponentInterface {
             return;
         }
         $game = $this->games[$player->gameID];
+        if (!isset($game['engine'])) {
+            return; // engine not ready yet
+        }
         $engine = $game['engine'];
         $action = $data['action'] ?? null;
         //check which paddle to control for local mode
