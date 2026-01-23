@@ -101,7 +101,7 @@ services:
     restart: on-failure
     ports:
       - "8080:80"
-      - "443:443"
+      - "8443:443"
     volumes:
       - ./backend/public:/var/www/html/public
       - avatars:/var/www/html/uploads/avatars:ro
@@ -110,7 +110,7 @@ services:
       - frontend
       - websocket
       - ws_app
-    networks:zz
+    networks:
       - transcendence
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost/ > /dev/null || exit 1"]
