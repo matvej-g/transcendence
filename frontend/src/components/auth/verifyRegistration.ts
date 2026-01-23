@@ -1,5 +1,5 @@
 // verifyRegistration.ts - handles registration code verification
-
+import { t } from '../languages/i18n.js';
 
 function initVerifyRegistrationSection() {
     const codeInput = document.getElementById('codeInput') as HTMLInputElement;
@@ -19,7 +19,7 @@ function initVerifyRegistrationSection() {
     }
 
     if (!email) {
-        messageDiv.innerHTML = '<div class="text-red-600 mb-2">No email found. Please register again.</div>';
+        messageDiv.innerHTML = `<div class="text-red-600 mb-2">${t('authMsg.verifyRegNoEmail')}</div>`;
         newVerifyBtn.disabled = true;
     } else {
         newVerifyBtn.disabled = false;
@@ -28,11 +28,11 @@ function initVerifyRegistrationSection() {
     newVerifyBtn.addEventListener('click', async () => {
         const code = codeInput.value.trim();
         if (code.length !== 6) {
-            messageDiv.innerHTML = '<div class="text-red-600 mb-2">Please enter a 6-digit code</div>';
+            messageDiv.innerHTML = `<div class="text-red-600 mb-2">${t('authMsg.verifyRegEnterCode')}</div>`;
             return;
         }
         newVerifyBtn.disabled = true;
-        newVerifyBtn.textContent = 'Verifying...';
+        newVerifyBtn.textContent = t('authMsg.verifyRegVerifying');
         messageDiv.innerHTML = '';
         try {
             const response = await fetch('/api/user/verify-registration', {
@@ -44,19 +44,19 @@ function initVerifyRegistrationSection() {
             });
             const data = await response.json();
             if (response.ok && data.success) {
-                messageDiv.innerHTML = '<div class="text-green-600 mb-2">Account created successfully! Redirecting to login...</div>';
+                messageDiv.innerHTML = `<div class="text-green-600 mb-2">${t('authMsg.verifyRegSuccess')}</div>`;
                 setTimeout(() => {
                     window.location.href = '/index.html';
                 }, 2000);
             } else {
-                messageDiv.innerHTML = `<div class="text-red-600 mb-2">${data.error || 'Verification failed'}</div>`;
+                messageDiv.innerHTML = `<div class="text-red-600 mb-2">${data.error || t('authMsg.verifyRegFailed')}</div>`;
                 newVerifyBtn.disabled = false;
-                newVerifyBtn.textContent = 'Verify & Create Account';
+                newVerifyBtn.textContent = t('authDom.verifyBtn');
             }
         } catch (error) {
-            messageDiv.innerHTML = '<div class="text-red-600 mb-2">Network error. Please try again.</div>';
+            messageDiv.innerHTML = `<div class="text-red-600 mb-2">${t('authMsg.networkErrorGeneric')}</div>`;
             newVerifyBtn.disabled = false;
-            newVerifyBtn.textContent = 'Verify & Create Account';
+            newVerifyBtn.textContent = t('authDom.verifyBtn');
         }
     });
 
