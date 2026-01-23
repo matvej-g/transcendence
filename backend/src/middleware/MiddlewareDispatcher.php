@@ -14,12 +14,10 @@ class MiddlewareDispatcher {
 		$this->logging = $logging;
 	}
 
-	// when aadding more middleware this can be updated to be more flexible
 	public function handler(Request $request, callable $nextFunc): Response
 	{
 		$requestId = $this->logging->handleRequest($request);
 
-		// calls router maybe needs exception handling
 		$response = $nextFunc($request);
 
 		$this->logging->handleResponse($response, $requestId);

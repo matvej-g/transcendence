@@ -73,38 +73,6 @@ class UserStatsModel
         }
     }
 
-    // public function recordDraw(int $userOneId, int $userTwoId, int $goalsOne, int $goalsTwo): ?bool
-    // {
-    //     try {
-    //         $this->ensureRow($userOneId);
-    //         $this->ensureRow($userTwoId);
-
-    //         $this->db->query(
-    //             "UPDATE user_stats
-    //              SET games_played = games_played + 1,
-    //                  goals_scored = goals_scored + ?,
-    //                  goals_conceded = goals_conceded + ?,
-    //                  last_game_at = CURRENT_TIMESTAMP
-    //              WHERE user_id = ?",
-    //             [$goalsOne, $goalsTwo, $userOneId]
-    //         );
-
-    //         $this->db->query(
-    //             "UPDATE user_stats
-    //              SET games_played = games_played + 1,
-    //                  goals_scored = goals_scored + ?,
-    //                  goals_conceded = goals_conceded + ?,
-    //                  last_game_at = CURRENT_TIMESTAMP
-    //              WHERE user_id = ?",
-    //             [$goalsTwo, $goalsOne, $userTwoId]
-    //         );
-
-    //         return true;
-    //     } catch (\PDOException $e) {
-    //         return null;
-    //     }
-    // }
-
     public function recordTournamentParticipation(array $participantIds): ?bool
     {
         try {

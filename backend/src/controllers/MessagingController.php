@@ -218,6 +218,7 @@ class MessagingController extends BaseController
         ]);
     }
 
+    // check if conversation between users already exists
     public function createConversation(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -231,6 +232,15 @@ class MessagingController extends BaseController
         if (!Validator::validateIdArray($participantIds ?? [])) {
             return $this->jsonBadRequest('Invalid participant ids');
         }
+
+        $uniqueParticipants = array_unique(
+            array_map('intval', $participantIds)
+        );
+
+        if (count($uniqueParticipants) === 1 && $uniqueParticipants[0] === (int)$userId) {
+            return $this->jsonConflict('Cannot start a conversation with yourself');
+        }
+
 
 		$text = $messageData['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
