@@ -4,13 +4,15 @@ WORKDIR /app
 
 # Copy package files first for better caching
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# Copy source code
+# Copy source code (including config files and input.css)
 COPY . .
 
-# Install TypeScript and build
-RUN npm install -D typescript @types/node
+# Install TypeScript and Tailwind, init config, build CSS
+RUN npm install -D typescript @types/node tailwindcss postcss autoprefixer
+RUN npx tailwindcss init -p
+RUN npx tailwindcss -i ./src/input.css -o ./public/tailwind.css
 RUN npx tsc --build
 
 # Stage 2: Production
