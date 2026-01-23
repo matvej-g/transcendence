@@ -110,7 +110,7 @@ services:
       - frontend
       - websocket
       - ws_app
-    networks:
+    networks:zz
       - transcendence
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost/ > /dev/null || exit 1"]
