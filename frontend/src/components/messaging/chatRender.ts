@@ -2,6 +2,7 @@ import { Conversation, ConversationSummary, Message} from "./types.js";
 import type { UserId } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { t } from "../languages/i18n.js";
+type GameText = "invite" | "accept" | "cancel" | "decline";
 
 const chatListEl = document.getElementById("chat-list")!;
 
@@ -118,35 +119,7 @@ export function renderMessages(
 
 		// ---- GAME MESSAGE ----
 		else if (msg.type === "game") {
-			const buttonsHtml = !isMine
-				? `
-					<div class="flex gap-2 mt-3">
-						<button
-							class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
-							data-action="accept-game"
-							data-message-id="${msg.id}"
-						>
-							Accept
-						</button>
-						<button
-							class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
-							data-action="decline-game"
-							data-message-id="${msg.id}"
-						>
-							Decline
-						</button>
-					</div>
-				`
-				: "";
-
-			contentHtml = `
-				<div class="${
-					isMine ? "bg-blue-600" : "bg-white/10"
-				} p-3 rounded-lg">
-					<div class="font-semibold">Let’s play</div>
-					${buttonsHtml}
-				</div>
-			`;
+			contentHtml = renderGameMessage(msg, isMine);
 		}
 
 		bubble.innerHTML = `
@@ -162,4 +135,106 @@ export function renderMessages(
 
 
 	container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(str: string): string {
+	return str
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
+}
+
+function renderInviteGameMessage(msg: any, isMine: boolean): string {
+	// Invite split:
+	// - Sender: Cancel
+	// - Receiver: Accept/Decline
+	const buttonsHtml = isMine
+		? `
+			<div class="flex gap-2 mt-3 justify-end">
+				<button
+					class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
+					data-action="cancel-game"
+					data-message-id="${escapeHtml(String(msg.id))}"
+				>
+					Cancel
+				</button>
+			</div>
+		`
+		: `
+			<div class="flex gap-2 mt-3">
+				<button
+					class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
+					data-action="accept-game"
+					data-message-id="${escapeHtml(String(msg.id))}"
+				>
+					Accept
+				</button>
+				<button
+					class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
+					data-action="decline-game"
+					data-message-id="${escapeHtml(String(msg.id))}"
+				>
+					Decline
+				</button>
+			</div>
+		`;
+
+	return `
+		<div class="${isMine ? "bg-blue-600" : "bg-white/10"} p-3 rounded-lg">
+			<div class="font-semibold">Let’s play</div>
+			<div class="text-sm text-white/70 mt-1">Game invite</div>
+			${buttonsHtml}
+		</div>
+	`;
+}
+
+function renderAcceptGameMessage(_msg: any, isMine: boolean): string {
+	return `
+		<div class="${isMine ? "bg-blue-600" : "bg-white/10"} p-3 rounded-lg">
+			<div class="font-semibold">Game accepted ✅</div>
+			<div class="text-sm text-white/70 mt-1">Starting match…</div>
+		</div>
+	`;
+}
+
+function renderCancelGameMessage(_msg: any, isMine: boolean): string {
+	return `
+		<div class="${isMine ? "bg-blue-600" : "bg-white/10"} p-3 rounded-lg">
+			<div class="font-semibold">Invite canceled</div>
+		</div>
+	`;
+}
+
+function renderDeclineGameMessage(_msg: any, isMine: boolean): string {
+	return `
+		<div class="${isMine ? "bg-blue-600" : "bg-white/10"} p-3 rounded-lg">
+			<div class="font-semibold">Invite declined</div>
+		</div>
+	`;
+}
+
+export function renderGameMessage(msg: any, isMine: boolean): string {
+	const t = (msg.text ?? "").toLowerCase() as GameText;
+
+	switch (t) {
+		case "invite":
+			return renderInviteGameMessage(msg, isMine);
+		case "accept":
+			return renderAcceptGameMessage(msg, isMine);
+		case "cancel":
+			return renderCancelGameMessage(msg, isMine);
+		case "decline":
+			return renderDeclineGameMessage(msg, isMine);
+		default:
+			return `
+				<div class="${isMine ? "bg-blue-600" : "bg-white/10"} p-3 rounded-lg">
+					<div class="font-semibold">Game</div>
+					<div class="text-sm text-white/70 mt-1">
+						Unknown game message: ${escapeHtml(String(msg.text ?? ""))}
+					</div>
+				</div>
+			`;
+	}
 }
