@@ -56,12 +56,12 @@ class MessageModel
         }
     }
 
-    public function createMessage(int $conversationId, int $authorId, string $text): ?array
+    public function createMessage(int $conversationId, int $authorId, string $type, string $text): ?array
     {
         try {
             $this->db->query(
-                "INSERT INTO messages (conversation_id, author_id, text) VALUES (?, ?, ?)",
-                [$conversationId, $authorId, $text]
+                "INSERT INTO messages (conversation_id, author_id, type, text) VALUES (?, ?, ?, ?)",
+                [$conversationId, $authorId, $type, $text]
             );
             $id = (int) $this->db->connection->lastInsertId();
 
