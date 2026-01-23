@@ -1,11 +1,13 @@
 import { UserDataPublic } from "../../common/types";
 
 export type ConversationId = string;
+type MessageType = "text" | "game";
 
 export interface Message {
   id: string;
   conversationId: ConversationId;
   author: UserDataPublic;
+  type: MessageType;
   text: string;
   createdAt: string; // ISO timestamp
 }

@@ -164,9 +164,17 @@ inviteToPlayBtn?.addEventListener("click", async () => {
 		return;
 	}
 
-	// todo Send game invite via WebSocket or API 
+	sendGameInvite(activeConversation,otherUserId);
 	alert("Game invite sent!"); // todo translate
 });
+
+function sendGameInvite(activeConversation: Conversation, userId: string) {
+	// For now, just send a special "game" message in the current conversation
+	if (!activeConversation) return;
+
+	sendMessage({conversationId: activeConversation.summary.id, type: "game", text: "invite"} as any)
+};
+	
 
 formEl.addEventListener("submit", async (e) => {
 	e.preventDefault();
@@ -178,6 +186,7 @@ formEl.addEventListener("submit", async (e) => {
 	if (activeConversation) {
 		const msg = await sendMessage({
 		conversationId: activeConversation.summary.id,
+		type: "text",
 		text,
 		} as any);
 
@@ -191,7 +200,7 @@ formEl.addEventListener("submit", async (e) => {
 	if (pendingUser) {
 		const createdMsg = await createConversation(
 		[pendingUser.id],
-		{ text } as any,
+		{ type: "text", text } as any,
 		);
 
 		// Open the newly created conversation

@@ -7,33 +7,13 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <title>ft_transcendence</title>
-    <!-- Tailwind CDN (dev convenience) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/tailwind.css" rel="stylesheet">
     <!-- Canvas Styles -->
     <style>
+        /* Custom image rendering for crisp canvas pixels */
         #tournamentCanvas,
         #gameCanvas {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
           image-rendering: crisp-edges;
-        }
-
-        #tournamentContainer,
-        #gameContainer {
-          max-height: calc(100vh - 150px);
-          position: relative;
-        }
-
-        #tournamentContainer canvas,
-        #gameContainer canvas {
-          max-height: 100%;
-        }
-
-        #exitTournamentButton,
-        #exitGameButton {
-          padding: 1vh 3vw;
-          font-size: clamp(0.875rem, 1.5vw, 1.125rem);
         }
     </style>
   </head>
@@ -105,7 +85,31 @@
       </div>
     </section>
 
-    <!-- SETTINGS: EDIT EMAIL SECTION (hidden by default) -->
+    <!-- SETTINGS: EDIT EMAIL SECTION (hidden by dee>
+        #tournamentCanvas,
+        #gameCanvas {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          image-rendering: crisp-edges;
+        }
+
+        #tournamentContainer,
+        #gameContainer {
+          max-height: calc(100vh - 150px);
+          position: relative;
+        }
+
+        #tournamentContainer canvas,
+        #gameContainer canvas {
+          max-height: 100%;
+        }
+
+        #exitTournamentButton,
+        #exitGameButton {
+          padding: 1vh 3vw;
+          font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+        }fault) -->
     <section id="settings-change-email" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
         <h2 class="text-2xl font-bold text-emerald-400 mb-4" data-i18n="settings.change_email">Change Email</h2>
@@ -258,19 +262,19 @@
           </div>
         </div>
         <!-- Game Canvas (hidden initially) -->
-        <div id="gameContainer" class="hidden w-full flex-1 flex flex-col items-center justify-center p-4">
-          <canvas id="gameCanvas" class="max-w-full max-h-full"></canvas>
+        <div id="gameContainer" class="hidden w-full flex-1 flex flex-col items-center justify-center p-4 max-h-[calc(100vh-150px)] relative">
+          <canvas id="gameCanvas" class="w-full h-full object-contain max-h-full"></canvas>
           <button
             id="exitGameButton"
-            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors mt-8" data-i18n="game.exit_game">
+            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-[1vh] px-[3vw] rounded-lg transition-colors mt-8 text-[clamp(0.875rem,1.5vw,1.125rem)]" data-i18n="game.exit_game">
             Exit Game
           </button>
         </div>
-        <div id="tournamentContainer" class="hidden w-full flex-1 flex flex-col items-center justify-center p-4">
-          <canvas id="tournamentCanvas" class="max-w-full max-h-full"></canvas>
+        <div id="tournamentContainer" class="hidden w-full flex-1 flex flex-col items-center justify-center p-4 max-h-[calc(100vh-150px)] relative">
+          <canvas id="tournamentCanvas" class="w-full h-full object-contain max-h-full"></canvas>
           <button
             id="exitTournamentButton"
-            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors mt-8" data-i18n="game.exit_tournament">
+            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-[1vh] px-[3vw] rounded-lg transition-colors mt-8 text-[clamp(0.875rem,1.5vw,1.125rem)]" data-i18n="game.exit_tournament">
             Exit Tournement
           </button>
         </div>
