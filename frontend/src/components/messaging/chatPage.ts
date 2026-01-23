@@ -174,6 +174,13 @@ function sendGameInvite(activeConversation: Conversation, userId: string) {
 
 	sendMessage({conversationId: activeConversation.summary.id, type: "game", text: "invite"} as any)
 };
+
+export function sendGameAction(convoId: string, action: "accept" | "decline" | "cancel") {
+	// For now, just send a special "game" message in the current conversation
+	if (!activeConversation) return;
+
+	sendMessage({conversationId: convoId, type: "game", text: action} as any)
+}
 	
 
 formEl.addEventListener("submit", async (e) => {
