@@ -4,15 +4,12 @@
 function initVerifyRegistrationSection() {
     const codeInput = document.getElementById('codeInput') as HTMLInputElement;
     const verifyBtn = document.getElementById('verifyBtn') as HTMLButtonElement;
-    const bypassBtn = document.getElementById('bypassBtn') as HTMLButtonElement;
     const messageDiv = document.getElementById('message') as HTMLDivElement;
 
     // Remove previous listeners to avoid duplicates
     verifyBtn?.replaceWith(verifyBtn.cloneNode(true));
-    bypassBtn?.replaceWith(bypassBtn.cloneNode(true));
     // Re-select after replace
     const newVerifyBtn = document.getElementById('verifyBtn') as HTMLButtonElement;
-    const newBypassBtn = document.getElementById('bypassBtn') as HTMLButtonElement;
 
     // Get email from hash params (e.g. #verify-registration?email=foo@bar.com)
     let email = null;
@@ -24,42 +21,9 @@ function initVerifyRegistrationSection() {
     if (!email) {
         messageDiv.innerHTML = '<div class="text-red-600 mb-2">No email found. Please register again.</div>';
         newVerifyBtn.disabled = true;
-        newBypassBtn.disabled = true;
     } else {
         newVerifyBtn.disabled = false;
-        newBypassBtn.disabled = false;
     }
-
-    // Bypass button - uses special bypass code
-    newBypassBtn.addEventListener('click', async () => {
-        newBypassBtn.disabled = true;
-        newBypassBtn.textContent = 'Creating account...';
-        messageDiv.innerHTML = '<div class="text-green-600 mb-2">DEV MODE: Bypassing verification...</div>';
-
-        try {
-            await fetch('/api/user/verify-registration', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email,
-                    code: 'BYPASS123',  // Special bypass code
-                    bypass: true         // Bypass flag
-                })
-            });
-            // Redirect to login regardless of response (for dev mode)
-            messageDiv.innerHTML = '<div class="text-green-600 mb-2">Account created! Redirecting to login...</div>';
-            setTimeout(() => {
-                window.location.href = '/index.html';
-            }, 1500);
-        } catch (error) {
-            messageDiv.innerHTML = '<div class="text-green-600 mb-2">Redirecting to login...</div>';
-            setTimeout(() => {
-                window.location.href = '/index.html';
-            }, 1500);
-        }
-    });
 
     newVerifyBtn.addEventListener('click', async () => {
         const code = codeInput.value.trim();
