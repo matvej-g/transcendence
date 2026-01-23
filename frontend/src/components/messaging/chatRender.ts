@@ -243,31 +243,31 @@ export function renderGameMessage(msg: any, isMine: boolean): string {
 	}
 }
 
-// export function attachGameMessageHandlers(container: HTMLElement) {
-// 	container.addEventListener("click", (e) => {
-// 		const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
-// 			"button[data-action][data-message-id][data-conversation-id]"
-// 		);
-// 		if (!btn) return;
+export function attachGameMessageHandlers(container: HTMLElement) {
+	container.addEventListener("click", (e) => {
+		const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+			"button[data-action][data-message-id][data-conversation-id]"
+		);
+		if (!btn) return;
 
-// 		const actionRaw = btn.dataset.action;
-// 		const messageId = btn.dataset.messageId;
-// 		const conversationId = btn.dataset.conversationId;
+		const actionRaw = btn.dataset.action;
+		const messageId = btn.dataset.messageId;
+		const conversationId = btn.dataset.conversationId;
 
-// 		if (!actionRaw || !messageId || !conversationId) return;
+		if (!actionRaw || !messageId || !conversationId) return;
 
-// 		const action =
-// 			actionRaw === "accept-game" ? "accept" :
-// 			actionRaw === "decline-game" ? "decline" :
-// 			actionRaw === "cancel-game" ? "cancel" :
-// 			null;
+		const action =
+			actionRaw === "accept-game" ? "accept" :
+			actionRaw === "decline-game" ? "decline" :
+			actionRaw === "cancel-game" ? "cancel" :
+			null;
 
-// 		if (!action) return;
+		if (!action) return;
 
-// 		// Send a "game action" message that references the invite message
-// 		sendGameAction(conversationId, action);
+		// Send a "game action" message that references the invite message
+		sendGameAction(conversationId, action);
 
-// 		// optional UX anti-spam
-// 		// btn.disabled = true;
-// 	});
-// }
+		// optional UX anti-spam
+		// btn.disabled = true;
+	});
+}

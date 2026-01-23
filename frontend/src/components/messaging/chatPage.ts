@@ -177,8 +177,7 @@ function sendGameInvite(activeConversation: Conversation, userId: string) {
 
 export function sendGameAction(convoId: string, action: "accept" | "decline" | "cancel") {
 	// For now, just send a special "game" message in the current conversation
-	if (!activeConversation) return;
-
+	console.log("sendGameAction", convoId, action);
 	sendMessage({conversationId: convoId, type: "game", text: action} as any)
 }
 	
