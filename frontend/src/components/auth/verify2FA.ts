@@ -26,7 +26,7 @@ async function verifyCode(code: string) {
     if (result.ok && result.data.success) {
         showMessage('Verification successful! Redirecting...', false);
         setTimeout(() => {
-            window.location.href = '/index.html#profile';
+            window.location.href = '/index.html?t=' + Date.now() + '#profile';
 			appWs.connect(); //connect app websocket after login
         }, 1500);
     } else {

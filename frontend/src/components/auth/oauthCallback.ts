@@ -20,7 +20,7 @@ if (window.location.pathname === '/api/auth/google/callback') {
     `;
 
     setTimeout(() => {
-      window.location.href = '/index.html#profile';
+      window.location.href = '/index.html?t=' + Date.now() + '#profile';
     }, 1000);
   } else {
     // No code means something went wrong
