@@ -7,6 +7,7 @@ function sanitizeString(str: string): string {
 // import { updateEmail } from "./api.js";
 import { getCurrentUserId } from '../auth/authUtils.js';
 import { changeEmail } from './api.js';
+import { t } from '../languages/i18n.js';
 
 // Elements
 const modal = document.getElementById('settings-change-email');
@@ -31,11 +32,11 @@ window.addEventListener('hashchange', async () => {
 					// User is logged in with Google - show warning and disable form
 					if (errorDiv) {
 						errorDiv.innerHTML = `
-							⚠️ <strong>Cannot change email for Google accounts.</strong><br>
-							Your email is managed by Google.<br><br>
-							<button onclick="window.location.hash='#profile'" 
+							⚠️ <strong>${t('settings.googleCannotChangeEmail')}</strong><br>
+							${t('settings.googleEmailManaged')}<br><br>
+							<button onclick="window.location.hash='#profile'"
 									style="background: #10b981; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold;">
-								← Back to Profile
+								← ${t('settings.backToProfile')}
 							</button>
 						`;
 						errorDiv.style.color = '#f59e0b';
