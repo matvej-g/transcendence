@@ -79,43 +79,6 @@ export function prependSearchRow(user: any, mode: "open" | "start", convoId?: st
 }
 
 // right side: active chat
-// export function renderMessages(conversation: Conversation, container: HTMLElement, currentUsername: string | null = null) {
-// 	container.innerHTML = "";
-
-// 	// todo can we rely on localStorage? maybe if localStorage returns null, we can fetch user data from server 
-// 	if (!currentUsername) {
-// 		currentUsername = getCurrentUsername() || "";
-// 	}
-
-// 	for (const msg of conversation.messages) {
-// 		const authorName = msg.author?.username ?? "unknown";
-// 		const isMine = authorName === currentUsername;
-
-// 		// outer row controls left/right alignment
-// 		const row = document.createElement("div");
-// 		row.className = isMine ? "flex justify-end" : "flex justify-start";
-
-// 		const bubble = document.createElement("div");
-// 		bubble.className = isMine
-// 		? "max-w-md text-right"
-// 		: "max-w-md";
-
-// 		bubble.innerHTML = `
-// 		<div class="text-sm text-white/60 mb-1">
-// 			${isMine ? "you" : authorName}
-// 		</div>
-// 		<div class="${
-// 			isMine ? "bg-blue-600" : "bg-white/10"
-// 		} p-3 rounded-lg">
-// 			${msg.text}
-// 		</div>
-// 		`;
-
-// 		row.appendChild(bubble);
-// 		container.appendChild(row);
-// 	}
-
-// right side: active chat
 export function renderMessages(
 	conversation: Conversation,
 	container: HTMLElement,
