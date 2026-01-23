@@ -1,11 +1,12 @@
 // Verify 2FA Code Logic
 import { apiCall } from '../../utils/api.js';
 import { appWs } from '../../ws/appWs.js';
+import { t } from '../languages/i18n.js';
 
 function showMessage(message: string, isError: boolean) {
     const errorEl = document.getElementById('error-message');
     const successEl = document.getElementById('success-message');
-    
+
     if (isError && errorEl) {
         errorEl.textContent = message;
         errorEl.style.display = 'block';
@@ -24,13 +25,13 @@ async function verifyCode(code: string) {
     });
 
     if (result.ok && result.data.success) {
-        showMessage('Verification successful! Redirecting...', false);
+        showMessage(t('authMsg.verify2faSuccess'), false);
         setTimeout(() => {
             window.location.href = '/index.html#profile';
 			appWs.connect(); //connect app websocket after login
         }, 1500);
     } else {
-        showMessage(result.data.error || 'Invalid or expired code', true);
+        showMessage(result.data.error || t('authMsg.verify2faInvalidCode'), true);
     }
 }
 
@@ -45,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const code = codeInput.value.trim();
 
             if (code.length !== 6 || !/^\d{6}$/.test(code)) {
-                showMessage('Please enter a valid 6-digit code', true);
+                showMessage(t('authMsg.verify2faEnterCode'), true);
                 return;
             }
 

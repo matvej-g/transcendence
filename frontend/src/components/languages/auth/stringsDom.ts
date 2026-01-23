@@ -8,6 +8,14 @@ type AuthDomKey =
   | "password"
   | "loginBtn"
   | "registerBtn"
+  | "orDivider"
+  | "googleLoginBtn"
+  | "verifyTitle"
+  | "verifyDescription"
+  | "verifyBtn"
+  | "verify2faTitle"
+  | "verify2faDescription"
+  | "verify2faBtn"
     // | "pretendLoginBtn"; // Removed pretendLoginBtn
 
 // format of the table for auth dom strings (single language)
@@ -22,6 +30,14 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     password: "Password",
     loginBtn: "Login",
     registerBtn: "Register",
+    orDivider: "OR",
+    googleLoginBtn: "Register/Login with Google",
+    verifyTitle: "Verify Your Email",
+    verifyDescription: "Enter the 6-digit code sent to your email address",
+    verifyBtn: "Verify & Create Account",
+    verify2faTitle: "Verify 2FA Code",
+    verify2faDescription: "Enter the 6-digit code sent to your email",
+    verify2faBtn: "Verify",
      // pretendLoginBtn: "pretendLogin → landing", // Removed pretendLoginBtn
   },
   ru: {
@@ -31,6 +47,14 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     password: "Пароль",
     loginBtn: "Войти",
     registerBtn: "Зарегистрироваться",
+    orDivider: "ИЛИ",
+    googleLoginBtn: "Регистрация/Вход через Google",
+    verifyTitle: "Подтвердите вашу почту",
+    verifyDescription: "Введите 6-значный код, отправленный на вашу почту",
+    verifyBtn: "Подтвердить и создать аккаунт",
+    verify2faTitle: "Подтверждение 2FA",
+    verify2faDescription: "Введите 6-значный код, отправленный на вашу почту",
+    verify2faBtn: "Подтвердить",
      // pretendLoginBtn: "Сделать вид, что вошёл → landing", // Removed pretendLoginBtn
   },
   de: {
@@ -40,6 +64,14 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
 	password: "Passwort",
 	loginBtn: "Anmelden",
 	registerBtn: "Registrieren",
+	orDivider: "ODER",
+	googleLoginBtn: "Registrieren/Anmelden mit Google",
+	verifyTitle: "E-Mail bestätigen",
+	verifyDescription: "Geben Sie den 6-stelligen Code ein, der an Ihre E-Mail gesendet wurde",
+	verifyBtn: "Bestätigen & Konto erstellen",
+	verify2faTitle: "2FA-Code bestätigen",
+	verify2faDescription: "Geben Sie den 6-stelligen Code ein, der an Ihre E-Mail gesendet wurde",
+	verify2faBtn: "Bestätigen",
      // pretendLoginBtn: "Vortäuschen Anmeldung → Landing", // Removed pretendLoginBtn
   },
 } satisfies Record<Lang, AuthDomStringsTableT>;
