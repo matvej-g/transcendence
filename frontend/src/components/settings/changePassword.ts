@@ -8,6 +8,7 @@ function sanitizeString(str: string): string {
 }
 import { changePassword } from './api.js';
 import { getCurrentUserId } from '../auth/authUtils.js';
+import { t } from '../languages/i18n.js';
 
 const changePasswordModal = document.getElementById('settings-change-password');
 const changePasswordForm = document.getElementById('change-password-form') as HTMLFormElement | null;
@@ -30,11 +31,11 @@ window.addEventListener('hashchange', async () => {
           // User is logged in with Google - show warning and disable form
           if (changePasswordError) {
             changePasswordError.innerHTML = `
-              ⚠️ <strong>Cannot change password for Google accounts.</strong><br>
-              Your password is managed by Google.<br><br>
-              <button onclick="window.location.hash='#profile'" 
+              ⚠️ <strong>${t('settings.googleCannotChangePassword')}</strong><br>
+              ${t('settings.googlePasswordManaged')}<br><br>
+              <button onclick="window.location.hash='#profile'"
                       style="background: #10b981; color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold;">
-                ← Back to Profile
+                ← ${t('settings.backToProfile')}
               </button>
             `;
             changePasswordError.style.color = '#f59e0b';
