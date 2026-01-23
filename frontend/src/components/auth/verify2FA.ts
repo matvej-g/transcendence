@@ -27,7 +27,6 @@ async function verifyCode(code: string) {
         showMessage('Verification successful! Redirecting...', false);
         setTimeout(() => {
             window.location.href = '/index.html?t=' + Date.now() + '#profile';
-			appWs.connect(); //connect app websocket after login
         }, 1500);
     } else {
         showMessage(result.data.error || 'Invalid or expired code', true);

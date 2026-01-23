@@ -250,6 +250,17 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   window.location.href = '/index.html?t=' + Date.now() + '#auth';
 });
 
+// Handle browser/tab close - set user offline
+window.addEventListener('beforeunload', () => {
+  const userId = getCurrentUserId();
+  if (userId) {
+    // Use sendBeacon for reliable delivery even as page unloads
+    // Note: setUserOffline() uses fetch which may be cancelled, so we use sendBeacon directly
+    const blob = new Blob([JSON.stringify({})], { type: 'application/json' });
+    navigator.sendBeacon('/api/user/offline', blob);
+  }
+});
+
 // Notfound "Go to Home" button (if present)
 document.getElementById('notfoundHomeBtn')?.addEventListener('click', () => {
   window.location.hash = '#';
@@ -295,6 +306,13 @@ if (urlParams.has('code') || urlParams.has('error')) {
     const isLoggedIn = getCurrentUserId();
     const protectedSections = ['profile', 'game', 'friends', 'chat'];
     const initialSection = initialHash.split('/')[0] || 'auth';
+
+     // Connect WebSocket if user is logged in
+    if (isLoggedIn) {
+      const { appWs } = await import('../ws/appWs.js');
+      appWs.connect();
+    }
+
 
     if (isLoggedIn && (initialSection === 'auth' || initialSection === '')) {
       // Logged in user on auth page → redirect to profile

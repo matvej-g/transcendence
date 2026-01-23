@@ -41,7 +41,6 @@ function wireLoginButton() {
         // User has 2FA disabled - login complete
         alert(msg("loginOkPrefix") + `${res.user.username}`);
         window.location.href = '/index.html?t=' + Date.now() + '#profile';
-		appWs.connect(); //connect app websocket after login
       }
     } else {
       alert(msg("loginFailedGeneric") + ` (${res.error})`);
