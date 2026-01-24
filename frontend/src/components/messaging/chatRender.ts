@@ -3,7 +3,7 @@ import type { UserId } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { t } from "../languages/i18n.js";
 import { sendGameAction } from "./chatPage.js";
-type GameText = "invite" | "accept" | "cancel" | "decline";
+type GameText = "invite" | "accept" | "cancel" | "decline" | "busy";
 
 const chatListEl = document.getElementById("chat-list")!;
 
@@ -121,11 +121,14 @@ export function renderMessages(
 
 		// ---- GAME MESSAGE ----
 		else if (msg.type === "game") {
-			if (lastGameMessageID !== null)
+			if (msg.text !== "busy")
 			{
-				pacifyGameMessage(lastGameMessageID, msg.conversationId);
+				if (lastGameMessageID !== null)
+				{
+					pacifyGameMessage(lastGameMessageID, msg.conversationId);
+				}
+				lastGameMessageID = msg.id;
 			}
-			lastGameMessageID = msg.id;
 			contentHtml = renderGameMessage(msg, isMine);
 		}
 
@@ -226,6 +229,15 @@ function renderDeclineGameMessage(_msg: any, isMine: boolean): string {
 	`;
 }
 
+function renderBusyGameMessage(_msg: any, isMine: boolean): string {
+	return `
+		<div class="${isMine ? "bg-blue-600" : "bg-white/10"} p-3 rounded-lg">
+			<div class="font-semibold">User is busy</div>
+			<div class="text-sm text-white/70 mt-1">Cannot play right now.</div>
+		</div>
+	`;
+}
+
 export function renderGameMessage(msg: any, isMine: boolean): string {
 	const t = (msg.text ?? "").toLowerCase() as GameText;
 
@@ -238,6 +250,8 @@ export function renderGameMessage(msg: any, isMine: boolean): string {
 			return renderCancelGameMessage(msg, isMine);
 		case "decline":
 			return renderDeclineGameMessage(msg, isMine);
+		case "busy":
+			return renderBusyGameMessage(msg, isMine);
 		default:
 			return `
 				<div class="${isMine ? "bg-blue-600" : "bg-white/10"} p-3 rounded-lg">

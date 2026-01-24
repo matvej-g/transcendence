@@ -40,8 +40,8 @@ export async function uploadAvatar(userId: number | string, avatarFile: File): P
 
 import { UpdateUserParams, ChangePasswordParams } from '../../common/types';
 
-export async function updateUser({ id, userName, email, password }: UpdateUserParams): Promise<any> {
-	const body = { id, userName, email, password };
+export async function updateUser({ id, userName}: UpdateUserParams): Promise<any> {
+	const body = { id, userName};
 	const res = await fetch('/api/user/update', {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
