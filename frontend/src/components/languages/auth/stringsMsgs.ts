@@ -16,7 +16,11 @@ export type AuthMsgKey =
   | "verifyRegEnterCode"
   | "verifyRegVerifying"
   | "verifyRegSuccess"
-  | "verifyRegFailed";
+  | "verifyRegFailed"
+  | "resendingSending"
+  | "resendSuccess"
+  | "resendFailed"
+  | "resendWait";
 
 export type AuthMsgStringsTableT = Record<AuthMsgKey, string>;
 
@@ -38,6 +42,10 @@ export const AuthMsgStrings: Record<Lang, AuthMsgStringsTableT> = {
     verifyRegVerifying: "Verifying...",
     verifyRegSuccess: "Account created successfully! Redirecting to login...",
     verifyRegFailed: "Verification failed",
+    resendingSending: "Sending...",
+    resendSuccess: "Code sent successfully!",
+    resendFailed: "Failed to resend code",
+    resendWait: "Resend code",
   },
   ru: {
     loginOkPrefix: "Успешный вход: ",
@@ -56,6 +64,10 @@ export const AuthMsgStrings: Record<Lang, AuthMsgStringsTableT> = {
     verifyRegVerifying: "Проверка...",
     verifyRegSuccess: "Аккаунт успешно создан! Перенаправление на вход...",
     verifyRegFailed: "Проверка не удалась",
+    resendingSending: "Отправка...",
+    resendSuccess: "Код успешно отправлен!",
+    resendFailed: "Не удалось отправить код",
+    resendWait: "Отправить код",
   },
   de: {
 	loginOkPrefix: "Anmeldung OK: ",
@@ -74,5 +86,9 @@ export const AuthMsgStrings: Record<Lang, AuthMsgStringsTableT> = {
 	verifyRegVerifying: "Überprüfung...",
 	verifyRegSuccess: "Konto erfolgreich erstellt! Weiterleitung zur Anmeldung...",
 	verifyRegFailed: "Verifizierung fehlgeschlagen",
+	resendingSending: "Wird gesendet...",
+	resendSuccess: "Code erfolgreich gesendet!",
+	resendFailed: "Code konnte nicht erneut gesendet werden",
+	resendWait: "Code erneut senden",
   },
 } as const satisfies Record<Lang, AuthMsgStringsTableT>;
