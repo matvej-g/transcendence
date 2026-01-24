@@ -366,6 +366,43 @@ class UserController extends BaseController
         ]);
     }
 
+    public function resendRegistrationCode(Request $request, $parameters)
+    {
+        $email = $request->postParams['email'] ?? null;
+
+        if (!$email) {
+            return $this->jsonBadRequest("Email required");
+        }
+
+        [$email] = Sanitiser::normaliseStrings([$email]);
+
+        // Check if there's a pending registration for this email
+        $pending = $this->pendingRegistrations->getPendingByEmail($email);
+        if (!$pending) {
+            return $this->jsonNotFound("No pending registration found for this email");
+        }
+
+        // Generate new verification code
+        $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+
+        // Update the pending registration with new code
+        $result = $this->pendingRegistrations->updateCode($email, $code, $expiresAt);
+        if ($result === null) {
+            return $this->jsonServerError("Failed to update verification code");
+        }
+
+        // Send verification email
+        if (!sendTwoFactorEmail($email, $code)) {
+            return $this->jsonServerError("Email sending failed");
+        }
+
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => 'Verification code resent to your email'
+        ]);
+    }
+
     public function deleteUser(Request $request, $parameters)
     {
         $id = $parameters['id'] ?? null;

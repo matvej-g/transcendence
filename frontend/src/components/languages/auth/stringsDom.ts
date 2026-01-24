@@ -16,6 +16,7 @@ type AuthDomKey =
   | "verify2faTitle"
   | "verify2faDescription"
   | "verify2faBtn"
+  | "resendCode"
     // | "pretendLoginBtn"; // Removed pretendLoginBtn
 
 // format of the table for auth dom strings (single language)
@@ -38,7 +39,7 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     verify2faTitle: "Verify 2FA Code",
     verify2faDescription: "Enter the 6-digit code sent to your email",
     verify2faBtn: "Verify",
-     // pretendLoginBtn: "pretendLogin → landing", // Removed pretendLoginBtn
+    resendCode: "Resend Code",
   },
   ru: {
     title: "Аутентификация",
@@ -55,7 +56,7 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     verify2faTitle: "Подтверждение 2FA",
     verify2faDescription: "Введите 6-значный код, отправленный на вашу почту",
     verify2faBtn: "Подтвердить",
-     // pretendLoginBtn: "Сделать вид, что вошёл → landing", // Removed pretendLoginBtn
+    resendCode: "Отправить код повторно",
   },
   de: {
 	title: "Authentifizierung",
@@ -72,6 +73,6 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
 	verify2faTitle: "2FA-Code bestätigen",
 	verify2faDescription: "Geben Sie den 6-stelligen Code ein, der an Ihre E-Mail gesendet wurde",
 	verify2faBtn: "Bestätigen",
-     // pretendLoginBtn: "Vortäuschen Anmeldung → Landing", // Removed pretendLoginBtn
+	resendCode: "Code erneut senden",
   },
 } satisfies Record<Lang, AuthDomStringsTableT>;

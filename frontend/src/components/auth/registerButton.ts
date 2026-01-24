@@ -12,6 +12,8 @@ function wireRegisterButton() {
   }
 
   btn.addEventListener("click", async () => {
+    if (btn.disabled) return;
+
     const u = $<HTMLInputElement>("user")?.value ?? "";
     const e = $<HTMLInputElement>("email")?.value ?? "";
     const p = $<HTMLInputElement>("pass")?.value ?? "";
@@ -30,15 +32,20 @@ function wireRegisterButton() {
       })}`
     );
 
-    const res = await registerHandle(payload);
-    log(`[UI] register result: ${JSON.stringify(res)}`);
+    btn.disabled = true;
+    try {
+      const res = await registerHandle(payload);
+      log(`[UI] register result: ${JSON.stringify(res)}`);
 
-    if (res.ok) {
-      // Registration initiated - redirect to verification page
-      alert('Verification code sent to your email!');
-      window.location.hash = `#verify-registration?email=${encodeURIComponent(payload.email)}`;
-    } else {
-      alert(msg("registerFailedGeneric") + ` (${res.error})`);
+      if (res.ok) {
+        // Registration initiated - redirect to verification page
+        alert('Verification code sent to your email!');
+        window.location.hash = `#verify-registration?email=${encodeURIComponent(payload.email)}`;
+      } else {
+        alert(msg("registerFailedGeneric") + ` (${res.error})`);
+      }
+    } finally {
+      btn.disabled = false;
     }
   });
 }

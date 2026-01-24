@@ -19,6 +19,7 @@ use src\middleware\Require2FAMiddleware;
 // users (public: registration & login)
 $this->router->post('/api/user/new', [UserController::class, 'newUser']);
 $this->router->post('/api/user/verify-registration', [UserController::class, 'verifyRegistration']);
+$this->router->post('/api/user/resend-registration-code', [UserController::class, 'resendRegistrationCode']);
 $this->router->post('/api/user/login', [UserController::class, 'userLogin']);
 
 // Authenticated-only: logout (JWT required, 2FA not strictly needed)

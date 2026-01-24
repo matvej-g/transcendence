@@ -134,4 +134,18 @@ class PendingRegistrationModel
     {
         return $this->deletePendingRegistration($email);
     }
+
+    public function updateCode($email, $code, $expiresAt)
+    {
+        try {
+            $result = $this->db->query(
+                "UPDATE pending_registrations SET verification_code = ?, expires_at = ? WHERE email = ?",
+                [$code, $expiresAt, $email]
+            );
+            return $result !== null;
+        } catch (\PDOException $e) {
+            error_log("Error updating verification code: " . $e->getMessage());
+            return null;
+        }
+    }
 }
