@@ -130,9 +130,15 @@ function showSection(sectionId: string): void {
   if (target === 'auth' || target === 'verify-2fa' || target === 'verify-registration' || target === 'oauth-callback') {
     authNavbar?.classList.remove('hidden');
     navbar?.classList.add('hidden');
+    footer?.classList.remove('hidden');
+  } else if (target === 'game') {
+    authNavbar?.classList.add('hidden');
+    navbar?.classList.remove('hidden');
+    footer?.classList.add('hidden');
   } else {
     authNavbar?.classList.add('hidden');
     navbar?.classList.remove('hidden');
+    footer?.classList.remove('hidden');
   }
 }
 
@@ -236,10 +242,23 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     console.error('Logout endpoint failed:', error);
   }
 
-  // mark user offline on server (best-effort)
+  // Clear localStorage
   clearCurrentUserId();
   clearCurrentUsername();
-  window.location.hash = '#';
+  
+  // Redirect and reload to clear all state (with cache bust)
+  window.location.href = '/index.html?t=' + Date.now() + '#auth';
+});
+
+// Handle browser/tab close - set user offline
+window.addEventListener('beforeunload', () => {
+  const userId = getCurrentUserId();
+  if (userId) {
+    // Use sendBeacon for reliable delivery even as page unloads
+    // Note: setUserOffline() uses fetch which may be cancelled, so we use sendBeacon directly
+    const blob = new Blob([JSON.stringify({})], { type: 'application/json' });
+    navigator.sendBeacon('/api/user/offline', blob);
+  }
 });
 
 // Notfound "Go to Home" button (if present)
@@ -255,27 +274,64 @@ if (urlParams.has('code') || urlParams.has('error')) {
   showSection('oauth-callback');
   handleOAuthCallback();
 } else {
-  // Normal routing
-  const initialHash = window.location.hash.slice(1);
-  const isLoggedIn = getCurrentUserId();
-  const protectedSections = ['profile', 'game', 'friends', 'chat'];
-  const initialSection = initialHash.split('/')[0] || 'auth';
+  // Normal routing - validate localStorage against backend JWT
+  (async () => {
+    const localUserId = getCurrentUserId();
+    
+    // If we have a userId in localStorage, verify it matches the backend JWT
+    if (localUserId) {
+      try {
+        const res = await fetch('/api/me', { credentials: 'include' });
+        if (res.ok) {
+          const userData = await res.json();
+          // If backend user doesn't match localStorage, update localStorage
+          if (String(userData.id) !== String(localUserId)) {
+            console.log('[router] localStorage userId mismatch - updating to match JWT cookie');
+            setCurrentUserId(userData.id);
+            setCurrentUsername(userData.username || '');
+          }
+        } else {
+          // JWT cookie invalid - clear localStorage
+          console.log('[router] JWT invalid - clearing localStorage');
+          clearCurrentUserId();
+          clearCurrentUsername();
+        }
+      } catch (err) {
+        console.warn('[router] Failed to validate user', err);
+      }
+    }
 
-  if (isLoggedIn) {
-    window.location.hash = '#profile';
-    showSection('profile');
-  } else if (protectedSections.includes(initialSection)) {
-    window.location.hash = '#auth';
-    showSection('auth');
-  } else if (initialHash.startsWith('settings/edit-username')) {
-    showSection('settings');
-  } else if (initialHash.startsWith('settings/upload-avatar')) {
-    showSection('settings');
-  } else if (initialHash.startsWith('settings/change-password')) {
-    showSection('settings');
-  } else if (initialHash.startsWith('settings/change-email')) {
-    showSection('settings');
-  } else {
-    showSection(initialSection);
-  }
+    // IMPORTANT: Routing logic must happen AFTER validation
+    const initialHash = window.location.hash.slice(1);
+    const isLoggedIn = getCurrentUserId();
+    const protectedSections = ['profile', 'game', 'friends', 'chat'];
+    const initialSection = initialHash.split('/')[0] || 'auth';
+
+     // Connect WebSocket if user is logged in
+    if (isLoggedIn) {
+      const { appWs } = await import('../ws/appWs.js');
+      appWs.connect();
+    }
+
+
+    if (isLoggedIn && (initialSection === 'auth' || initialSection === '')) {
+      // Logged in user on auth page → redirect to profile
+      window.location.hash = '#profile';
+      showSection('profile');
+    } else if (protectedSections.includes(initialSection) && !isLoggedIn) {
+      // Not logged in trying to access protected section → redirect to auth
+      window.location.hash = '#auth';
+      showSection('auth');
+    } else if (initialHash.startsWith('settings/edit-username')) {
+      showSection('settings');
+    } else if (initialHash.startsWith('settings/upload-avatar')) {
+      showSection('settings');
+    } else if (initialHash.startsWith('settings/change-password')) {
+      showSection('settings');
+    } else if (initialHash.startsWith('settings/change-email')) {
+      showSection('settings');
+    } else {
+      showSection(initialSection);
+    }
+  })();
 }

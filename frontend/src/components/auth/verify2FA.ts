@@ -27,8 +27,7 @@ async function verifyCode(code: string) {
     if (result.ok && result.data.success) {
         showMessage(t('authMsg.verify2faSuccess'), false);
         setTimeout(() => {
-            window.location.href = '/index.html#profile';
-			appWs.connect(); //connect app websocket after login
+            window.location.href = '/index.html?t=' + Date.now() + '#profile';
         }, 1500);
     } else {
         showMessage(result.data.error || t('authMsg.verify2faInvalidCode'), true);

@@ -7,25 +7,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <title>ft_transcendence</title>
-    <!-- Tailwind CDN (dev convenience) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Canvas Styles -->
-    <style>
-        #gameCanvas {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            image-rendering: crisp-edges;
-        }
-
-        #gameContainer {
-            max-height: calc(100vh - 150px);
-        }
-
-        #gameContainer canvas {
-          max-height: calc(100% - 60px);
-        }
-    </style>
+    <link href="/tailwind.css" rel="stylesheet">
   </head>
   <body class="min-h-screen bg-gradient-to-br from-gray-900 to-black flex flex-col justify-between">
     <!-- Language switcher mount point -->
@@ -34,8 +16,8 @@
     <!-- AUTH NAVBAR (shown by default) -->
     <nav id="auth-navbar" class="header flex flex-wrap justify-between items-center text-white px-5 py-0.25 shadow-lg bg-gradient-to-br from-[#2c3e50] to-[#3498db]">
         <h1 class="text-xl text-emerald-400 py-2">ft_transcendence</h1>
-        <ul class="nav-bar-right flex gap-12 items-center">
-            <li>
+        <ul class="nav-bar-right flex items-center">
+            <li class="mr-12">
                 <button class="hover:text-emerald-400 transition-colors" data-lang-switcher></button>
             </li>
         </ul>
@@ -230,11 +212,10 @@
 
       <!-- GAME SECTION (hidden by default) -->
       <section id="game-section" class="hidden w-full h-full flex flex-col items-center justify-center text-white">
-        <!-- Edited by Matthias for testing:
-        Game Mode Menu (direkt sichtbar) -->
+        <!-- Game Mode Menu (shown initially) -->
         <div id="gameModeMenu" class="flex-column m-8">
           <h2 class="mb-8 text-4xl font-bold" data-i18n="game.choose_game_mode">Choose Game Mode</h2>
-          <div class="flex gap-4">
+          <div class="flex flex-col gap-4">
             <button
               id="playLocalButton"
               class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_local">
@@ -242,18 +223,31 @@
             </button>
             <button
               id="playRemoteButton"
-              class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_vs_player">
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_vs_player">
               Play vs Player
+            </button>
+            <button
+              id="playTournamentButton"
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition-all transform hover:scale-105" data-i18n="game.play_tournament">
+              Join Tournement
             </button>
           </div>
         </div>
         <!-- Game Canvas (hidden initially) -->
-        <div id="gameContainer" class="hidden w-full flex-1 flex flex-col items-center justify-start gap-4 p-4 pt-16">
-          <canvas id="gameCanvas" class="max-w-full max-h-full"></canvas>
+        <div id="gameContainer" class="hidden w-full flex-1 flex flex-col items-center justify-center p-4 max-h-[calc(100vh-150px)] relative">
+          <canvas id="gameCanvas" class="w-full h-full object-contain max-h-full"></canvas>
           <button
             id="exitGameButton"
-            class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors" data-i18n="game.exit_game">
+            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-[1vh] px-[3vw] rounded-lg transition-colors mt-8 text-[clamp(0.875rem,1.5vw,1.125rem)]" data-i18n="game.exit_game">
             Exit Game
+          </button>
+        </div>
+        <div id="tournamentContainer" class="hidden w-full flex-1 flex flex-col items-center justify-center p-4 max-h-[calc(100vh-150px)] relative">
+          <canvas id="tournamentCanvas" class="w-full h-full object-contain max-h-full"></canvas>
+          <button
+            id="exitTournamentButton"
+            class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-[1vh] px-[3vw] rounded-lg transition-colors mt-8 text-[clamp(0.875rem,1.5vw,1.125rem)]" data-i18n="game.exit_tournament">
+            Exit Tournement
           </button>
         </div>
       </section>
@@ -332,6 +326,16 @@
 			data-i18n-placeholder="chat.type_a_message"
 			class="flex-1 bg-white/10 rounded px-3 py-2 outline-none"
 		/>
+		<!-- Invite to play -->
+		<button
+			id="invite-to-play-btn-chat"
+			type="button"
+			class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded text-sm transition disabled:opacity-50"
+			data-i18n="chat.invite_to_play"
+			title="Invite to play"
+		>
+			🎮
+		</button>
 		<button type="submit" class="bg-blue-600 px-4 py-2 rounded" data-i18n="chat.send">
 			Send
 		</button>
@@ -400,9 +404,9 @@
   <!-- NOTFOUND SECTION (hidden by default) -->
   <section id="notfound-section" class="hidden w-full h-full flex items-center justify-center text-white">
     <div class="text-center">
-      <h2 class="mb-4 text-3xl font-bold">Page Not Found</h2>
-      <p class="mb-4">The page you requested doesn't exist.</p>
-      <button id="notfoundHomeBtn" class="bg-emerald-400 text-black px-4 py-2 rounded">Go to Home</button>
+      <h2 class="mb-4 text-3xl font-bold" data-i18n="notfound.page_not_found">Page Not Found</h2>
+      <p class="mb-4" data-i18n="notfound.page_not_found_description">The page you requested doesn't exist.</p>
+      <button id="notfoundHomeBtn" class="bg-emerald-400 text-black px-4 py-2 rounded" data-i18n="notfound.go_to_home">Go to Home</button>
     </div>
   </section>
 
@@ -447,5 +451,13 @@
     <script type="module" src="/dist/components/friends/searchButton.js"></script>
     <script type="module" src="/dist/components/friends/requestsList.js"></script>
     <script type="module" src="/dist/components/friends/friendsContent.js"></script>
+
+    <!-- Canvas pixel rendering - Keep as custom CSS (no Tailwind equivalent for image-rendering) -->
+    <style>
+        #tournamentCanvas,
+        #gameCanvas {
+          image-rendering: crisp-edges; /* Prevents blur when scaling canvas for pixel-perfect Pong rendering */
+        }
+    </style>
   </body>
 </html>

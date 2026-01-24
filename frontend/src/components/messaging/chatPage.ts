@@ -18,6 +18,7 @@ const messagesEl = document.getElementById("chat-messages")!;
 const formEl = document.getElementById("chat-form")!;
 const inputEl = document.getElementById("chat-input") as HTMLInputElement | null;
 const searchEl = document.getElementById("chat-search") as HTMLInputElement;
+const inviteToPlayBtn = document.getElementById("invite-to-play-btn-chat") as HTMLButtonElement | null;
 
 let activeConversation: Conversation | null = null;
 let conversations: ConversationSummary[] = [];
@@ -147,6 +148,33 @@ chatListEl.addEventListener("click", async (e) => {
 	renderMessages(convo, messagesEl, getCurrentUsername());
 });
 
+inviteToPlayBtn?.addEventListener("click", async () => {
+	if (!activeConversation) {
+		alert("Select a conversation to invite to play."); // todo translate
+		return;
+	}
+	const userIds = (activeConversation.summary?.participants ?? []).map(p => p.id);
+	if (userIds.length !== 2) {
+		alert("Can only invite to play in one-on-one conversations."); // todo translate
+		return; 
+	}
+	const otherUserId = userIds.find(id => String(id) !== String(getCurrentUserId()));
+	if (!otherUserId) {
+		alert("Could not determine the other user to invite."); // todo translate
+		return;
+	}
+
+	sendGameInvite(activeConversation,otherUserId);
+	alert("Game invite sent!"); // todo translate
+});
+
+function sendGameInvite(activeConversation: Conversation, userId: string) {
+	// For now, just send a special "game" message in the current conversation
+	if (!activeConversation) return;
+
+	sendMessage({conversationId: activeConversation.summary.id, type: "game", text: "invite"} as any)
+};
+	
 
 formEl.addEventListener("submit", async (e) => {
 	e.preventDefault();
@@ -158,6 +186,7 @@ formEl.addEventListener("submit", async (e) => {
 	if (activeConversation) {
 		const msg = await sendMessage({
 		conversationId: activeConversation.summary.id,
+		type: "text",
 		text,
 		} as any);
 
@@ -171,7 +200,7 @@ formEl.addEventListener("submit", async (e) => {
 	if (pendingUser) {
 		const createdMsg = await createConversation(
 		[pendingUser.id],
-		{ text } as any,
+		{ type: "text", text } as any,
 		);
 
 		// Open the newly created conversation
@@ -190,7 +219,7 @@ formEl.addEventListener("submit", async (e) => {
 document.addEventListener("DOMContentLoaded", () => {
 	const searchEl = document.getElementById("chat-search") as HTMLInputElement | null;
 	if (!searchEl) {
-		console.error("chat-search not found in DOM");
+		console.error("chat-search not found in DOM"); // todo silence /remove
 		return;
 	}
 
@@ -238,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 		} catch {
 		pendingUser = null;
-		chatListEl.innerHTML = `<li class="p-4 text-white/60">No user found</li>`;
+		chatListEl.innerHTML = `<li class="p-4 text-white/60">No user found</li>`; // todo translate
 		}
 	});
 });

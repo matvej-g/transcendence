@@ -91,6 +91,7 @@ class MessagingController extends BaseController
             'id'             => (string) $row['id'],
             'conversationId' => (string) $row['conversation_id'],
             'author'         => $author,
+			'type'           => $row['type'],
             'text'           => $row['text'],
             'createdAt'      => $createdAt,
             'isRead'         => ($row['read_at'] ?? null) !== null,
@@ -218,6 +219,7 @@ class MessagingController extends BaseController
         ]);
     }
 
+    // check if conversation between users already exists
     public function createConversation(Request $request, $parameters)
     {
         $userId = $this->getCurrentUserId($request);
@@ -231,6 +233,15 @@ class MessagingController extends BaseController
         if (!Validator::validateIdArray($participantIds ?? [])) {
             return $this->jsonBadRequest('Invalid participant ids');
         }
+
+        $uniqueParticipants = array_unique(
+            array_map('intval', $participantIds)
+        );
+
+        if (count($uniqueParticipants) === 1 && $uniqueParticipants[0] === (int)$userId) {
+            return $this->jsonConflict('Cannot start a conversation with yourself');
+        }
+
 
 		$text = $messageData['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
@@ -278,7 +289,7 @@ class MessagingController extends BaseController
             }
 
             // 3) Create first message
-            $row = $this->messages->createMessage((int)$conversationId, (int)$userId, (string)$text);
+            $row = $this->messages->createMessage((int)$conversationId, (int)$userId, (string)$type, (string)$text);
             if ($row === null) {
                 return $this->jsonServerError('createMessage failed');
             }
@@ -309,6 +320,7 @@ class MessagingController extends BaseController
         }
         $conversationId = (int) $id;
 
+		$type = $request->postParams['type'] ?? null;
 		$text = $request->postParams['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
@@ -345,7 +357,7 @@ class MessagingController extends BaseController
             }
         }
 
-        $row = $this->messages->createMessage($conversationId, $userId, $text);
+        $row = $this->messages->createMessage($conversationId, $userId, $type, $text);
         if ($row === null) {
             return $this->jsonServerError();
         }

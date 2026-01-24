@@ -14,18 +14,25 @@ class LoggingMiddleware {
         $this->logger = $logger;
     }
 
+
+	private function sanitise_data($Params)
+	{
+		$newParams = is_array($Params) ? $Params : [];
+		$sensitiveKeys = ['username', 'displayname', 'password', 'oldPassword', 'newPassword', 'token', 'access_token', 'refresh_token', 'email', 'oauth_id', 'two_factor_code'];
+		foreach ($sensitiveKeys as $key) {
+			if (array_key_exists($key, $newParams)) {
+				$newParams[$key] = '***';
+			}
+		}
+		return $newParams;
+	}
+
 	public function handleRequest(Request $request): string
 	{
 		$requestId = uniqid('');
 
 		// Redact sensitive fields before logging to avoid leaking passwords/tokens
-		$params = is_array($request->postParams) ? $request->postParams : [];
-		$sensitiveKeys = ['password', 'oldPassword', 'newPassword', 'token', 'access_token', 'refresh_token'];
-		foreach ($sensitiveKeys as $key) {
-			if (array_key_exists($key, $params)) {
-				$params[$key] = '***';
-			}
-		}
+		$params = $this->sanitise_data($request->postParams);
 
 		$this->logger->info('Incoming request', [
 			'request_id' => $requestId,
@@ -39,10 +46,12 @@ class LoggingMiddleware {
 
 	public function handleResponse(Response $response, $requestId): void
 	{
+		$params = $this->sanitise_data($response->getContent());
+
 		$context = [
 			'request_id' => $requestId,
 			'status' => $response->getStatusCodeValue(),
-        	'Content' => $response->getContent(),
+        	'Content' => $params,
 			'Header' => $response->getHeaders(),
 		];
 		if ($response->getStatusCodeValue() >= 400 ){

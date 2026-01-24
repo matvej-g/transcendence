@@ -25,13 +25,6 @@ CREATE TABLE IF NOT EXISTS pending_registrations (
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- todo: remove these users later on because of password hash
-INSERT OR IGNORE INTO users(username, displayname, email, password_hash)
-VALUES ('david', 'David', 'dhuss42@heilbron.de', 123);
-
-INSERT OR IGNORE INTO users(username, displayname, email, password_hash)
-VALUES ('test', 'TEST', 'test42@test.de', 234);
-
 -- Pong match Data
 CREATE TABLE IF NOT EXISTS matches (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,6 +86,7 @@ CREATE TABLE IF NOT EXISTS messages (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
 	author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	type TEXT NOT NULL CHECK (type IN ('text','game')),
 	text TEXT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	edited_at DATETIME

@@ -41,9 +41,6 @@ class Router {
 		$this->add('PUT', $uri, $controller, $middleware);
     }
 
-    // Convert a route URI with placeholders into a regex pattern,
-    // handling multiple placeholders and restricting {id} to digits.
-    // Returns an array of matches (named and numeric) or false.
     private function convert($route, $uri)
     {
         $pattern = preg_replace_callback('/\{(\w+)\}/', function ($m) {

@@ -5,7 +5,6 @@ export type LoginResult =
 import { setCurrentUserId, setUserOnline, setCurrentUsername } from './authUtils.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
-  console.log('[TS] loginHandle → input', { username, password }); // todo delete password log
 
   try {
     const res = await fetch('/api/user/login', {

@@ -61,10 +61,8 @@ class Logger {
 			default => $this->infoLog
 		};
 
-		// Attempt to write with exclusive lock; throw on failure (fail-fast).
 		$result = @file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
 		if ($result === false) {
-			// write to PHP error_log as a last-resort and then throw
 			error_log("[LOGGER] Failed to write to {$logFile}: {$entry}");
 			throw new \RuntimeException("Failed to write to log file: {$logFile}");
 		}

@@ -15,7 +15,6 @@ class Kernel
 
 	public function __construct()
 	{
-		// not sure about constducting them every time
 		$this->db = new Database('sqlite:' . base_path('/database/transcendence.db'));
 		$this->router = new Router();
 		
