@@ -11,6 +11,7 @@ import { Conversation, ConversationSummary } from "./types.js";
 import { UserDataPublic } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { appWs } from "../../ws/appWs.js";
+import { gameManager } from "../../game_components/gameManager.js";
 
 const chatListEl = document.getElementById("chat-list")!;
 const chatHeaderEl = document.getElementById("chat-header")!;
@@ -86,6 +87,15 @@ function handleChatMessageCreated(ev: any) {
 	}
 
 	renderChatList(conversations, chatListEl);
+
+	if (ev.data?.message?.type === "game") {
+		if (ev.data?.message?.text === "accept") {
+			// let inviteCode = ev.data?.message?.participantIds.str.join("-");
+			let inviteCode = "1_1";
+			window.location.hash = `#game`;
+			gameManager.startInviteGame(inviteCode);
+		}
+	}
 }
 
 appWs.on(handleChatMessageCreated);
