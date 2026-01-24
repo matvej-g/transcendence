@@ -1,13 +1,14 @@
 // Compiles to /site/public/js/user/auth/registerButton.js
 import { $, log } from "../../utils/utils.js";
 import { msg } from "../languages/auth/stringsMsgsHandlers.js";
-import { registerHandle } from "./register.js";
+import { registerHandle } from './register.js';
+import { logger } from '../../utils/logger.js';
 import type { RegisterRequest } from "./types.js";
 
 function wireRegisterButton() {
   const btn = document.getElementById("registerBtn") as HTMLButtonElement | null;
   if (!btn) {
-    console.warn("[registerButton] #registerBtn not found");
+    logger.warn("[registerButton] #registerBtn not found");
     return;
   }
 
@@ -42,7 +43,18 @@ function wireRegisterButton() {
         alert('Verification code sent to your email!');
         window.location.hash = `#verify-registration?email=${encodeURIComponent(payload.email)}`;
       } else {
-        alert(msg("registerFailedGeneric") + ` (${res.error})`);
+        // Map specific error messages
+        let errorMsg = msg("registerFailedGeneric");
+
+        if (res.error.toLowerCase().includes("email")) {
+          errorMsg = msg("registerFailedEmail");
+        } else if (res.error.toLowerCase().includes("password")) {
+          errorMsg = msg("registerFailedPassword");
+        } else if (res.error.toLowerCase().includes("username")) {
+          errorMsg = msg("registerFailedGeneric");
+        }
+
+        alert(errorMsg + ` (${res.error})`);
       }
     } finally {
       btn.disabled = false;

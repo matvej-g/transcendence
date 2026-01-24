@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS matches (
 -- User presence / status
 CREATE TABLE IF NOT EXISTS user_status (
 	user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+	busy INTEGER NOT NULL CHECK (busy IN (0,1)) DEFAULT 0,
 	online INTEGER NOT NULL DEFAULT 0,
 	last_seen DATETIME,
 	current_match_id INTEGER REFERENCES matches(id)

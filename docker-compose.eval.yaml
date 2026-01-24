@@ -7,8 +7,6 @@ volumes:
     name: database
   avatars:
     name: avatars
-  vendor:
-    name: vendor
 
 services:
   php-backend:
@@ -19,8 +17,6 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     volumes:
-      - ./backend:/var/www/html
-      - vendor:/var/www/html/vendor
       - sqlite_data:/var/www/html/database
       - avatars:/var/www/html/uploads/avatars
     env_file:
@@ -41,8 +37,6 @@ services:
     container_name: frontend
     build: ./frontend
     restart: on-failure
-    volumes:
-      - ./frontend:/var/www/html
     networks:
       - transcendence
     healthcheck:
@@ -60,8 +54,6 @@ services:
     depends_on:
       php-backend:
         condition: service_healthy
-    ports:
-      - "8081:8080"
     volumes:
       - sqlite_data:/var/www/html/database
     networks:
@@ -101,9 +93,8 @@ services:
     restart: on-failure
     ports:
       - "8080:80"   
-      - "8443:443" 
+      - "8443:443"
     volumes:
-      - ./backend/public:/var/www/html/public
       - avatars:/var/www/html/uploads/avatars:ro
     depends_on:
       - php-backend
@@ -121,14 +112,35 @@ services:
 
   cloudflared:
     container_name: cloudflared
-    build:
-      context: ./cloudflared
-      dockerfile: Dockerfile
+    image: cloudflare/cloudflared:2025.11.1
+    command: tunnel --config /etc/cloudflared/config.yaml run
     restart: unless-stopped
     volumes:
       - ./cloudflared:/etc/cloudflared:ro
     networks:
       - transcendence
+    depends_on:
+      nginx:
+        condition: service_started
+      cloudflared-precheck:
+        condition: service_completed_successfully
 
-    entrypoint: ["/bin/sh", "/etc/cloudflared/entrypoint.sh"]
-
+  cloudflared-precheck:
+    image: busybox:1.36
+    container_name: cloudflared-precheck
+    volumes:
+      - ./cloudflared:/etc/cloudflared:ro
+    command:
+      [
+        "sh",
+        "-lc",
+        "for i in $(seq 1 12); do \\
+          test -s /etc/cloudflared/config.yaml \\
+          -a -s /etc/cloudflared/cert.pem \\
+          -a -s /etc/cloudflared/*.json && exit 0; \\
+          sleep 5; \\
+        done; \\
+        echo 'cloudflare credentials missing'; \\
+        exit 1"
+      ]
+    restart: "no"

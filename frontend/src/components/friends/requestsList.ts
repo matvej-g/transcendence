@@ -10,6 +10,7 @@ import { getCurrentUserId } from '../auth/authUtils.js';
 import type { FriendRequest } from '../../common/types.js';
 import { t } from '../languages/i18n.js';
 import { populateFriendsList } from './friendsList.js';
+import { logger } from '../../utils/logger.js';
 
 // Helper to create a request list item
 function createRequestItem(request: FriendRequest) {
@@ -99,7 +100,7 @@ export async function populateRequestsList() {
 		return;
 	}
 	try {
-		console.log("user Id: ", userId);
+		logger.log("user Id: ", userId);
 		const friends: FriendRequest[] = await getFriends(Number(userId));
 		// Only show requests where status is 'pending' and the current user is the recipient
 		const pendingToMe = friends.filter((f: FriendRequest) => f.status === 'pending' && Number(userId) === f.receiverId);

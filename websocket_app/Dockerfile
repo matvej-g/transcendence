@@ -18,7 +18,4 @@ RUN composer install --no-dev --optimize-autoloader || composer install --no-dev
 # copy backend source (includes src/app_ws/Server.php)
 COPY backend/ ./
 
-# app-ws listens on 8082 (match nginx proxy_pass)
-EXPOSE 8082
-
 CMD ["php", "src/app_ws/Server.php"]

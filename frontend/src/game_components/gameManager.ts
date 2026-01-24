@@ -5,6 +5,7 @@ import { GameCanvas } from './gameCanvas.js';
 import { TournamentCanvas } from './tournamentCanvas.js';
 import { NetworkManager } from './networkManager.js';
 import { getCurrentUserIdNumber } from '../components/auth/authUtils.js';
+import { logger } from '../utils/logger.js';
 
 // Game Manager Class
 class GameManager {
@@ -65,11 +66,11 @@ class GameManager {
 	}
 
     private startLocalGame(): void {
-        console.log('Starting local game...');
+        logger.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need cahnge later
-        console.log(userId);
+        logger.log(userId);
 		this.networkManager.connect(
 			this.getWebSocketUrl(),
 			'local',
@@ -78,11 +79,11 @@ class GameManager {
     }
 
     private startRemoteGame(): void {
-        console.log('Starting remote game...');
+        logger.log('Starting remote game...');
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need change later
-        console.log(userId);
+        logger.log(userId);
 		this.networkManager.connect(
 			this.getWebSocketUrl(),
 			'remote',
@@ -91,11 +92,11 @@ class GameManager {
     }
 
     private startTournament(): void {
-        console.log('Join Tournament...');
+        logger.log('Join Tournament...');
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1; //need change later
-        console.log(userId);
+        logger.log(userId);
         this.networkManager.connect(
 			this.getWebSocketUrl(),
 			'joinT',
@@ -104,7 +105,7 @@ class GameManager {
     }
 
     public startInviteGame(inviteCode: string): void {
-        console.log('Starting invite game with code:', inviteCode);
+        logger.log('Starting invite game with code:', inviteCode);
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1;
@@ -118,7 +119,7 @@ class GameManager {
 
 
     private exitGame(): void {
-        console.log('Exit game, back to GameModeSelection');
+        logger.log('Exit game, back to GameModeSelection');
 
         this.networkManager.disconnect();
         this.gameCanvas.hide();
@@ -127,7 +128,7 @@ class GameManager {
     }
 
     private exitTournament(): void {
-        console.log('Exit Tournament, back to GameModeSelection');
+        logger.log('Exit Tournament, back to GameModeSelection');
         this.networkManager.disconnect();
         this.tournamentCanvas.hide();
         this.gameCanvas.hide();

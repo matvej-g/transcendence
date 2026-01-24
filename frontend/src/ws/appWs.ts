@@ -4,7 +4,9 @@
 // Connects to nginx route:  /ws/app
 // Automatically chooses ws:// or wss:// based on current page protocol.
 
-console.log('AppWs module loaded');
+import { logger } from '../utils/logger.js';
+
+logger.log('AppWs module loaded');
 
 export type AppWsEvent = {
   /** Event type, e.g. "message.created" */
@@ -58,7 +60,7 @@ export class AppWs {
    * - On successful connection, automatically re-joins all conversations.
    */
   connect(): void {
-	console.log("AppWs connecting to", APP_WS_URL);
+	logger.log("AppWs connecting to", APP_WS_URL);
 	if (
 		this.ws &&
 		(this.ws.readyState === WebSocket.OPEN ||
@@ -70,7 +72,7 @@ export class AppWs {
 
 		// Fired when the socket is successfully opened
 	this.ws.onopen = () => {
-		console.log("AppWs open");
+		logger.log("AppWs open");
 
 		// register user with ws_app server //todo use jwt // or register through backend
 		const userId = localStorage.getItem("userId");
@@ -85,7 +87,7 @@ export class AppWs {
 
     // Fired for each incoming message from the server
     this.ws.onmessage = (e: MessageEvent<string>) => {
-		console.log("AppWs raw message:", e.data);
+		logger.log("AppWs raw message:", e.data);
       let ev: AppWsEvent;
       try {
         ev = JSON.parse(e.data) as AppWsEvent;
@@ -97,7 +99,7 @@ export class AppWs {
       // Dispatch event to all registered handlers
       for (const h of this.handlers) 
 		{
-			console.log("AppWs dispatching event to handler", ++i, ev);
+			logger.log("AppWs dispatching event to handler", ++i, ev);
 			h(ev);
 		}
     };
@@ -110,7 +112,7 @@ export class AppWs {
 
     // Fired when the socket closes (server restart, network loss, etc.)
     this.ws.onclose = () => {
-		console.log("AppWs close");
+		logger.log("AppWs close");
       this.ws = null;
       this.scheduleReconnect();
     };

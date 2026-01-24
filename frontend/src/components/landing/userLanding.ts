@@ -1,5 +1,6 @@
 // User Landing Page - Protected by JWT + 2FA
 import { apiCall } from '../../utils/api.js';
+import { logger } from '../../utils/logger.js';
 
 interface User {
     id: number;
@@ -15,7 +16,7 @@ async function checkAuthAndLoad2FA() {
 
     if (!result.ok) {
         // Not authenticated or 2FA not verified
-        console.log('Auth check failed:', result.data);
+        logger.log('Auth check failed:', result.data);
         
         // Check if it's specifically a 2FA issue
         if (result.data?.error?.includes('2FA')) {
@@ -70,7 +71,7 @@ async function show2FADialog(): Promise<any> {
         
         document.getElementById('ignoreBtn')?.addEventListener('click', () => {
             document.body.removeChild(overlay);
-            console.log('User chose to bypass 2FA check');
+            logger.log('User chose to bypass 2FA check');
             resolve({ limited: true });
         });
     });
@@ -151,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (authData) {
         // User is authenticated with 2FA verified
-        console.log('✓ User authenticated with 2FA');
+        logger.log('✓ User authenticated with 2FA');
         
         // Load user profile
         await loadUserProfile();

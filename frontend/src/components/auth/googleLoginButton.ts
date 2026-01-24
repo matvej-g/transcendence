@@ -1,15 +1,16 @@
 import { handleGoogleLogin } from "./login.js";
+import { logger } from "../../utils/logger.js";
 
 function wireGoogleLoginButton() {
   const btn = document.getElementById("googleLoginBtn") as HTMLButtonElement | null;
   if (!btn) {
-    console.warn("[googleLoginButton] #googleLoginBtn not found");
+    logger.warn("[googleLoginButton] #googleLoginBtn not found");
     return;
   }
 
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
-    console.log("[UI] Google login button clicked");
+    logger.log("[UI] Google login button clicked");
     
     // Disable button during OAuth flow
     btn.disabled = true;

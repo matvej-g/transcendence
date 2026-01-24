@@ -16,6 +16,4 @@ RUN composer install --no-dev --optimize-autoloader || composer install --no-dev
 
 COPY backend/ ./
 
-EXPOSE 8080
-
 CMD ["php", "src/game_app/server.php"]

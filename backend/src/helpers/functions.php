@@ -21,10 +21,20 @@ function getCurrentUser($request): ?array
 {
 	return $request->user ?? null;
 }
-function user_to_public(array $user): array
+
+function userToPublic(array $user): array
 {
 	if (array_key_exists('password_hash', $user)) {
 		unset($user['password_hash']);
+	}
+
+	return $user;
+}
+
+function stripEmail(array $user): array
+{
+	if (array_key_exists('email', $user)) {
+		unset($user['email']);
 	}
 
 	return $user;

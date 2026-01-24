@@ -115,7 +115,7 @@ class UserModel {
 				"UPDATE users SET email = ? WHERE id = ?",
 				[$email, $id]
 			);
-			file_put_contents(BASE_PATH .'/tmp/debug.log', print_r('user id: '. $id . '\n', true), FILE_APPEND);
+			// file_put_contents(BASE_PATH .'/tmp/debug.log', print_r('user id: '. $id . '\n', true), FILE_APPEND);
 			return $this->getUserById($id);
 		}
 		catch (\PDOException $e) {
@@ -123,11 +123,11 @@ class UserModel {
 		}
 	}
 
-    public function updateUserInfo($id, $userName, $displayName, $email, $password) {
+    public function updateUserName($id, $userName, $displayName) {
 		try {
             $this->db->query(
-                "UPDATE users SET username = ?, displayname = ?, email = ?, password_hash = ? WHERE id = ?",
-                [$userName, $displayName, $email, $password, $id]
+                "UPDATE users SET username = ?, displayname = ?WHERE id = ?",
+                [$userName, $displayName, $id]
             );
             return $this->getUserById($id);
         }

@@ -6,6 +6,7 @@ function sanitizeString(str: string): string {
 }
 
 import { getCurrentUserId } from '../auth/authUtils.js';
+import { logger } from '../../utils/logger.js';
 import { getMatches } from './api.js';
 
 // Render match history for the current user
@@ -16,7 +17,7 @@ export async function renderMatchHistory(): Promise<void> {
   try {
     matches = await getMatches();
   } catch (e) {
-    console.warn('[profile] Could not fetch matches', e);
+    logger.warn('[profile] Could not fetch matches', e);
     return;
   }
   if (!Array.isArray(matches)) return;

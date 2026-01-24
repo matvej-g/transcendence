@@ -5,13 +5,23 @@ origincert: /etc/cloudflared/cert.pem
 
 ingress:
   - hostname: old-swede.com
-    service: http://nginx:80
+    service: https://nginx:443
+    originRequest:
+      noTLSVerify: true
   - hostname: www.old-swede.com
-    service: http://nginx:80
+    service: https://nginx:443
+    originRequest:
+      noTLSVerify: true
   - hostname: app.old-swede.com
-    service: http://nginx:80
+    service: https://nginx:443
+    originRequest:
+      noTLSVerify: true
   - hostname: api.old-swede.com
-    service: http://nginx:80
+    service: https://nginx:443
+    originRequest:
+      noTLSVerify: true
   - hostname: ws.old-swede.com
-    service: http://nginx:80
+    service: https://nginx:443
+    originRequest:
+      noTLSVerify: true
   - service: http_status:404

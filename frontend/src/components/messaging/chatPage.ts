@@ -6,11 +6,13 @@ import {
   fetchUserByUsername,
 } from "./api.js";
 
-import { renderChatList, renderMessages, prependSearchRow } from "./chatRender.js";
+import { renderChatList, renderMessages, prependSearchRow, attachGameMessageHandlers } from "./chatRender.js";
 import { Conversation, ConversationSummary } from "./types.js";
 import { UserDataPublic } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { appWs } from "../../ws/appWs.js";
+import { gameManager } from "../../game_components/gameManager.js";
+import { logger } from "../../utils/logger.js";
 
 const chatListEl = document.getElementById("chat-list")!;
 const chatHeaderEl = document.getElementById("chat-header")!;
@@ -24,22 +26,22 @@ let activeConversation: Conversation | null = null;
 let conversations: ConversationSummary[] = [];
 let pendingUser: UserDataPublic | null = null;
 
-console.log("chatPage loading");
+logger.log("chatPage loading");
 
 // events start
 function handleChatMessageCreated(ev: any) {
 	if (ev.type !== "message.created") {
-		console.log("handleChatMessageCreated: ignoring event type", ev.type);
+		logger.log("handleChatMessageCreated: ignoring event type", ev.type);
 		return;
 	}
 
-	console.log("handleChatMessageCreated: event", ev);
+	logger.log("handleChatMessageCreated: event", ev);
 
 	const cid = String(ev.data?.conversationId ?? "");
 	const msg = ev.data?.message;
 
 	if (!cid || !msg) {
-		console.warn("handleChatMessageCreated: missing cid or message in event", ev);
+		logger.warn("handleChatMessageCreated: missing cid or message in event", ev);
 		return;
 	}
 
@@ -86,6 +88,15 @@ function handleChatMessageCreated(ev: any) {
 	}
 
 	renderChatList(conversations, chatListEl);
+
+	if (ev.data?.message?.type === "game") {
+		if (ev.data?.message?.text === "accept") {
+			// let inviteCode = ev.data?.message?.participantIds.str.join("-");
+			let inviteCode = "1_1";
+			window.location.hash = `#game`;
+			gameManager.startInviteGame(inviteCode);
+		}
+	}
 }
 
 appWs.on(handleChatMessageCreated);
@@ -94,7 +105,7 @@ appWs.on(handleChatMessageCreated);
 // todo move this to (include in) central router section
 function onHashChange() { 
 	appWs.connect(); // fail-safe connect/re-connect
-	console.log("hash changed to", window.location.hash);
+	logger.log("hash changed to", window.location.hash);
 	if (window.location.hash === "#chat") {
 		loadConversations();
 	}
@@ -140,7 +151,7 @@ chatListEl.addEventListener("click", async (e) => {
 	if (!convoId) return;
 
 	const convo = await fetchConversation(convoId);
-	console.log("FETCHED CONVO", convo);
+	logger.log("FETCHED CONVO", convo);
 	activeConversation = convo;
 	pendingUser = null;
 
@@ -174,23 +185,36 @@ function sendGameInvite(activeConversation: Conversation, userId: string) {
 
 	sendMessage({conversationId: activeConversation.summary.id, type: "game", text: "invite"} as any)
 };
+
+export function sendGameAction(convoId: string, action: "accept" | "decline" | "cancel") {
+	const userId = getCurrentUserId();
+	if (!userId) return;
+
+	sendMessage({
+		conversationId: convoId,
+		type: "game",
+		text: action,
+		author: {
+			id: userId,
+			username: getCurrentUsername() ?? "you",
+		},
+	} as any);
+}
 	
 
 formEl.addEventListener("submit", async (e) => {
 	e.preventDefault();
 	if (!inputEl) return;
-	const text = inputEl.value.trim();
-	if (!text) return;
+	const textInput = inputEl.value.trim();
+	if (!textInput) return;
 
 	// 1) Existing conversation -> send message
 	if (activeConversation) {
 		const msg = await sendMessage({
 		conversationId: activeConversation.summary.id,
 		type: "text",
-		text,
+		text: textInput,
 		} as any);
-
-		activeConversation.messages.push(msg);
 		renderMessages(activeConversation, messagesEl, getCurrentUsername());
 		inputEl.value = "";
 		return;
@@ -198,11 +222,7 @@ formEl.addEventListener("submit", async (e) => {
 
 	// 2) No active convo, but we selected a user -> create convo with first message
 	if (pendingUser) {
-		const createdMsg = await createConversation(
-		[pendingUser.id],
-		{ type: "text", text } as any,
-		);
-
+		const createdMsg = await createConversation( [pendingUser.id], { type: "text", text: textInput } as any );
 		// Open the newly created conversation
 		const convo = await fetchConversation(createdMsg.conversationId);
 		activeConversation = convo;
@@ -219,12 +239,12 @@ formEl.addEventListener("submit", async (e) => {
 document.addEventListener("DOMContentLoaded", () => {
 	const searchEl = document.getElementById("chat-search") as HTMLInputElement | null;
 	if (!searchEl) {
-		console.error("chat-search not found in DOM"); // todo silence /remove
+		logger.error("chat-search not found in DOM"); // todo silence /remove
 		return;
 	}
 
 	searchEl.addEventListener("keydown", async (e) => {
-		console.log("keydown", e.key);
+		logger.log("keydown", e.key);
 		if (e.key !== "Enter") return;
 
 		const q = searchEl.value.trim();

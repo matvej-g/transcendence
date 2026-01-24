@@ -80,13 +80,10 @@ class Router {
 					}
 				}
 
-				// dynamic controller classes
 				if (is_array($route['controller'])) {
 					[$class, $methodName] = $route['controller'];
 					
-					// creating a Controller because $class holds name of controller
 					$controllerInstance = new $class($db);
-					// calling the method because $methodName holds the name of the method
 					return ($controllerInstance->$methodName($request, $matches));
 				}
 			}

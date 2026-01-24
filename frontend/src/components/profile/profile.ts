@@ -12,7 +12,7 @@ import { getUserByUserId } from './api.js';
 import { renderMatchHistory } from './matchHistory.js';
 import { fetchUserWinsAndLosses } from './stats.js';
 
-
+import { logger } from '../../utils/logger.js';
 
 // Reload only the username
 export async function reloadUsername(): Promise<void> {
@@ -24,7 +24,7 @@ export async function reloadUsername(): Promise<void> {
     if (!username) return;
     document.getElementById('username')!.textContent = sanitizeString(`${username}`);
   } catch (e) {
-    console.warn('[profile] reloadUsername error', e);
+    logger.warn('[profile] reloadUsername error', e);
   }
 }
 
@@ -42,11 +42,11 @@ export async function reloadAvatar(): Promise<void> {
         avatarImg.src = `/uploads/avatars/${encodeURIComponent(avatarFilename || '')}`;
       } else {
         avatarImg.src = '';
-        console.error('avatar filename not found');
+        logger.error('avatar filename not found');
       }
     }
   } catch (e) {
-    console.warn('[profile] reloadAvatar error', e);
+    logger.warn('[profile] reloadAvatar error', e);
   }
 }
 
@@ -76,7 +76,7 @@ export async function reloadStats(): Promise<void> {
     document.getElementById('tourn-wins')!.textContent = '?';
     document.getElementById('tourn-losses')!.textContent = '?';
     document.getElementById('tourn-winning-rate')!.textContent = '?';
-    console.warn('[profile] reloadStats error', e);
+    logger.warn('[profile] reloadStats error', e);
   }
 }
 
@@ -85,7 +85,7 @@ export async function reloadMatchHistory(): Promise<void> {
   try {
     await renderMatchHistory();
   } catch (e) {
-    console.warn('[profile] reloadMatchHistory error', e);
+    logger.warn('[profile] reloadMatchHistory error', e);
   }
 }
 

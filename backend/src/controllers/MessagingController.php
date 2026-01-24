@@ -10,6 +10,7 @@ use src\Models\MessageModel;
 use src\Models\BlockModel;
 use src\Models\GameInviteModel;
 use src\Models\UserModel;
+use src\Models\UserStatusModel;
 use src\Validator;
 use src\Services\MessagingNotifier;
 use src\app_ws\RedisPublisher;
@@ -21,6 +22,7 @@ class MessagingController extends BaseController
     private BlockModel $blocks;
     private GameInviteModel $invites;
     private UserModel $users;
+    private UserStatusModel $userStatus;
 	private MessagingNotifier $notifier;
 
     public function __construct(Database $db)
@@ -31,6 +33,7 @@ class MessagingController extends BaseController
         $this->invites       = new GameInviteModel($db);
         $this->users         = new UserModel($db);
 		$this->notifier	     = new MessagingNotifier(new RedisPublisher());
+        $this->userStatus    = new UserStatusModel($db);
     }
 
     // Replace this with proper auth/JWT once available.
@@ -67,7 +70,7 @@ class MessagingController extends BaseController
             return null;
         }
 
-        $author = user_to_public($author);
+        $author = userToPublic($author);
 
         $createdAt = $row['created_at'] ?? null;
         if ($createdAt !== null) {
@@ -117,7 +120,7 @@ class MessagingController extends BaseController
             if ($user === null || !$user) {
                 continue;
             }
-            $participants[] = user_to_public($user);
+            $participants[] = userToPublic($user);
         }
 
         // Last message
@@ -242,7 +245,7 @@ class MessagingController extends BaseController
             return $this->jsonConflict('Cannot start a conversation with yourself');
         }
 
-
+		$type = $messageData['type'] ?? null;
 		$text = $messageData['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
@@ -357,16 +360,31 @@ class MessagingController extends BaseController
             }
         }
 
+        $anyBusy = false;
+
+        foreach ($otherUserIds as $otherId) {
+            $status = $this->userStatus->getStatusByUserId($otherId);
+            if ($status === null) {
+                return $this->jsonServerError();
+            }
+
+            if (!empty($status['busy']) && (int)$status['busy'] === 1) {
+                $anyBusy = true;
+            }
+        }
+
         $row = $this->messages->createMessage($conversationId, $userId, $type, $text);
         if ($row === null) {
             return $this->jsonServerError();
         }
 
-        $apiMessage = $this->mapMessageRowToApi($row);
+        $response = $this->mapMessageRowToApi($row);
         if ($apiMessage === null) {
             return $this->jsonServerError();
         }
-		$this->notifier->messageCreated(conversationId: $conversationId, apiMessage: $apiMessage, recipientUserIds: $otherUserIds, actorUserId: $userId); //notify all users
+
+        $apiMessage['recipient_busy'] = $anyBusy;
+		$this->notifier->messageCreated(conversationId: $conversationId, apiMessage: $apiMessage, recipientUserIds: $otherUserIds, actorUserId: $userId);
 
         return $this->jsonCreated($apiMessage);
     }

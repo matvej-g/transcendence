@@ -84,7 +84,7 @@ class Validator
 		return self::validateString($password, 8, 72);
 	}
 
-	private static function validateUserName($userName): ?string
+	public static function validateUserName($userName): ?string
 	{
 		$userName = trim($userName);
 		if (!preg_match('/^[a-zA-Z0-9._-]+$/', $userName)) {
