@@ -2,6 +2,7 @@ import { Conversation, ConversationSummary, Message} from "./types.js";
 import type { UserId } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { t } from "../languages/i18n.js";
+import { sendGameAction } from "./chatPage.js";
 type GameText = "invite" | "accept" | "cancel" | "decline";
 
 const chatListEl = document.getElementById("chat-list")!;
@@ -135,6 +136,7 @@ export function renderMessages(
 
 
 	container.scrollTop = container.scrollHeight;
+	attachGameMessageHandlers();
 }
 
 function escapeHtml(str: string): string {
@@ -146,17 +148,18 @@ function escapeHtml(str: string): string {
 		.replace(/'/g, "&#039;");
 }
 
-function renderInviteGameMessage(msg: any, isMine: boolean): string {
-	// Invite split:
-	// - Sender: Cancel
-	// - Receiver: Accept/Decline
+function renderInviteGameMessage(msg: Message, isMine: boolean): string {
+	const convId = escapeHtml(String(msg.conversationId));
+	const msgId = escapeHtml(String(msg.id));
+
 	const buttonsHtml = isMine
 		? `
 			<div class="flex gap-2 mt-3 justify-end">
 				<button
 					class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
 					data-action="cancel-game"
-					data-message-id="${escapeHtml(String(msg.id))}"
+					data-message-id="${msgId}"
+					data-conversation-id="${convId}"
 				>
 					Cancel
 				</button>
@@ -167,14 +170,16 @@ function renderInviteGameMessage(msg: any, isMine: boolean): string {
 				<button
 					class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
 					data-action="accept-game"
-					data-message-id="${escapeHtml(String(msg.id))}"
+					data-message-id="${msgId}"
+					data-conversation-id="${convId}"
 				>
 					Accept
 				</button>
 				<button
 					class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
 					data-action="decline-game"
-					data-message-id="${escapeHtml(String(msg.id))}"
+					data-message-id="${msgId}"
+					data-conversation-id="${convId}"
 				>
 					Decline
 				</button>
@@ -237,4 +242,34 @@ export function renderGameMessage(msg: any, isMine: boolean): string {
 				</div>
 			`;
 	}
+}
+
+
+export function attachGameMessageHandlers() {
+  const container = document.getElementById("chat-messages");
+  if (!container) return;
+
+  // prevent double-binding if you call this multiple times
+  if ((container as any).__gameHandlersAttached) return;
+  (container as any).__gameHandlersAttached = true;
+
+  container.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+      "button[data-action][data-message-id][data-conversation-id]"
+    );
+    if (!btn) return;
+
+    const actionRaw = btn.dataset.action;
+    const conversationId = btn.dataset.conversationId;
+
+    const action =
+      actionRaw === "accept-game" ? "accept" :
+      actionRaw === "decline-game" ? "decline" :
+      actionRaw === "cancel-game" ? "cancel" :
+      null;
+
+    if (!action || !conversationId) return;
+
+    sendGameAction(conversationId, action);
+  });
 }

@@ -6,11 +6,12 @@ import {
   fetchUserByUsername,
 } from "./api.js";
 
-import { renderChatList, renderMessages, prependSearchRow } from "./chatRender.js";
+import { renderChatList, renderMessages, prependSearchRow, attachGameMessageHandlers } from "./chatRender.js";
 import { Conversation, ConversationSummary } from "./types.js";
 import { UserDataPublic } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { appWs } from "../../ws/appWs.js";
+import { gameManager } from "../../game_components/gameManager.js";
 import { logger } from "../../utils/logger.js";
 
 const chatListEl = document.getElementById("chat-list")!;
@@ -87,6 +88,15 @@ function handleChatMessageCreated(ev: any) {
 	}
 
 	renderChatList(conversations, chatListEl);
+
+	if (ev.data?.message?.type === "game") {
+		if (ev.data?.message?.text === "accept") {
+			// let inviteCode = ev.data?.message?.participantIds.str.join("-");
+			let inviteCode = "1_1";
+			window.location.hash = `#game`;
+			gameManager.startInviteGame(inviteCode);
+		}
+	}
 }
 
 appWs.on(handleChatMessageCreated);
@@ -175,6 +185,21 @@ function sendGameInvite(activeConversation: Conversation, userId: string) {
 
 	sendMessage({conversationId: activeConversation.summary.id, type: "game", text: "invite"} as any)
 };
+
+export function sendGameAction(convoId: string, action: "accept" | "decline" | "cancel") {
+	const userId = getCurrentUserId();
+	if (!userId) return;
+
+	sendMessage({
+		conversationId: convoId,
+		type: "game",
+		text: action,
+		author: {
+			id: userId,
+			username: getCurrentUsername() ?? "you",
+		},
+	} as any);
+}
 	
 
 formEl.addEventListener("submit", async (e) => {
@@ -185,6 +210,7 @@ formEl.addEventListener("submit", async (e) => {
 
 	// 1) Existing conversation -> send message
 	if (activeConversation) {
+		console.log("there is an active convo, sending message", activeConversation);
 		const msg = await sendMessage({
 		conversationId: activeConversation.summary.id,
 		type: "text",
