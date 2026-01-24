@@ -27,8 +27,7 @@ class OAuthController extends BaseController
     public function redirectToGoogle(Request $request, $parameters)
     {
         $authUrl = $this->googleClient->createAuthUrl();
-        header('Location: ' . $authUrl);
-        exit;
+        return $this->jsonSuccess(['url' => $authUrl]);
     }
 
     public function handleGoogleCallback(Request $request, $parameters)
