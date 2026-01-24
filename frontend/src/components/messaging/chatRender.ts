@@ -87,6 +87,7 @@ export function renderMessages(
 	currentUsername: string | null = null
 ) {
 	container.innerHTML = "";
+	let lastGameMessageID: string | null = null;
 
 	if (!currentUsername) {
 		currentUsername = getCurrentUsername() || "";
@@ -120,6 +121,11 @@ export function renderMessages(
 
 		// ---- GAME MESSAGE ----
 		else if (msg.type === "game") {
+			if (lastGameMessageID !== null)
+			{
+				pacifyGameMessage(lastGameMessageID, msg.conversationId);
+			}
+			lastGameMessageID = msg.id;
 			contentHtml = renderGameMessage(msg, isMine);
 		}
 
@@ -272,4 +278,39 @@ export function attachGameMessageHandlers() {
 
     sendGameAction(conversationId, action);
   });
+}
+
+function pacifyGameMessage(messageId: string | number, conversationId: string | number) {
+	const msgId = String(messageId);
+	const convId = String(conversationId);
+
+	const container = document.getElementById("chat-messages");
+	if (!container) return;
+
+	const buttons = container.querySelectorAll<HTMLButtonElement>(
+		`button[data-message-id="${CSS.escape(msgId)}"][data-conversation-id="${CSS.escape(convId)}"]`
+	);
+
+	if (buttons.length === 0) return;
+
+	for (const btn of buttons) {
+		// mark as stale for logic
+		btn.dataset.action = "action-stale";
+
+		// UX: disable interaction
+		btn.disabled = true;
+
+		// UX: visual feedback
+		btn.classList.add(
+			"opacity-50",
+			"cursor-not-allowed",
+			"pointer-events-none"
+		);
+	}
+
+	// Optional: dim the whole message bubble
+	const bubble = buttons[0].closest<HTMLElement>(".p-3.rounded-lg");
+	if (bubble) {
+		bubble.classList.add("opacity-70");
+	}
 }
