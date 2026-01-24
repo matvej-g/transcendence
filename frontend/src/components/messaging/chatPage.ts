@@ -13,6 +13,7 @@ import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { appWs } from "../../ws/appWs.js";
 import { gameManager } from "../../game_components/gameManager.js";
 import { logger } from "../../utils/logger.js";
+import { loadFriendProfile } from "../friendProfile/friendProfile.js";
 
 const chatListEl = document.getElementById("chat-list")!;
 const chatHeaderEl = document.getElementById("chat-header")!;
@@ -21,6 +22,7 @@ const formEl = document.getElementById("chat-form")!;
 const inputEl = document.getElementById("chat-input") as HTMLInputElement | null;
 const searchEl = document.getElementById("chat-search") as HTMLInputElement;
 const inviteToPlayBtn = document.getElementById("invite-to-play-btn-chat") as HTMLButtonElement | null;
+const viewProfileBtn = document.getElementById("view-profile-btn") as HTMLButtonElement | null;
 
 let activeConversation: Conversation | null = null;
 let conversations: ConversationSummary[] = [];
@@ -177,6 +179,25 @@ inviteToPlayBtn?.addEventListener("click", async () => {
 
 	sendGameInvite(activeConversation,otherUserId);
 	alert("Game invite sent!"); // todo translate
+});
+
+viewProfileBtn?.addEventListener("click", () => {
+	if (!activeConversation) {
+		alert("Select a conversation to view profile."); // todo translate
+		return;
+	}
+	const userIds = (activeConversation.summary?.participants ?? []).map(p => p.id);
+	if (userIds.length !== 2) {
+		alert("Can only view profile in one-on-one conversations."); // todo translate
+		return; 
+	}
+	const otherUserId = userIds.find(id => String(id) !== String(getCurrentUserId()));
+	if (!otherUserId) {
+		alert("Could not determine the other user to view."); // todo translate
+		return;
+	}
+	loadFriendProfile(Number(otherUserId));
+	
 });
 
 function sendGameInvite(activeConversation: Conversation, userId: string) {
