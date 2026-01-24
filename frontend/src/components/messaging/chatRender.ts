@@ -136,6 +136,7 @@ export function renderMessages(
 
 
 	container.scrollTop = container.scrollHeight;
+	attachGameMessageHandlers();
 }
 
 function escapeHtml(str: string): string {
@@ -243,31 +244,32 @@ export function renderGameMessage(msg: any, isMine: boolean): string {
 	}
 }
 
-export function attachGameMessageHandlers(container: HTMLElement) {
-	container.addEventListener("click", (e) => {
-		const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
-			"button[data-action][data-message-id][data-conversation-id]"
-		);
-		if (!btn) return;
 
-		const actionRaw = btn.dataset.action;
-		const messageId = btn.dataset.messageId;
-		const conversationId = btn.dataset.conversationId;
+export function attachGameMessageHandlers() {
+  const container = document.getElementById("chat-messages");
+  if (!container) return;
 
-		if (!actionRaw || !messageId || !conversationId) return;
+  // prevent double-binding if you call this multiple times
+  if ((container as any).__gameHandlersAttached) return;
+  (container as any).__gameHandlersAttached = true;
 
-		const action =
-			actionRaw === "accept-game" ? "accept" :
-			actionRaw === "decline-game" ? "decline" :
-			actionRaw === "cancel-game" ? "cancel" :
-			null;
+  container.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+      "button[data-action][data-message-id][data-conversation-id]"
+    );
+    if (!btn) return;
 
-		if (!action) return;
+    const actionRaw = btn.dataset.action;
+    const conversationId = btn.dataset.conversationId;
 
-		// Send a "game action" message that references the invite message
-		sendGameAction(conversationId, action);
+    const action =
+      actionRaw === "accept-game" ? "accept" :
+      actionRaw === "decline-game" ? "decline" :
+      actionRaw === "cancel-game" ? "cancel" :
+      null;
 
-		// optional UX anti-spam
-		// btn.disabled = true;
-	});
+    if (!action || !conversationId) return;
+
+    sendGameAction(conversationId, action);
+  });
 }

@@ -6,7 +6,7 @@ import {
   fetchUserByUsername,
 } from "./api.js";
 
-import { renderChatList, renderMessages, prependSearchRow } from "./chatRender.js";
+import { renderChatList, renderMessages, prependSearchRow, attachGameMessageHandlers } from "./chatRender.js";
 import { Conversation, ConversationSummary } from "./types.js";
 import { UserDataPublic } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
@@ -176,9 +176,18 @@ function sendGameInvite(activeConversation: Conversation, userId: string) {
 };
 
 export function sendGameAction(convoId: string, action: "accept" | "decline" | "cancel") {
-	// For now, just send a special "game" message in the current conversation
-	console.log("sendGameAction", convoId, action);
-	sendMessage({conversationId: convoId, type: "game", text: action} as any)
+	const userId = getCurrentUserId();
+	if (!userId) return;
+
+	sendMessage({
+		conversationId: convoId,
+		type: "game",
+		text: action,
+		author: {
+			id: userId,
+			username: getCurrentUsername() ?? "you",
+		},
+	} as any);
 }
 	
 
@@ -190,6 +199,7 @@ formEl.addEventListener("submit", async (e) => {
 
 	// 1) Existing conversation -> send message
 	if (activeConversation) {
+		console.log("there is an active convo, sending message", activeConversation);
 		const msg = await sendMessage({
 		conversationId: activeConversation.summary.id,
 		type: "text",
