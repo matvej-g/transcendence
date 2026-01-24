@@ -341,8 +341,13 @@
 	<!-- RIGHT: ACTIVE CHAT -->
 	<div class="flex flex-col flex-1">
 		<!-- Chat header -->
-		<header id="chat-header" class="p-4 border-b border-white/10 font-semibold" data-i18n="chat.select_a_chat">
-		Select a chat
+		<header
+		id="chat-header"
+		class="p-4 border-b border-white/10 font-semibold flex items-center justify-between"
+		>
+		<span id="chat-header-title" data-i18n="chat.select_a_chat">
+			Select a chat
+		</span>
 		</header>
 
 		<div
@@ -351,6 +356,15 @@
 		></div>
 
 		<form id="chat-form" class="flex gap-2">
+		<button
+			id="view-profile-btn"
+			type="button"
+			class="bg-white/10 hover:bg-white/20 px-3 py-2 rounded text-sm transition disabled:opacity-50"
+			data-i18n="chat.view_profile"
+			title="View profile"
+		>
+		👤
+		</button>
 		<input
 			id="chat-input"
 			type="text"

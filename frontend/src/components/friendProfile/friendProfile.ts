@@ -20,21 +20,6 @@ export async function loadFriendProfile(userId: number): Promise<void> {
       return;
     }
 
-    // Check if users are friends
-    const areFriends = await checkIfFriends(userId);
-    if (!areFriends) {
-      logger.warn('[friendProfile] Attempted to view non-friend profile');
-      const usernameEl = document.getElementById('friend-username');
-      if (usernameEl) {
-        usernameEl.textContent = 'You can only view profiles of your friends';
-      }
-      // Optionally redirect to friends page
-      setTimeout(() => {
-        window.location.hash = '#friends';
-      }, 2000);
-      return;
-    }
-
     const data = await getPublicProfile(userId);
     
     // Update username
@@ -78,7 +63,7 @@ export async function loadFriendProfile(userId: number): Promise<void> {
     
     // Render match history
     renderFriendMatchHistory(data.matches || [], userId);
-    
+    window.location.hash = '#friend-profile';
   } catch (error) {
     logger.error('[friendProfile] Failed to load friend profile:', error);
     // Set error state in UI
