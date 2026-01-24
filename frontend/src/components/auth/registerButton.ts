@@ -39,7 +39,18 @@ function wireRegisterButton() {
       alert('Verification code sent to your email!');
       window.location.hash = `#verify-registration?email=${encodeURIComponent(payload.email)}`;
     } else {
-      alert(msg("registerFailedGeneric") + ` (${res.error})`);
+      // Map specific error messages
+      let errorMsg = msg("registerFailedGeneric");
+      
+      if (res.error.toLowerCase().includes("email")) {
+        errorMsg = msg("registerFailedEmail");
+      } else if (res.error.toLowerCase().includes("password")) {
+        errorMsg = msg("registerFailedPassword");
+      } else if (res.error.toLowerCase().includes("username")) {
+        errorMsg = msg("registerFailedGeneric");
+      }
+      
+      alert(errorMsg + ` (${res.error})`);
     }
   });
 }
