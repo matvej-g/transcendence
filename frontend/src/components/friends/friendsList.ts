@@ -1,4 +1,4 @@
-// Utility to sanitize strings (defense-in-depth)
+// Utility to sanitize strings (defense-in-depth) for xss attacks
 function sanitizeString(str: string): string {
 	const temp = document.createElement('div');
 	temp.textContent = str;
