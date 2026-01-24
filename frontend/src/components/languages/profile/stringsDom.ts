@@ -12,7 +12,9 @@ export type ProfileDomKey =
   | "match_history"
   | "avatar_choose_image"
   | "avatar_cancel"
-  | "avatar_upload";
+  | "avatar_upload"
+  | "avatar_choose_file"
+  | "avatar_no_file";
 
 export type ProfileDomStringsTableT = Record<ProfileDomKey, string>;
 
@@ -29,6 +31,8 @@ export const ProfileDomStrings: Record<Lang, ProfileDomStringsTableT> = {
     avatar_choose_image: "Choose image",
     avatar_cancel: "Cancel",
     avatar_upload: "Upload",
+    avatar_choose_file: "Choose file",
+    avatar_no_file: "No file chosen",
   },
   ru: {
     upload_avatar: "Загрузить аватар",
@@ -42,6 +46,8 @@ export const ProfileDomStrings: Record<Lang, ProfileDomStringsTableT> = {
     avatar_choose_image: "Выбрать изображение",
     avatar_cancel: "Отмена",
     avatar_upload: "Загрузить",
+    avatar_choose_file: "Выбрать файл",
+    avatar_no_file: "Файл не выбран",
   },
   de: {
 	upload_avatar: "Avatar hochladen",
@@ -55,5 +61,7 @@ export const ProfileDomStrings: Record<Lang, ProfileDomStringsTableT> = {
 	avatar_choose_image: "Bild auswählen",
 	avatar_cancel: "Abbrechen",
 	avatar_upload: "Hochladen",
+	avatar_choose_file: "Datei auswählen",
+	avatar_no_file: "Keine Datei ausgewählt",
   },
 } as const satisfies Record<Lang, ProfileDomStringsTableT>;

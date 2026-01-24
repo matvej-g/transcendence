@@ -13,6 +13,8 @@ function wireRegisterButton() {
   }
 
   btn.addEventListener("click", async () => {
+    if (btn.disabled) return;
+
     const u = $<HTMLInputElement>("user")?.value ?? "";
     const e = $<HTMLInputElement>("email")?.value ?? "";
     const p = $<HTMLInputElement>("pass")?.value ?? "";
@@ -31,26 +33,20 @@ function wireRegisterButton() {
       })}`
     );
 
-    const res = await registerHandle(payload);
-    log(`[UI] register result: ${JSON.stringify(res)}`);
+    btn.disabled = true;
+    try {
+      const res = await registerHandle(payload);
+      log(`[UI] register result: ${JSON.stringify(res)}`);
 
-    if (res.ok) {
-      // Registration initiated - redirect to verification page
-      alert('Verification code sent to your email!');
-      window.location.hash = `#verify-registration?email=${encodeURIComponent(payload.email)}`;
-    } else {
-      // Map specific error messages
-      let errorMsg = msg("registerFailedGeneric");
-      
-      if (res.error.toLowerCase().includes("email")) {
-        errorMsg = msg("registerFailedEmail");
-      } else if (res.error.toLowerCase().includes("password")) {
-        errorMsg = msg("registerFailedPassword");
-      } else if (res.error.toLowerCase().includes("username")) {
-        errorMsg = msg("registerFailedGeneric");
+      if (res.ok) {
+        // Registration initiated - redirect to verification page
+        alert('Verification code sent to your email!');
+        window.location.hash = `#verify-registration?email=${encodeURIComponent(payload.email)}`;
+      } else {
+        alert(msg("registerFailedGeneric") + ` (${res.error})`);
       }
-      
-      alert(errorMsg + ` (${res.error})`);
+    } finally {
+      btn.disabled = false;
     }
   });
 }

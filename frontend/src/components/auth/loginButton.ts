@@ -12,39 +12,46 @@ function wireLoginButton() {
   if (!btn) { logger.warn("[loginButton] #loginBtn not found"); return; }
 
   btn.addEventListener("click", async () => {
+    if (btn.disabled) return;
+
     const u = $<HTMLInputElement>("user")?.value ?? "";
     const p = $<HTMLInputElement>("pass")?.value ?? "";
     log(`[UI] login → ${JSON.stringify({ username: u, passwordMasked: p ? "***" : "" })}`);
 
-    const res = await loginHandle(u, p);
-    log(`[UI] login result: ${JSON.stringify(res)}`);
-    
-    if (res.ok) {
-      log(`[UI] Login successful`);
-      
-      // Check if 2FA is required
-      if (res.two_factor_required) {
-        // User has 2FA enabled - send code and redirect to verification
-        log(`[UI] 2FA required, sending code...`);
-        
-        const twoFAResult = await apiCall('/api/auth/send-2fa', {
-          method: 'POST',
-          body: JSON.stringify({})
-        });
-        
-        if (twoFAResult.ok && twoFAResult.data.success) {
-          alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to your email!`);
-          window.location.hash = '#verify-2fa';
+    btn.disabled = true;
+    try {
+      const res = await loginHandle(u, p);
+      log(`[UI] login result: ${JSON.stringify(res)}`);
+
+      if (res.ok) {
+        log(`[UI] Login successful`);
+
+        // Check if 2FA is required
+        if (res.two_factor_required) {
+          // User has 2FA enabled - send code and redirect to verification
+          log(`[UI] 2FA required, sending code...`);
+
+          const twoFAResult = await apiCall('/api/auth/send-2fa', {
+            method: 'POST',
+            body: JSON.stringify({})
+          });
+
+          if (twoFAResult.ok && twoFAResult.data.success) {
+            alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to your email!`);
+            window.location.hash = '#verify-2fa';
+          } else {
+            alert('Login successful but 2FA failed: ' + (twoFAResult.data.error || 'Unknown error'));
+          }
         } else {
-          alert('Login successful but 2FA failed: ' + (twoFAResult.data.error || 'Unknown error'));
+          // User has 2FA disabled - login complete
+          alert(msg("loginOkPrefix") + `${res.user.username}`);
+          window.location.href = '/index.html?t=' + Date.now() + '#profile';
         }
       } else {
-        // User has 2FA disabled - login complete
-        alert(msg("loginOkPrefix") + `${res.user.username}`);
-        window.location.href = '/index.html?t=' + Date.now() + '#profile';
+        alert(msg("loginFailedGeneric") + ` (${res.error})`);
       }
-    } else {
-      alert(msg("loginFailedGeneric") + ` (${res.error})`);
+    } finally {
+      btn.disabled = false;
     }
   });
 }

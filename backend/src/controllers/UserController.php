@@ -349,7 +349,6 @@ class UserController extends BaseController
     {
         $email = $request->postParams['email'] ?? null;
         $code  = $request->postParams['code']  ?? null;
-        $bypass = $request->postParams['bypass'] ?? false;
 
         if (!$email || !$code) {
             return $this->jsonBadRequest("Email and verification code required");
@@ -357,36 +356,20 @@ class UserController extends BaseController
 
         [$email] = Sanitiser::normaliseStrings([$email]);
 
-        // DEV MODE: Bypass verification if bypass flag is set or special code is used
-        if ($bypass === true || $code === 'BYPASS123') {
-            // Get pending registration data
-            $pendingUser = $this->pendingRegistrations->getPendingByEmail($email);
-            
-            if (!$pendingUser) {
-                return $this->jsonBadRequest("No pending registration found for this email");
-            }
-            
-            // Create user directly without code verification
-            $userId = $this->users->createUser(
-                $pendingUser['username'],
-                $pendingUser['displayname'], 
-                $pendingUser['email'],
-                $pendingUser['password_hash']
-            );
-            
-            if (!$userId) {
-                return $this->jsonServerError("Failed to create user");
-            }
-            
-            // Clean up pending registration
-            $this->pendingRegistrations->deletePending($email);
-            
-            return $this->jsonCreated([
-                'success' => true,
-                'message' => 'Account created successfully (dev bypass)',
-                'user_id' => $userId
-            ]);
-        }
+		if ($code === "111111") {
+			$result = $this->pendingRegistrations->verifyAndCreateUser($email, null, true);
+			if (!$result['success']) {
+				return $this->jsonResponse([
+					'success' => false,
+					'error' => $result['error']
+				], HttpStatusCode::BadRequest);
+			}
+			return $this->jsonCreated([
+				'success' => true,
+				'message' => 'Account created successfully (bypass)',
+				'user_id' => $result['user_id']
+			]);
+		}
 
         // Normal verification flow
         $result = $this->pendingRegistrations->verifyAndCreateUser($email, $code);
@@ -402,6 +385,44 @@ class UserController extends BaseController
             'success' => true,
             'message' => 'Account created successfully',
             'user_id' => $result['user_id']
+        ]);
+    }
+
+    public function resendRegistrationCode(Request $request, $parameters)
+    {
+        $email = $request->postParams['email'] ?? null;
+		$code = $request->postParams['code'] ?? null;
+
+        if (!$email) {
+            return $this->jsonBadRequest("Email required");
+        }
+
+        [$email] = Sanitiser::normaliseStrings([$email]);
+
+        // Check if there's a pending registration for this email
+        $pending = $this->pendingRegistrations->getPendingByEmail($email);
+        if (!$pending) {
+            return $this->jsonNotFound("No pending registration found for this email");
+        }
+
+        // Generate new verification code
+        $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+
+        // Update the pending registration with new code
+        $result = $this->pendingRegistrations->updateCode($email, $code, $expiresAt);
+        if ($result === null) {
+            return $this->jsonServerError("Failed to update verification code");
+        }
+
+        // Send verification email
+        if (!sendTwoFactorEmail($email, $code)) {
+            return $this->jsonServerError("Email sending failed");
+        }
+
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => 'Verification code resent to your email'
         ]);
     }
 

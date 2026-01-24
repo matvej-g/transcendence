@@ -1,12 +1,14 @@
 import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId, setCurrentUserId, setCurrentUsername, setUserOnline } from '../components/auth/authUtils.js';
 import { initFriendsSection} from '../components/friends/friendsContent.js';
 import { initProfile, reloadUsername, reloadAvatar, reloadMatchHistory, reloadStats } from '../components/profile/profile.js';
+import { loadFriendProfile } from '../components/friendProfile/friendProfile.js';
 import { logger } from '../utils/logger.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
   'auth': document.getElementById('auth-section'),
   'profile': document.getElementById('profile-section'),
+  'friend-profile': document.getElementById('friend-profile-section'),
   'game': document.getElementById('game-section'),
   'friends': document.getElementById('friends-section'),
   'chat': document.getElementById('chat-section'),
@@ -127,6 +129,18 @@ function showSection(sectionId: string): void {
     }
   }
 
+  // If friend-profile section, extract userId from hash and load profile
+  if (target === 'friend-profile') {
+    const hash = window.location.hash;
+    const match = hash.match(/^#friend-profile\/(\d+)/); // Extract userId
+    if (match && match[1]) {
+      const userId = parseInt(match[1], 10);
+      loadFriendProfile(userId).catch(e => logger.warn('[router] loadFriendProfile failed', e));
+    } else {
+      logger.warn('[router] friend-profile accessed without valid userId');
+    }
+  }
+
   // Show/hide navbars and footer based on section
   if (target === 'auth' || target === 'verify-2fa' || target === 'verify-registration' || target === 'oauth-callback') {
     authNavbar?.classList.remove('hidden');
@@ -211,7 +225,7 @@ window.addEventListener('hashchange', async () => {
   const section = hash.split('/')[0] || 'auth';
   const isLoggedIn = getCurrentUserId();
   // If trying to access a protected section and not logged in, redirect to login
-  const protectedSections = ['profile', 'game', 'friends', 'chat'];
+  const protectedSections = ['profile', 'friend-profile', 'game', 'friends', 'chat'];
   if (protectedSections.includes(section) && !isLoggedIn) {
     window.location.hash = '#auth';
     showSection('auth');
@@ -309,7 +323,7 @@ if (urlParams.has('code') || urlParams.has('error')) {
     // IMPORTANT: Routing logic must happen AFTER validation
     const initialHash = window.location.hash.slice(1);
     const isLoggedIn = getCurrentUserId();
-    const protectedSections = ['profile', 'game', 'friends', 'chat'];
+    const protectedSections = ['profile', 'friend-profile', 'game', 'friends', 'chat'];
     const initialSection = initialHash.split('/')[0] || 'auth';
 
      // Connect WebSocket if user is logged in

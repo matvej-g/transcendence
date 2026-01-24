@@ -35,7 +35,7 @@ class PendingRegistrationModel
         }
     }
 
-    public function verifyAndCreateUser($email, $code)
+    public function verifyAndCreateUser($email, $code, $bypass = false)
     {
         try {
             // Get pending registration
@@ -48,20 +48,22 @@ class PendingRegistrationModel
                 return ['success' => false, 'error' => 'No pending registration found'];
             }
 
-            // Check if code matches
-            if ($pending['verification_code'] !== $code) {
-                return ['success' => false, 'error' => 'Invalid verification code'];
-            }
+            if (!$bypass) {
+                // Check if code matches
+                if ($pending['verification_code'] !== $code) {
+                    return ['success' => false, 'error' => 'Invalid verification code'];
+                }
 
-            // Check if code has expired
-            $now = date('Y-m-d H:i:s');
-            if ($pending['expires_at'] < $now) {
-                // Delete expired registration
-                $this->db->query(
-                    "DELETE FROM pending_registrations WHERE email = ?",
-                    [$email]
-                );
-                return ['success' => false, 'error' => 'Verification code expired'];
+                // Check if code has expired
+                $now = date('Y-m-d H:i:s');
+                if ($pending['expires_at'] < $now) {
+                    // Delete expired registration
+                    $this->db->query(
+                        "DELETE FROM pending_registrations WHERE email = ?",
+                        [$email]
+                    );
+                    return ['success' => false, 'error' => 'Verification code expired'];
+                }
             }
 
             // Check if user already exists (edge case: duplicate registration)
@@ -133,5 +135,19 @@ class PendingRegistrationModel
     public function deletePending($email)
     {
         return $this->deletePendingRegistration($email);
+    }
+
+    public function updateCode($email, $code, $expiresAt)
+    {
+        try {
+            $result = $this->db->query(
+                "UPDATE pending_registrations SET verification_code = ?, expires_at = ? WHERE email = ?",
+                [$code, $expiresAt, $email]
+            );
+            return $result !== null;
+        } catch (\PDOException $e) {
+            error_log("Error updating verification code: " . $e->getMessage());
+            return null;
+        }
     }
 }

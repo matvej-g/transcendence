@@ -1,6 +1,6 @@
 FROM nginx:alpine
 
-RUN apk update && \
+RUN apk update --no-cache && \
     apk upgrade && \
     apk add --no-cache openssl curl
 
