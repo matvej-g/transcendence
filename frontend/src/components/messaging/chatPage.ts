@@ -205,19 +205,16 @@ export function sendGameAction(convoId: string, action: "accept" | "decline" | "
 formEl.addEventListener("submit", async (e) => {
 	e.preventDefault();
 	if (!inputEl) return;
-	const text = inputEl.value.trim();
-	if (!text) return;
+	const textInput = inputEl.value.trim();
+	if (!textInput) return;
 
 	// 1) Existing conversation -> send message
 	if (activeConversation) {
-		console.log("there is an active convo, sending message", activeConversation);
 		const msg = await sendMessage({
 		conversationId: activeConversation.summary.id,
 		type: "text",
-		text,
+		text: textInput,
 		} as any);
-
-		activeConversation.messages.push(msg);
 		renderMessages(activeConversation, messagesEl, getCurrentUsername());
 		inputEl.value = "";
 		return;
@@ -225,11 +222,7 @@ formEl.addEventListener("submit", async (e) => {
 
 	// 2) No active convo, but we selected a user -> create convo with first message
 	if (pendingUser) {
-		const createdMsg = await createConversation(
-		[pendingUser.id],
-		{ type: "text", text } as any,
-		);
-
+		const createdMsg = await createConversation( [pendingUser.id], { type: "text", text: textInput } as any );
 		// Open the newly created conversation
 		const convo = await fetchConversation(createdMsg.conversationId);
 		activeConversation = convo;

@@ -245,7 +245,7 @@ class MessagingController extends BaseController
             return $this->jsonConflict('Cannot start a conversation with yourself');
         }
 
-
+		$type = $messageData['type'] ?? null;
 		$text = $messageData['text'] ?? null;
         if ($text === null || !Validator::validateMessageText($text)) {
             return $this->jsonBadRequest('Invalid message text');
