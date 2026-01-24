@@ -1,4 +1,5 @@
 // Shared API utility functions
+import { logger } from './logger.js';
 
 export const API_BASE = ''; // Use relative URLs - nginx will proxy /api to backend
 
@@ -16,7 +17,7 @@ export async function apiCall(endpoint: string, options: RequestInit = {}) {
         const data = await response.json();
         return { ok: response.ok, status: response.status, data };
     } catch (error) {
-        console.error('API call failed:', error);
+        logger.error('API call failed:', error);
         return { ok: false, status: 0, data: { success: false, error: 'Network error' } };
     }
 }

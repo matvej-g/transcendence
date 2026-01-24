@@ -1,6 +1,7 @@
 import { DEFAULT_GAME_CONFIG, GameState, DEFAULT_TOURNAMENT_CONFIG, TournamentState } from "./gameEntities.js";
 import { GameCanvas } from "./gameCanvas";
 import { TournamentCanvas } from "./tournamentCanvas.js";
+import { logger } from '../utils/logger.js';
 //import { reloadMatchHistory, reloadStats } from "../components/profile/profile.js";
 
 export class NetworkManager {
@@ -28,7 +29,7 @@ export class NetworkManager {
 	}
 
 	public connect(url: string, mode: 'local' | 'remote' | 'joinT' | 'invite' , userId: number, inviteCode?: string): void {
-		console.log(`Connecting to ${url}...`);
+		logger.log(`Connecting to ${url}...`);
 		this.gameMode = mode;
 		this.userId = userId;
 		this.inviteCode = inviteCode ?? null;
@@ -49,7 +50,7 @@ export class NetworkManager {
 	}
 
 	private onConnected(): void {
-		console.log('Connected to server!');
+		logger.log('Connected to server!');
 
 		// send authenticate message to server
 		this.send({
@@ -65,7 +66,7 @@ export class NetworkManager {
 
 		switch (message.type) {
 			case 'connected':
-				console.log('Server confirmed:', message.data);
+				logger.log('Server confirmed:', message.data);
 				//send join after authentication
 				if (this.gameMode === 'invite' && this.inviteCode) {
 					this.send({
@@ -83,7 +84,7 @@ export class NetworkManager {
 				}
 				break;
 			case 'matchFound':
-				console.log('Match found!');
+				logger.log('Match found!');
 				this.resetlocalMatchState();
 				if (message.data.leftPlayerName) {
 					this.localGameState.leftPlayerName = message.data.leftPlayerName;
@@ -98,14 +99,14 @@ export class NetworkManager {
 				break;
 
 			case 'gameUpdate':
-				//console.log('GameUpdate received:', message.data);
+				logger.log('GameUpdate received:', message.data);
 				this.localGameState.leftPaddle.y = message.data.leftPaddleY;
 				this.localGameState.rightPaddle.y = message.data.rightPaddleY;
 				this.localGameState.ball.x = message.data.ballX;
 				this.localGameState.ball.y = message.data.ballY;
 				//check if message send with a score
 				if (message.data.leftScore !== undefined && message.data.rightScore !== undefined) {
-					//console.log('Score update:', message.data.leftScore, message.data.rightScore);
+					logger.log('Score update:', message.data.leftScore, message.data.rightScore);
 					this.localGameState.leftPaddle.score = message.data.leftScore;
 					this.localGameState.rightPaddle.score = message.data.rightScore;
 				}
@@ -113,14 +114,14 @@ export class NetworkManager {
 				break;
 
 			case 'gameOver':
-				console.log('Winner received:', message.data);
+				logger.log('Winner received:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
 				window.__profileReload = { stats: true, matchHistory: true };
 				break;
 
 			case 'opponentDisconnected':
-				console.log('Opponent disconnected:', message.data);
+				logger.log('Opponent disconnected:', message.data);
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
 				window.__profileReload = { stats: true, matchHistory: true };
@@ -134,7 +135,7 @@ export class NetworkManager {
 				window.location.hash = 'profile';
 				break;
 			case 'tournamentStart':
-				console.log('Tournament starting:', message.data);
+				logger.log('Tournament starting:', message.data);
 				this.localTournamentState = {
 					isRunning: true,
 					winner: null,
@@ -146,13 +147,13 @@ export class NetworkManager {
 				this.t_canvas.render(this.localTournamentState);
 				break;
 			case 'tournamentQueue':
-				console.log('Tournament queue update:', message.data);
+				logger.log('Tournament queue update:', message.data);
 				this.canvas.hide();
 				this.t_canvas.show();
 				this.t_canvas.showSearching(message.data.waiting);
 				break;
 			case 'tournamentUpdate':
-				console.log('Tournament update:', message.data);
+				logger.log('Tournament update:', message.data);
 				this.localTournamentState.rounds = message.data.rounds;
 				this.localTournamentState.currentRound = message.data.currentRound;
 				if (!this.localGameState.isRunning) {
@@ -160,7 +161,7 @@ export class NetworkManager {
 				}
 				break;
 			case 'tournamentMatchEnd':
-				console.log('Tournament update:', message.data);
+				logger.log('Tournament update:', message.data);
 				this.t_canvas.cancelCountdown();
 				this.resetlocalMatchState();
 				this.localTournamentState.rounds = message.data.rounds;
@@ -171,7 +172,7 @@ export class NetworkManager {
 				this.t_canvas.render(this.localTournamentState);
 				break;
 			case 'tournamentMatchAnnounce':
-				console.log('Match announce:', message.data);
+				logger.log('Match announce:', message.data);
 				this.resetlocalMatchState();
 				this.localGameState.leftPlayerName = message.data.player1;
 				this.localGameState.rightPlayerName = message.data.player2;
@@ -187,7 +188,7 @@ export class NetworkManager {
 				);
 				break;
 			case 'tournamentWin':
-				console.log('Tournament winner:', message.data);
+				logger.log('Tournament winner:', message.data);
 				this.canvas.hide();
 				this.t_canvas.show();
 				this.localTournamentState.winner = message.data.winner;
@@ -196,7 +197,7 @@ export class NetworkManager {
 				alert(`🏆 Tournament Winner: ${message.data.winner}!`);
 				break;
 			case 'tournamentDC':
-				console.log('Tournament disconnection:', message.data);
+				logger.log('Tournament disconnection:', message.data);
 				alert(message.data.message);
 				this.canvas.hide();
 				this.removeInputHandlers();
@@ -211,7 +212,7 @@ export class NetworkManager {
 				window.location.hash = 'profile';
 				break;
 			case 'error':
-				console.error('Server error:', message.data.errorMessage);
+				logger.error('Server error:', message.data.errorMessage);
 				alert(message.data.errorMessage);
 				window.location.hash = 'profile';
 				break;
@@ -219,11 +220,11 @@ export class NetworkManager {
 	}
 
 	private onError(error: Event): void {
-        console.error('WebSocket error:', error);
+        logger.error('WebSocket error:', error);
     }
 
     private onClose(): void {
-        console.log('Connection closed');
+        logger.log('Connection closed');
         this.canvas.hide();
         this.removeInputHandlers();
 		this.localGameState.leftPaddle.score = 0;

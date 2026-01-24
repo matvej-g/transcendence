@@ -3,12 +3,13 @@ import { $, log } from "../../utils/utils.js";
 import { msg } from "../languages/auth/stringsMsgsHandlers.js";
 import { loginHandle } from "./login.js";
 import { apiCall } from "../../utils/api.js";
+import { logger } from '../../utils/logger.js';
 //import { navigateToLandingPage } from "../landing/navigation.js";
 import { appWs } from "../../ws/appWs.js";
 
 function wireLoginButton() {
   const btn = document.getElementById("loginBtn") as HTMLButtonElement | null;
-  if (!btn) { console.warn("[loginButton] #loginBtn not found"); return; }
+  if (!btn) { logger.warn("[loginButton] #loginBtn not found"); return; }
 
   btn.addEventListener("click", async () => {
     const u = $<HTMLInputElement>("user")?.value ?? "";

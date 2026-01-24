@@ -11,6 +11,7 @@ import { Conversation, ConversationSummary } from "./types.js";
 import { UserDataPublic } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { appWs } from "../../ws/appWs.js";
+import { logger } from "../../utils/logger.js";
 
 const chatListEl = document.getElementById("chat-list")!;
 const chatHeaderEl = document.getElementById("chat-header")!;
@@ -24,22 +25,22 @@ let activeConversation: Conversation | null = null;
 let conversations: ConversationSummary[] = [];
 let pendingUser: UserDataPublic | null = null;
 
-console.log("chatPage loading");
+logger.log("chatPage loading");
 
 // events start
 function handleChatMessageCreated(ev: any) {
 	if (ev.type !== "message.created") {
-		console.log("handleChatMessageCreated: ignoring event type", ev.type);
+		logger.log("handleChatMessageCreated: ignoring event type", ev.type);
 		return;
 	}
 
-	console.log("handleChatMessageCreated: event", ev);
+	logger.log("handleChatMessageCreated: event", ev);
 
 	const cid = String(ev.data?.conversationId ?? "");
 	const msg = ev.data?.message;
 
 	if (!cid || !msg) {
-		console.warn("handleChatMessageCreated: missing cid or message in event", ev);
+		logger.warn("handleChatMessageCreated: missing cid or message in event", ev);
 		return;
 	}
 
@@ -94,7 +95,7 @@ appWs.on(handleChatMessageCreated);
 // todo move this to (include in) central router section
 function onHashChange() { 
 	appWs.connect(); // fail-safe connect/re-connect
-	console.log("hash changed to", window.location.hash);
+	logger.log("hash changed to", window.location.hash);
 	if (window.location.hash === "#chat") {
 		loadConversations();
 	}
@@ -140,7 +141,7 @@ chatListEl.addEventListener("click", async (e) => {
 	if (!convoId) return;
 
 	const convo = await fetchConversation(convoId);
-	console.log("FETCHED CONVO", convo);
+	logger.log("FETCHED CONVO", convo);
 	activeConversation = convo;
 	pendingUser = null;
 
@@ -219,12 +220,12 @@ formEl.addEventListener("submit", async (e) => {
 document.addEventListener("DOMContentLoaded", () => {
 	const searchEl = document.getElementById("chat-search") as HTMLInputElement | null;
 	if (!searchEl) {
-		console.error("chat-search not found in DOM"); // todo silence /remove
+		logger.error("chat-search not found in DOM"); // todo silence /remove
 		return;
 	}
 
 	searchEl.addEventListener("keydown", async (e) => {
-		console.log("keydown", e.key);
+		logger.log("keydown", e.key);
 		if (e.key !== "Enter") return;
 
 		const q = searchEl.value.trim();

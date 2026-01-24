@@ -1,3 +1,5 @@
+import { logger } from '../../utils/logger.js';
+
 // Utility to sanitize strings (defense-in-depth)
 function sanitizeString(str: string): string {
   const temp = document.createElement('div');
@@ -80,7 +82,7 @@ window.addEventListener('hashchange', async () => {
           }
         }
       } catch (err) {
-        console.error('Failed to check OAuth status:', err);
+        logger.error('Failed to check OAuth status:', err);
       }
     }
   }

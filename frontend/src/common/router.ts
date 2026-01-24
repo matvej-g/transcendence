@@ -1,6 +1,7 @@
 import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId, setCurrentUserId, setCurrentUsername, setUserOnline } from '../components/auth/authUtils.js';
 import { initFriendsSection} from '../components/friends/friendsContent.js';
 import { initProfile, reloadUsername, reloadAvatar, reloadMatchHistory, reloadStats } from '../components/profile/profile.js';
+import { logger } from '../utils/logger.js';
 
 // Simple router to handle navigation between sections
 const sections: Record<string, HTMLElement | null> = {
@@ -50,7 +51,7 @@ function resolveSection(sectionId: string): string {
     return baseSectionId;
   }
   // Unknown section requested — warn and notify consumers.
-  console.warn(`Router: unknown section "${sectionId}", showing 'notfound' section`);
+  logger.warn(`Router: unknown section "${sectionId}", showing 'notfound' section`);
   window.dispatchEvent(new CustomEvent('router:notfound', { detail: { section: sectionId } }));
   return 'notfound';
 }
@@ -114,7 +115,7 @@ function showSection(sectionId: string): void {
   if (target === 'profile') {
     if (!profileLoaded) {
       profileLoaded = true;
-      initProfile().catch(e => console.warn('[router] initProfile failed', e));
+      initProfile().catch(e => logger.warn('[router] initProfile failed', e));
       }
   }
 
@@ -169,14 +170,14 @@ async function handleOAuthCallback(): Promise<void> {
       setCurrentUserId(data.user.id);
       setCurrentUsername(data.user.username);
 
-      try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
+      try { await setUserOnline(); } catch (e) { logger.warn('[auth] setUserOnline failed', e); }
 
       window.location.href = '/index.html#profile';
     } else {
       throw new Error(data.error || 'Authentication failed');
     }
   } catch (err) {
-    console.error('OAuth callback error:', err);
+    logger.error('OAuth callback error:', err);
     alert('Failed to complete Google sign-in: ' + (err as Error).message);
     window.location.href = '/index.html#auth';
   }
@@ -235,7 +236,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   try {
     await setUserOffline();
   } catch (e) {
-    console.warn('[auth] setUserOffline failed', e);
+    logger.warn('[auth] setUserOffline failed', e);
   }
 
   // Call logout endpoint to clear JWT cookie
@@ -245,7 +246,7 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
       credentials: 'include'
     });
   } catch (error) {
-    console.error('Logout endpoint failed:', error);
+    logger.error('Logout endpoint failed:', error);
   }
 
   // Clear localStorage
@@ -301,7 +302,7 @@ if (urlParams.has('code') || urlParams.has('error')) {
           clearCurrentUsername();
         }
       } catch (err) {
-        console.warn('[router] Failed to validate user', err);
+        logger.warn('[router] Failed to validate user', err);
       }
     }
 

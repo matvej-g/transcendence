@@ -3,6 +3,7 @@ export type LoginResult =
   | { ok: false; error: string };
 
 import { setCurrentUserId, setUserOnline, setCurrentUsername } from './authUtils.js';
+import { logger } from '../../utils/logger.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
 
@@ -18,8 +19,8 @@ export async function loginHandle(username: string, password: string): Promise<L
     try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
 
     // 3) Log response
-    console.log('[TS] loginMiddleware → HTTP', res.status, res.statusText);
-    console.log('[TS] loginMiddleware → body', data);
+    logger.log('[TS] loginMiddleware → HTTP', res.status, res.statusText);
+    logger.log('[TS] loginMiddleware → body', data);
 
     if (!res.ok) {
       // Normalize error shape
@@ -38,7 +39,7 @@ export async function loginHandle(username: string, password: string): Promise<L
       // Only initialize profile if 2FA is not required or already verified
       if (!twoFactorRequired) {
         // set user online on server
-        try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
+        try { await setUserOnline(); } catch (e) { logger.warn('[auth] setUserOnline failed', e); }
       }
     }
 	const userNameToStore = data?.user?.username ?? data?.userName ?? data?.username ?? null;
@@ -51,13 +52,13 @@ export async function loginHandle(username: string, password: string): Promise<L
     const returnedUsername = String(userNameToStore ?? '');
     return { ok: true, user: { id: returnedId, username: returnedUsername }, two_factor_required: twoFactorRequired };
   } catch (e) {
-    console.log('[TS] loginHandle → exception', e);
+    logger.log('[TS] loginHandle → exception', e);
     return { ok: false, error: 'NETWORK_ERROR' };
   }
 }
 
 export async function handleGoogleLogin(): Promise<void> {
-  console.log('[TS] handleGoogleLogin → starting Google OAuth flow');
+  logger.log('[TS] handleGoogleLogin → starting Google OAuth flow');
   
   try {
     // Get Google auth URL from backend
@@ -66,12 +67,12 @@ export async function handleGoogleLogin(): Promise<void> {
     });
 
     if (!res.ok) {
-      console.error('[TS] handleGoogleLogin → failed to get auth URL', res.status);
+      logger.error('[TS] handleGoogleLogin → failed to get auth URL', res.status);
       throw new Error('Failed to initialize Google login');
     }
 
     const data = await res.json();
-    console.log('[TS] handleGoogleLogin → received auth URL');
+    logger.log('[TS] handleGoogleLogin → received auth URL');
 
     // Redirect to Google
     if (data.url) {
@@ -80,7 +81,7 @@ export async function handleGoogleLogin(): Promise<void> {
       throw new Error('No auth URL received from backend');
     }
   } catch (e) {
-    console.error('[TS] handleGoogleLogin → exception', e);
+    logger.error('[TS] handleGoogleLogin → exception', e);
     alert('Failed to start Google login. Please try again.');
   }
 }

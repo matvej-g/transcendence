@@ -1,4 +1,5 @@
 import { ChangeEmailParams } from '../../common/types';
+import { logger } from '../../utils/logger.js';
 // Change email
 export async function changeEmail({ id, oldEmail, newEmail }: ChangeEmailParams): Promise<any> {
 	const body = { id, oldEmail, newEmail };
@@ -16,7 +17,7 @@ export async function changeEmail({ id, oldEmail, newEmail }: ChangeEmailParams)
 	try {
 		return JSON.parse(text);
 	} catch (e) {
-		console.error('Failed to parse response:', text);
+		logger.error('Failed to parse response:', text);
 		throw new Error('Invalid server response');
 	}
 }

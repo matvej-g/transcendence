@@ -7,6 +7,7 @@ function sanitizeString(str: string): string {
 // import { updateEmail } from "./api.js";
 import { getCurrentUserId } from '../auth/authUtils.js';
 import { changeEmail } from './api.js';
+import { logger } from '../../utils/logger.js';
 
 // Elements
 const modal = document.getElementById('settings-change-email');
@@ -74,7 +75,7 @@ window.addEventListener('hashchange', async () => {
 					}
 				}
 			} catch (err) {
-				console.error('Failed to check OAuth status:', err);
+				logger.error('Failed to check OAuth status:', err);
 			}
 		}
 	}

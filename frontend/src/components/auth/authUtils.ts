@@ -2,6 +2,8 @@
  * Auth-related small helpers.
  * note: also used in src/components/messaging/chatPage.ts
  */
+import { logger } from '../../utils/logger.js';
+
 export function getCurrentUserId(): string | null {
   const id = localStorage.getItem('userId');
   if (!id) return null;
@@ -53,7 +55,7 @@ export async function setUserOnline(options?: { token?: string }): Promise<void>
   const res = await fetch('/api/status/online', { method: 'PATCH', headers, body: JSON.stringify({ currentUserId: userId }), credentials: 'include' });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    console.warn('[authUtils] setUserOnline failed', res.status, body);
+    logger.warn('[authUtils] setUserOnline failed', res.status, body);
     throw new Error(`setUserOnline failed: ${res.status}`);
   }
 }
@@ -71,7 +73,7 @@ export async function setUserOffline(options?: { token?: string }): Promise<void
   const res = await fetch('/api/status/offline', { method: 'PATCH', headers, body: JSON.stringify({ currentUserId: userId }), credentials: 'include' });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    console.warn('[authUtils] setUserOffline failed', res.status, body);
+    logger.warn('[authUtils] setUserOffline failed', res.status, body);
     throw new Error(`setUserOffline failed: ${res.status}`);
   }
 }
