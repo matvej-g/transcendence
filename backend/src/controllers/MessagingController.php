@@ -10,6 +10,7 @@ use src\Models\MessageModel;
 use src\Models\BlockModel;
 use src\Models\GameInviteModel;
 use src\Models\UserModel;
+use src\Models\UserStatusModel;
 use src\Validator;
 use src\Services\MessagingNotifier;
 use src\app_ws\RedisPublisher;
@@ -21,6 +22,7 @@ class MessagingController extends BaseController
     private BlockModel $blocks;
     private GameInviteModel $invites;
     private UserModel $users;
+    private UserStatusModel $userStatus;
 	private MessagingNotifier $notifier;
 
     public function __construct(Database $db)
@@ -31,6 +33,7 @@ class MessagingController extends BaseController
         $this->invites       = new GameInviteModel($db);
         $this->users         = new UserModel($db);
 		$this->notifier	     = new MessagingNotifier(new RedisPublisher());
+        $this->userStatus    = new UserStatusModel($db);
     }
 
     // Replace this with proper auth/JWT once available.
@@ -354,6 +357,13 @@ class MessagingController extends BaseController
             }
             if ($blocked === true) {
                 return $this->jsonBadRequest('You are blocked by this user');
+            }
+        }
+
+        foreach ($otherUserIds as $otherId) {
+            $isBusy = $this->userStatus->getStatusByUserId($id);
+            if ($isBusy['busy'] == 1) {
+                $text = 'User is busy';
             }
         }
 

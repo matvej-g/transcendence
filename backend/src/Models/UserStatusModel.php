@@ -83,4 +83,34 @@ class UserStatusModel
             return null;
         }
     }
+
+    public function busyStatus(int $userId)
+    {
+        try {
+            return $this->db->query(
+                "SELECT busy FROM user_status WHERE user_id = ?",
+                [$userId]
+            )->fetch(PDO::FETCH_ASSOC);
+        }
+        catch (\PDOException $e) {
+            return null;
+        }
+    } 
+
+
+    public function setBusyStatus(int $userId, bool $status)
+    {
+        $busy = $status ? 1 : 0;
+
+        try {
+            $this->db->query(
+                "UPDATE user_status SET busy = ? WHERE user_id = ?",
+                [$userId]
+            )->fetch(PDO::FETCH_ASSOC);
+            return $this->busyStatus($userId);
+        }
+        catch (\PDOException $e) {
+            return null;
+        }
+    } 
 }
