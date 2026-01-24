@@ -77,7 +77,6 @@ class AuthController extends BaseController
             return $this->jsonBadRequest('Code is required');
         }
 
-$isValidCode = (($code === '111111') || $this->pendingRegistrations->verifyCode($email, $code));        // Admin bypass code for testing
         $isValidCode = ($code === '111111') || $this->userModel->verifyTwoFactorCode($userId, $code);
 
         if ($isValidCode) {
