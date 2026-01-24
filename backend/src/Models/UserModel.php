@@ -81,9 +81,6 @@ class UserModel {
 		}
 	}
 
-	// another approach could be to create an is deleted flag
-	// delete could update that flag
-	// would save cascade that is involved through relational data where user is used
 	public function deleteUser($id) {
 		try {
 			$statement = $this->db->query(
