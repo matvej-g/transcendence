@@ -49,7 +49,6 @@ if (form) {
 		}
 		try {
 			const res = await updateUser({ id: userId, userName: newUsername });
-			console.log(res);
 			if (res && res.displayname === newUsername) {
 				setCurrentUsername(newUsername);
 				alert("OK: Username has been changed.");

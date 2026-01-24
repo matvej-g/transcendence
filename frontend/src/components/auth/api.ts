@@ -31,7 +31,6 @@ export async function setUserOnline(options?: { token?: string }): Promise<void>
   }
   const re = await fetch(`/api/status/${userId}`);
   const status = await re.json();
-  console.log('User online:', status.online === 1);
 }
 
 export async function setUserOffline(options?: { token?: string }): Promise<void> {
@@ -49,7 +48,6 @@ export async function setUserOffline(options?: { token?: string }): Promise<void
   }
   const re = await fetch(`/api/status/${userId}`);
   const status = await re.json();
-  console.log('User online:', status.online === 1);
 }
 
 export async function loginUser(username: string, password: string): Promise<any> {

@@ -34,7 +34,6 @@ export async function loginHandle(username: string, password: string): Promise<L
     
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
-      console.log('User data stored:', data.user ?? data);
       
       // Only initialize profile if 2FA is not required or already verified
       if (!twoFactorRequired) {

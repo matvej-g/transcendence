@@ -106,15 +106,22 @@ if (form) {
 		}
 		try {
 			// Fetch current user email from backend
-			const userRes = await fetch(`/api/user/${userId}`, { credentials: 'include' });
-			const userData = await userRes.json();
-			const oldEmail = userData?.email || userData?.user?.email;
+			const UserRes = await fetch(`/api/me`, { credentials: 'include' }); 
+			
+			if (!UserRes.ok) {
+				if (errorDiv) errorDiv.textContent = 'Not logged in.';
+				return;
+			}
+			
+			const userData = await UserRes.json();
+			const oldEmail = userData?.email;
+			
 			if (!oldEmail) {
 				if (errorDiv) errorDiv.textContent = 'Could not retrieve current email.';
 				return;
 			}
+			
 			const res = await changeEmail({ id: userId, oldEmail, newEmail });
-			console.log(res);
 			if (res && res.message === "Email changed") {
 				alert("OK: Email changed.");
 				window.location.hash = '#profile';

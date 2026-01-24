@@ -231,9 +231,15 @@ window.addEventListener('hashchange', async () => {
 
 // Logout button
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+  // Set user offline first (wait for it to complete)
+  try {
+    await setUserOffline();
+  } catch (e) {
+    console.warn('[auth] setUserOffline failed', e);
+  }
+
   // Call logout endpoint to clear JWT cookie
   try {
-    setUserOffline().catch((e) => console.warn('[auth] setUserOffline failed', e));
     await fetch('/api/user/logout', {
       method: 'POST',
       credentials: 'include'
@@ -286,13 +292,11 @@ if (urlParams.has('code') || urlParams.has('error')) {
           const userData = await res.json();
           // If backend user doesn't match localStorage, update localStorage
           if (String(userData.id) !== String(localUserId)) {
-            console.log('[router] localStorage userId mismatch - updating to match JWT cookie');
             setCurrentUserId(userData.id);
             setCurrentUsername(userData.username || '');
           }
         } else {
           // JWT cookie invalid - clear localStorage
-          console.log('[router] JWT invalid - clearing localStorage');
           clearCurrentUserId();
           clearCurrentUsername();
         }
