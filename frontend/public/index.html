@@ -190,6 +190,42 @@
         </div>
         </section>
 
+        <!-- FRIEND PROFILE SECTION (hidden by default) -->
+        <section id="friend-profile-section" class="hidden w-full">
+        <div class="profile flex justify-around items-center w-full bg-gradient-to-r from-[#40e5c9] to-[#2ecc71] p-4 shadow-lg flex-wrap">
+          <div class="avatar-name flex flex-col items-center">
+            <img id="friend-profile-avatar" src="" alt="Avatar image" class="h-40 w-auto rounded-full border-2 border-white/20 shadow-lg m-4">
+            <h2 class="text-white font-bold text-lg" id="friend-username"></h2>
+          </div>
+
+          <div class="stats flex flex-col justify-between items-center">
+            <h3 class="text-black font-bold text-lg" data-i18n="profile.statistics">Statistics</h3>
+            <div class="text-rectangle flex justify-between gap-12 text-black shadow-xl rounded-3xl p-4 backdrop-blur-sm font-[Brush_Script_MT]">
+              <ul class="match-stats pl-5">
+                <h4 class="font-bold" data-i18n="profile.matches">Matches</h4>
+                <li><span data-i18n="profile.wins">Wins:</span> <span  id="friend-match-wins"></span></li>
+                <li><span data-i18n="profile.losses">Losses:</span> <span id="friend-match-losses"></span></li>
+                <li><span data-i18n="profile.winning_rate">Win rate:</span> <span id="friend-match-winning-rate"></span> </li>
+              </ul>
+              <ul class="tournament-stats">
+                <h4 class="font-bold" data-i18n="profile.tournaments">Tournaments</h4>
+                <li><span data-i18n="profile.wins">Wins:</span> <span id="friend-tourn-wins"></span></li>
+                <li><span data-i18n="profile.losses">Losses:</span> <span  id="friend-tourn-losses"></span></li>
+                <li><span data-i18n="profile.winning_rate">Win rate:</span> <span id="friend-tourn-winning-rate"></span> </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="match-history w-2/3 flex flex-col justify-center items-center text-emerald-400 p-4 m-auto font-[Brush_Script_MT]">
+          <h3 class="mb-4 font-bold" data-i18n="profile.match_history">Match History</h3>
+          <ul class="text-rectangle flex flex-col items-start w-full">
+            <!-- Match items will be rendered here by JS -->
+            <ul id="friend-match-history-list" class="w-full"></ul>
+          </ul>
+        </div>
+        </section>
+
         <!-- SETTINGS: UPLOAD AVATAR SECTION (hidden by default) -->
         <section id="settings-upload-avatar" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div class="bg-gradient-to-br from-[#2c3e50] to-[#3498db] rounded-xl shadow-2xl p-8 w-full max-w-md border-2 border-emerald-400 flex flex-col items-center">
