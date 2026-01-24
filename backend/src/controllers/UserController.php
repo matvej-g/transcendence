@@ -676,7 +676,8 @@ class UserController extends BaseController
 
         return $this->jsonSuccess([
             'id' => $user['id'],
-            'username' => $user['username']
+            'username' => $user['username'],
+            'email' => $user['email']
         ]);
     }
 }

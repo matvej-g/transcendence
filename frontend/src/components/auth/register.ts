@@ -3,6 +3,7 @@ import { postRegisterRequest } from "./api.js";
 import { setCurrentUserId, setUserOnline } from './authUtils.js';
 import { initProfile } from '../profile/profile.js';
 import { appWs } from "../../ws/appWs.js";
+import { logger } from '../../utils/logger.js';
 
 /**
  * Public API used by the UI.
@@ -22,7 +23,7 @@ export async function registerHandle(payload: RegisterRequest): Promise<Register
     const userIdToStore = data?.id ?? data?.user?.id ?? null;
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
-      try { await setUserOnline(); } catch (e) { console.warn('[auth] setUserOnline failed', e); }
+      try { await setUserOnline(); } catch (e) { logger.warn('[auth] setUserOnline failed', e); }
     }
 	appWs.connect(); //connect app websocket after register
     return buildRegisterSuccessResult(data);
@@ -53,8 +54,8 @@ async function parseRegisterResponseBody(res: Response): Promise<any> {
 }
 
 function logRegisterResponse(res: Response, data: any): void {
-  console.log("[TS] registerHandle → HTTP", res.status, res.statusText);
-  console.log("[TS] registerHandle → body", data);
+  logger.log("[TS] registerHandle → HTTP", res.status, res.statusText);
+  logger.log("[TS] registerHandle → body", data);
 }
 
 /**
@@ -87,7 +88,7 @@ function buildRegisterSuccessResult(data: any): RegisterResult {
  * Logs unexpected exceptions (network issues, etc.).
  */
 function logRegisterException(e: unknown): void {
-  console.log("[TS] registerHandle → exception", e);
+  logger.log("[TS] registerHandle → exception", e);
 }
 
 /**

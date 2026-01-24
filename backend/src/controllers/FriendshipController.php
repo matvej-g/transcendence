@@ -26,10 +26,6 @@ class FriendshipController extends BaseController
 		$this->notifier = new MessagingNotifier(new RedisPublisher());
     }
 
-    /*-------------------------------------------------------*/
-    /* replace with correct authentication logic later       */
-    /* gets current id from user and validates it            */
-    /*-------------------------------------------------------*/
     private function getCurrentUserId(Request $request): ?int
     {
         $server = $request->server;
@@ -49,19 +45,13 @@ class FriendshipController extends BaseController
         return null;
     }
 
-    /*-------------------------------------------------------*/
-    /* gets users current id                                 */
-    /* gets all friend requests statuses for that user       */
-    /*-------------------------------------------------------*/
     public function getFriends(Request $request, $parameters)
     {
-        // get current userID
         $userId = $this->getCurrentUserId($request);
         if ($userId === null) {
             return $this->jsonBadRequest('Missing or invalid current user id');
         }
 
-        // get all friendships for that user
         $rows = $this->friendships->getFriendshipsForUser($userId);
         if ($rows === null) {
             return $this->jsonServerError();
@@ -109,25 +99,21 @@ class FriendshipController extends BaseController
 	// note: handles both sending new requests and accepting existing ones
     public function sendRequest(Request $request, $parameters)
     {
-        // validate current user id
         $userId = $this->getCurrentUserId($request);
         if ($userId === null) {
             return $this->jsonBadRequest('Missing or invalid current user id');
         }
 
-        // retrieve friend id and validate
         $friendIdRaw = $request->postParams['friendId'] ?? null;
         if (!Validator::validateId($friendIdRaw)) {
             return $this->jsonBadRequest('Invalid friend id');
         }
         $friendId = (int) $friendIdRaw;
 
-        // check if the same id
         if ($friendId === $userId) {
             return $this->jsonBadRequest('Cannot befriend yourself');
         }
 
-        // retrieve user based on friendId
         $friend = $this->users->getUserById($friendId);
         if ($friend === null) {
             return $this->jsonServerError();
@@ -136,14 +122,12 @@ class FriendshipController extends BaseController
             return $this->jsonNotFound('Friend user not found');
         }
 
-        // retrieve friendship status
         $existing = $this->friendships->getFriendshipBetween($userId, $friendId);
         if ($existing === null) {
             return $this->jsonServerError();
         }
         if ($existing) {
             $status = $existing['status'];
-            // if there is a reverse pending request accept it
             if ($status === 'pending' && $friendId === (int)$existing['user_id'] && $userId === (int)$existing['friend_id']) {
                 $accepted = $this->friendships->updateStatus((int)$existing['id'], 'accepted');
                 if ($accepted === null) {

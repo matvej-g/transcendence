@@ -1,4 +1,5 @@
 import { getCurrentUserId } from '../auth/authUtils.js';
+import { logger } from '../../utils/logger.js';
 
 const toggleBtn = document.getElementById('dropdown-toggle-2fa');
 
@@ -77,7 +78,7 @@ async function toggle2FA(enable: boolean) {
     const data = await response.json();
     
     if (data.success) {
-      console.log(data.message);
+      logger.log(data.message);
       currentlyEnabled = data.two_factor_enabled; // Update state after API call
       updateToggleUI(data.two_factor_enabled);
     } else {

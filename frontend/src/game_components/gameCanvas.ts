@@ -1,4 +1,5 @@
 import { GameState, GameConfig, DEFAULT_GAME_CONFIG } from './gameEntities.js';
+import { logger } from '../utils/logger.js';
 
 export class GameCanvas {
     private canvas: HTMLCanvasElement | null;
@@ -16,7 +17,7 @@ export class GameCanvas {
             this.canvas.height = this.config.canvasHeight;
         }
 
-        console.log('GameCanvas initialized');
+        logger.log('GameCanvas initialized');
     }
 
 	// Clear entire canvas
@@ -155,7 +156,7 @@ export class GameCanvas {
         const exitButton = document.getElementById('exitGameButton');
         container?.classList.remove('hidden');
         exitButton?.classList.remove('hidden');
-        console.log('Game canvas visible');
+        logger.log('Game canvas visible');
     }
 
     
@@ -165,7 +166,7 @@ export class GameCanvas {
         const exitButton = document.getElementById('exitGameButton');
         container?.classList.add('hidden');
         exitButton?.classList.add('hidden');
-        console.log('Game canvas hidden');
+        logger.log('Game canvas hidden');
     }
 
     // for remote Play

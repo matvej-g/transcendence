@@ -1,9 +1,10 @@
 import { setCurrentUserId, setCurrentUsername, setUserOnline } from './authUtils.js';
 import { appWs } from '../../ws/appWs.js';
+import { logger } from '../../utils/logger.js';
 
 
 if (window.location.pathname === '/api/auth/google/callback') {
-  console.log('[OAuth] Detected Google OAuth callback');
+  logger.log('[OAuth] Detected Google OAuth callback');
  
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code');

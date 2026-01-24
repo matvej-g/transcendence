@@ -1,13 +1,14 @@
 // Compiles to /site/public/js/user/auth/registerButton.js
 import { $, log } from "../../utils/utils.js";
 import { msg } from "../languages/auth/stringsMsgsHandlers.js";
-import { registerHandle } from "./register.js";
+import { registerHandle } from './register.js';
+import { logger } from '../../utils/logger.js';
 import type { RegisterRequest } from "./types.js";
 
 function wireRegisterButton() {
   const btn = document.getElementById("registerBtn") as HTMLButtonElement | null;
   if (!btn) {
-    console.warn("[registerButton] #registerBtn not found");
+    logger.warn("[registerButton] #registerBtn not found");
     return;
   }
 

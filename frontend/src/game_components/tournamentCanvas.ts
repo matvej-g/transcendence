@@ -1,4 +1,5 @@
 import { Match, TournamentState, TournamentConfig, DEFAULT_TOURNAMENT_CONFIG } from './gameEntities.js';
+import { logger } from '../utils/logger.js';
 
 export class TournamentCanvas {
     private canvas: HTMLCanvasElement | null;
@@ -349,7 +350,7 @@ export class TournamentCanvas {
 		const exit_tButton = document.getElementById('exitTournamentButton');
         container?.classList.remove('hidden');
 		exit_tButton?.classList.remove('hidden');
-		//console.log('Tournament canvas visible');
+		logger.log('Tournament canvas visible');
     }
 
     public hide(): void {
@@ -357,6 +358,6 @@ export class TournamentCanvas {
 		const exit_tButton = document.getElementById('exitTournamentButton');
         container?.classList.add('hidden');
 		exit_tButton?.classList.add('hidden');
-		//console.log('Tournament canvas hidden');
+		logger.log('Tournament canvas hidden');
     }
 }

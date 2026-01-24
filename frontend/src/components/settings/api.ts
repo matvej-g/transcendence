@@ -1,4 +1,5 @@
 import { ChangeEmailParams } from '../../common/types';
+import { logger } from '../../utils/logger.js';
 // Change email
 export async function changeEmail({ id, oldEmail, newEmail }: ChangeEmailParams): Promise<any> {
 	const body = { id, oldEmail, newEmail };
@@ -8,7 +9,17 @@ export async function changeEmail({ id, oldEmail, newEmail }: ChangeEmailParams)
 		body: JSON.stringify(body),
 		credentials: 'include',
 	});
-	return res.json();
+	
+	const text = await res.text();
+	if (!text) {
+		return { message: 'Email changed' };
+	}
+	try {
+		return JSON.parse(text);
+	} catch (e) {
+		logger.error('Failed to parse response:', text);
+		throw new Error('Invalid server response');
+	}
 }
 // Upload avatar
 export async function uploadAvatar(userId: number | string, avatarFile: File): Promise<any> {

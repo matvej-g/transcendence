@@ -115,7 +115,7 @@ class UserModel {
 				"UPDATE users SET email = ? WHERE id = ?",
 				[$email, $id]
 			);
-			file_put_contents(BASE_PATH .'/tmp/debug.log', print_r('user id: '. $id . '\n', true), FILE_APPEND);
+			// file_put_contents(BASE_PATH .'/tmp/debug.log', print_r('user id: '. $id . '\n', true), FILE_APPEND);
 			return $this->getUserById($id);
 		}
 		catch (\PDOException $e) {
