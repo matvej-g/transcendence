@@ -360,10 +360,16 @@ class MessagingController extends BaseController
             }
         }
 
+        $anyBusy = false;
+
         foreach ($otherUserIds as $otherId) {
-            $isBusy = $this->userStatus->getStatusByUserId($id);
-            if ($isBusy['busy'] == 1) {
-                $text = 'User is busy';
+            $status = $this->userStatus->getStatusByUserId($otherId);
+            if ($status === null) {
+                return $this->jsonServerError();
+            }
+
+            if (!empty($status['busy']) && (int)$status['busy'] === 1) {
+                $anyBusy = true;
             }
         }
 
@@ -372,11 +378,13 @@ class MessagingController extends BaseController
             return $this->jsonServerError();
         }
 
-        $apiMessage = $this->mapMessageRowToApi($row);
+        $response = $this->mapMessageRowToApi($row);
         if ($apiMessage === null) {
             return $this->jsonServerError();
         }
-		$this->notifier->messageCreated(conversationId: $conversationId, apiMessage: $apiMessage, recipientUserIds: $otherUserIds, actorUserId: $userId); //notify all users
+
+        $apiMessage['recipient_busy'] = $anyBusy;
+		$this->notifier->messageCreated(conversationId: $conversationId, apiMessage: $apiMessage, recipientUserIds: $otherUserIds, actorUserId: $userId);
 
         return $this->jsonCreated($apiMessage);
     }
