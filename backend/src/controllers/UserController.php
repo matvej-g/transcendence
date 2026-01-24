@@ -117,7 +117,7 @@ class UserController extends BaseController
             $match['player_two_displayname'] = $playerTwo['displayname'];
         }
 
-        $publicUser = user_to_public($user);
+        $publicUser = userToPublic($user);
 
         return $this->jsonSuccess([
             'username'    => $publicUser['username'],
@@ -149,7 +149,7 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
-        $user = user_to_public($user);
+        $user = userToPublic($user);
         return $this->jsonSuccess($user);
     }
 
@@ -167,36 +167,38 @@ class UserController extends BaseController
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
-        $user = user_to_public($user);
+        $user = userToPublic($user);
+        $user = stripEmail($user);
         return $this->jsonSuccess($user);
     }
 
-    public function getUserByEmail(Request $request, $parameters)
-    {
-        $email = $parameters['email'] ?? null;
-        if ($email === null || !is_string($email)) {
-            return $this->jsonBadRequest("Invalid email");
-        }
+    // public function getUserByEmail(Request $request, $parameters)
+    // {
+    //     $email = $parameters['email'] ?? null;
+    //     if ($email === null || !is_string($email)) {
+    //         return $this->jsonBadRequest("Invalid email");
+    //     }
 
-        [$email] = Sanitiser::normaliseStrings([$email]);
-        $user = $this->users->getUserByEmail($email);
-        if ($user === null) {
-            return $this->jsonServerError();
-        }
-        if (!$user) {
-            return $this->jsonNotFound("User not found");
-        }
-        $user = user_to_public($user);
-        return $this->jsonSuccess($user);
-    }
+    //     [$email] = Sanitiser::normaliseStrings([$email]);
+    //     $user = $this->users->getUserByEmail($email);
+    //     if ($user === null) {
+    //         return $this->jsonServerError();
+    //     }
+    //     if (!$user) {
+    //         return $this->jsonNotFound("User not found");
+    //     }
+    //     $user = userToPublic($user);
+    //     return $this->jsonSuccess($user);
+    // }
 
+    // remove later
     public function getUsers(Request $request, $parameters)
     {
         $allUsers = $this->users->getAllUsers();
         if ($allUsers === null) {
             return $this->jsonServerError();
         }
-        $allUsers = array_map('user_to_public', $allUsers);
+        $allUsers = array_map('userToPublic', $allUsers);
         return $this->jsonSuccess($allUsers);
     }
 
@@ -214,6 +216,11 @@ class UserController extends BaseController
         }
         if (!$user) {
             return $this->jsonNotFound("User not found");
+        }
+
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only access your own user data");
         }
 
         $stats = $this->stats->getStatsForUser($id);
@@ -420,6 +427,8 @@ class UserController extends BaseController
         if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
+        $id = (int) $id;
+
         $user = $this->users->getUserById((int)$id);
         if ($user === null) {
             return $this->jsonServerError();
@@ -431,6 +440,11 @@ class UserController extends BaseController
         // Prevent Google OAuth users from changing password
         if ($user['password_hash'] === null) {
             return $this->jsonBadRequest("Cannot change password for Google accounts. Password is managed by Google.");
+        }
+
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only access your own user data");
         }
 
         $old = $request->postParams['oldPassword'] ?? null;
@@ -467,6 +481,12 @@ class UserController extends BaseController
             return $this->jsonNotFound("User not found");
         } elseif ($user === null) {
             return $this->jsonServerError();
+        }
+        $id = (int) $id;
+
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only access your own user data");
         }
 
         $old = $request->postParams['oldEmail'] ?? null;
@@ -511,34 +531,27 @@ class UserController extends BaseController
         if (!$existing) {
             return $this->jsonNotFound("User not found");
         }
-        $userName = $request->postParams['userName'] ?? $existing['username'];
-        $email    = $request->postParams['email']    ?? $existing['email'];
-        $password = $request->postParams['password'] ?? null;
+        $id = (int) $id;
 
-        $errors = Validator::validateUpdateUserData($userName, $email, $password);
-        if ($errors) {
-            return $this->jsonBadRequest(json_encode($errors));
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only access your own user data");
         }
 
-        $isGoogleUser = $existing['oauth_id'] !== null;
+        $userName = $request->postParams['userName'] ?? null;
 
-        if ($isGoogleUser && $password !== null) {
-            return $this->jsonBadRequest("Cannot set password for Google accounts. Use Google to sign in.");
-        }
-
-        if ($isGoogleUser && $email !== $existing['email']) {
-            return $this->jsonBadRequest("Cannot change email for Google accounts. Email is managed by Google.");
+        if (Validator::validateUserName($userName)) {
+            return $this->jsonBadRequest('invalid userName');
         }
 
         $displayName = $userName;
-        [$userName, $email] = Sanitiser::normaliseStrings([$userName, $email]);
+        [$userName] = Sanitiser::normaliseStrings([$userName]);
 
-        $hash = $password ? password_hash($password, PASSWORD_DEFAULT) : $existing['password_hash'];
-        $updated = $this->users->updateUserInfo((int)$id, $userName, $displayName, $email, $hash);
+        $updated = $this->users->updateUserName((int)$id, $userName, $displayName);
         if ($updated === null) {
             return $this->jsonServerError();
         }
-        $updated = user_to_public($updated);
+        $updated = userToPublic($updated);
         return $this->jsonSuccess($updated);
     }
 
@@ -549,6 +562,12 @@ class UserController extends BaseController
         if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
+        $id = (int) $id;
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only access your own user data");
+        }
+
         $file = $request->files['avatar'] ?? null;
         if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
             return $this->jsonBadRequest("No file uploaded or upload error");
@@ -562,24 +581,28 @@ class UserController extends BaseController
             return $this->jsonBadRequest("Invalid file type");
         }
         $ext = $mime === 'image/png' ? 'png' : 'jpg';
+
         $filename = bin2hex(random_bytes(16)) . ".$ext";
         $targetDir = '/var/www/html/uploads/avatars/';
         if (!is_dir($targetDir)) {
             mkdir($targetDir, 0755, true);
         }
+
         $target = $targetDir . $filename;
         if (!move_uploaded_file($file['tmp_name'], $target)) {
             return $this->jsonServerError();
         }
+
         $user = $this->users->getUserById((int)$id);
         if ($user && $user['avatar_filename'] !== 'default.jpg') {
             @unlink($targetDir . $user['avatar_filename']);
         }
+
         $updated = $this->users->updateAvatarFilename((int)$id, $filename);
         if (!$updated) {
             return $this->jsonServerError();
         }
-        return $this->jsonSuccess(user_to_public($updated));
+        return $this->jsonSuccess(userToPublic($updated));
     }
 
     public function deleteAvatar(Request $request, $parameters)
@@ -600,7 +623,7 @@ class UserController extends BaseController
         if (!$updated) {
             return $this->jsonServerError();
         }
-        return $this->jsonSuccess(user_to_public($updated));
+        return $this->jsonSuccess(userToPublic($updated));
     }
 
 

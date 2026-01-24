@@ -92,6 +92,7 @@ services:
     build: ./nginx
     restart: on-failure
     ports:
+      - "8080:80"   
       - "8443:443"
     volumes:
       - avatars:/var/www/html/uploads/avatars:ro
@@ -103,7 +104,7 @@ services:
     networks:
       - transcendence
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost/ > /dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -kfsSL https://localhost/ > /dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3

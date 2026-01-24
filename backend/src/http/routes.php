@@ -49,28 +49,28 @@ $this->router->patch('/api/match/{id}/end', [MatchesController::class, 'endMatch
 $this->router->patch('/api/match/{id}', [MatchesController::class, 'updateScore'], [Require2FAMiddleware::class]);
 $this->router->delete('/api/match/{id}', [MatchesController::class, 'deleteMatch'], [Require2FAMiddleware::class]);
 
-// tournaments (protected)
-$this->router->get('/api/tournaments', [TournamentController::class, 'getTournaments'], [Require2FAMiddleware::class]);
-$this->router->get('/api/tournament/{id}', [TournamentController::class, 'getTournament'], [Require2FAMiddleware::class]);
-$this->router->get('/api/tournament/{name}', [TournamentController::class, 'getTournamentByName'], [Require2FAMiddleware::class]);
-$this->router->post('/api/tournament/new', [TournamentController::class, 'newTournament'], [Require2FAMiddleware::class]);
-$this->router->patch('/api/tournament/{id}', [TournamentController::class, 'endTournament'], [Require2FAMiddleware::class]);
-$this->router->post('/api/tournament/{id}/generate-matches', [TournamentController::class, 'generateMatches'], [Require2FAMiddleware::class]);
-$this->router->get('/api/tournament/{id}/next-match', [TournamentController::class, 'getNextMatch'], [Require2FAMiddleware::class]);
-$this->router->delete('/api/tournament/{id}', [TournamentController::class, 'deleteTournament'], [Require2FAMiddleware::class]);
+// // tournaments (protected)
+// $this->router->get('/api/tournaments', [TournamentController::class, 'getTournaments'], [Require2FAMiddleware::class]);
+// $this->router->get('/api/tournament/{id}', [TournamentController::class, 'getTournament'], [Require2FAMiddleware::class]);
+// $this->router->get('/api/tournament/{name}', [TournamentController::class, 'getTournamentByName'], [Require2FAMiddleware::class]);
+// $this->router->post('/api/tournament/new', [TournamentController::class, 'newTournament'], [Require2FAMiddleware::class]);
+// $this->router->patch('/api/tournament/{id}', [TournamentController::class, 'endTournament'], [Require2FAMiddleware::class]);
+// $this->router->post('/api/tournament/{id}/generate-matches', [TournamentController::class, 'generateMatches'], [Require2FAMiddleware::class]);
+// $this->router->get('/api/tournament/{id}/next-match', [TournamentController::class, 'getNextMatch'], [Require2FAMiddleware::class]);
+// $this->router->delete('/api/tournament/{id}', [TournamentController::class, 'deleteTournament'], [Require2FAMiddleware::class]);
 
-// tournament players (protected)
-$this->router->get('/api/tournament/{id}/players', [TournamentPlayerController::class, 'getTournamentPlayers'], [Require2FAMiddleware::class]);
-$this->router->post('/api/tournament/{id}/player', [TournamentPlayerController::class, 'newTournamentPlayer'], [Require2FAMiddleware::class]);
-$this->router->patch('/api/tournament/player/{id}', [TournamentPlayerController::class, 'updateTournamentPlayer'], [Require2FAMiddleware::class]);
-$this->router->delete('/api/tournament/player/{id}', [TournamentPlayerController::class, 'deleteTournamentPlayer'], [Require2FAMiddleware::class]);
+// // tournament players (protected)
+// $this->router->get('/api/tournament/{id}/players', [TournamentPlayerController::class, 'getTournamentPlayers'], [Require2FAMiddleware::class]);
+// $this->router->post('/api/tournament/{id}/player', [TournamentPlayerController::class, 'newTournamentPlayer'], [Require2FAMiddleware::class]);
+// $this->router->patch('/api/tournament/player/{id}', [TournamentPlayerController::class, 'updateTournamentPlayer'], [Require2FAMiddleware::class]);
+// $this->router->delete('/api/tournament/player/{id}', [TournamentPlayerController::class, 'deleteTournamentPlayer'], [Require2FAMiddleware::class]);
 
-// tournament matches (protected)
-$this->router->get('/api/tournament/matches', [TournamentMatchesController::class, 'getTournamentMatches'], [Require2FAMiddleware::class]);
-$this->router->get('/api/tournament/match/{id}', [TournamentMatchesController::class, 'getTournamentMatch'], [Require2FAMiddleware::class]);
-$this->router->post('/api/tournament/match/new', [TournamentMatchesController::class, 'newTournamentMatch'], [Require2FAMiddleware::class]);
-$this->router->patch('/api/tournament/match/{id}', [TournamentMatchesController::class, 'updateTournamentMatch'], [Require2FAMiddleware::class]);
-$this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController::class, 'deleteTournamentMatch'], [Require2FAMiddleware::class]);
+// // tournament matches (protected)
+// $this->router->get('/api/tournament/matches', [TournamentMatchesController::class, 'getTournamentMatches'], [Require2FAMiddleware::class]);
+// $this->router->get('/api/tournament/match/{id}', [TournamentMatchesController::class, 'getTournamentMatch'], [Require2FAMiddleware::class]);
+// $this->router->post('/api/tournament/match/new', [TournamentMatchesController::class, 'newTournamentMatch'], [Require2FAMiddleware::class]);
+// $this->router->patch('/api/tournament/match/{id}', [TournamentMatchesController::class, 'updateTournamentMatch'], [Require2FAMiddleware::class]);
+// $this->router->delete('/api/tournament/match/{id}', [TournamentMatchesController::class, 'deleteTournamentMatch'], [Require2FAMiddleware::class]);
 
 // OAuth routes (public)
 $this->router->get('/api/auth/google', [OAuthController::class, 'redirectToGoogle']);

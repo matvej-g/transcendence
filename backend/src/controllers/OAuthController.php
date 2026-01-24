@@ -77,7 +77,7 @@ class OAuthController extends BaseController
             setJWTCookie($token);
             
             // Remove sensitive data before sending to frontend
-            $user = user_to_public($user);
+            $user = userToPublic($user);
             
             return $this->jsonSuccess([
                 'success' => true,

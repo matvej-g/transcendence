@@ -67,7 +67,7 @@ class MessagingController extends BaseController
             return null;
         }
 
-        $author = user_to_public($author);
+        $author = userToPublic($author);
 
         $createdAt = $row['created_at'] ?? null;
         if ($createdAt !== null) {
@@ -117,7 +117,7 @@ class MessagingController extends BaseController
             if ($user === null || !$user) {
                 continue;
             }
-            $participants[] = user_to_public($user);
+            $participants[] = userToPublic($user);
         }
 
         // Last message

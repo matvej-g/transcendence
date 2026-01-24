@@ -123,11 +123,11 @@ class UserModel {
 		}
 	}
 
-    public function updateUserInfo($id, $userName, $displayName, $email, $password) {
+    public function updateUserName($id, $userName, $displayName) {
 		try {
             $this->db->query(
-                "UPDATE users SET username = ?, displayname = ?, email = ?, password_hash = ? WHERE id = ?",
-                [$userName, $displayName, $email, $password, $id]
+                "UPDATE users SET username = ?, displayname = ?WHERE id = ?",
+                [$userName, $displayName, $id]
             );
             return $this->getUserById($id);
         }

@@ -96,7 +96,7 @@ class FriendshipController extends BaseController
 
             $result[] = [
                 'friendshipId'     => (int) $row['id'],
-                'friend' => user_to_public($friend),
+                'friend' => userToPublic($friend),
                 'senderId' => $senderId,
                 'receiverId' => $receiverId,
                 'status' => $row['status'],
@@ -435,8 +435,8 @@ class FriendshipController extends BaseController
 
             $result[] = [
                 'id'     => (int) $row['id'],
-                'blocker' => user_to_public($blocker),
-                'blocked' => user_to_public($blocked),
+                'blocker' => userToPublic($blocker),
+                'blocked' => userToPublic($blocked),
             ];
         }
 
