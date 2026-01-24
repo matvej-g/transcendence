@@ -105,7 +105,7 @@ class UserStatusModel
         try {
             $this->db->query(
                 "UPDATE user_status SET busy = ? WHERE user_id = ?",
-                [$userId]
+                [$busy, $userId]
             )->fetch(PDO::FETCH_ASSOC);
             return $this->busyStatus($userId);
         }

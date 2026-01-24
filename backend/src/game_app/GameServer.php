@@ -112,6 +112,7 @@ class GameServer implements MessageComponentInterface {
         }
         $this->handlePlayerDisconnect($player);
         $userId = $player->userID ?? $conn->resourceId;
+        $this->userStatus->setBusyStatus($userId, 0);
         unset($this->players[$conn]);
         echo "Connection closed: {$userId}\n";
     }
@@ -444,6 +445,8 @@ class GameServer implements MessageComponentInterface {
             $this->sendError($player, 'No userID povided');
             return;
         }
+        //echo "set user Id to busy: {$userID}\n";
+        $this->userStatus->setBusyStatus($userID, 1);
         $user = $this->userModel->getUserById($userID);
         if (!$user) {
             $this->sendError($player, 'User not found');
