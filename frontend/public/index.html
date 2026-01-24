@@ -341,8 +341,23 @@
 	<!-- RIGHT: ACTIVE CHAT -->
 	<div class="flex flex-col flex-1">
 		<!-- Chat header -->
-		<header id="chat-header" class="p-4 border-b border-white/10 font-semibold" data-i18n="chat.select_a_chat">
-		Select a chat
+		<header
+		id="chat-header"
+		class="p-4 border-b border-white/10 font-semibold flex items-center justify-between"
+		>
+		<span id="chat-header-title" data-i18n="chat.select_a_chat">
+			Select a chat
+		</span>
+
+		<!-- View profile -->
+		<button
+			id="view-profile-btn"
+			type="button"
+			class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded text-sm transition hidden"
+			data-i18n="chat.view_profile"
+		>
+			View profile
+		</button>
 		</header>
 
 		<div
