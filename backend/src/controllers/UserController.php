@@ -432,7 +432,15 @@ class UserController extends BaseController
         if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
-        $deleted = $this->users->deleteUser((int)$id);
+        $id = (int)$id;
+
+        // Enforce self-delete only
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only delete your own account");
+        }
+
+        $deleted = $this->users->deleteUser($id);
         if ($deleted === null) {
             return $this->jsonServerError();
         }
@@ -632,7 +640,17 @@ class UserController extends BaseController
         if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
-        $user = $this->users->getUserById((int)$id);
+        $id = (int)$id;
+
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId === null) {
+            return $this->jsonForbidden('User not authenticated');
+        }
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden('You can only modify your own avatar');
+        }
+
+        $user = $this->users->getUserById($id);
         if (!$user) {
             return $this->jsonNotFound("User not found");
         }
@@ -640,7 +658,7 @@ class UserController extends BaseController
         if ($user['avatar_filename'] !== 'default.jpg') {
             @unlink($targetDir . $user['avatar_filename']);
         }
-        $updated = $this->users->updateAvatarFilename((int)$id, 'default.jpg');
+        $updated = $this->users->updateAvatarFilename($id, 'default.jpg');
         if (!$updated) {
             return $this->jsonServerError();
         }

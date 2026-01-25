@@ -11,6 +11,8 @@ use src\Validator;
 use src\Services\MessagingNotifier;
 use src\app_ws\RedisPublisher;
 
+use function getCurrentUserId as getJwtUserId;
+
 class FriendshipController extends BaseController
 {
     private FriendshipModel $friendships;
@@ -26,23 +28,35 @@ class FriendshipController extends BaseController
 		$this->notifier = new MessagingNotifier(new RedisPublisher());
     }
 
+    // Get current authenticated user ID from JWT (requires AuthMiddleware)
     private function getCurrentUserId(Request $request): ?int
     {
+        // 1) Get user id from JWT
+        $jwtUserId = getJwtUserId($request);
+        if ($jwtUserId === null) {
+            return null;
+        }
+
+        // 2) Optionally cross-check client-provided id
         $server = $request->server;
         $headerId = $server['HTTP_X_USER_ID'] ?? null;
-        if ($headerId !== null && Validator::validateId($headerId)) {
-            return (int) $headerId;
-        }
 
         $candidate = $request->postParams['currentUserId']
             ?? $request->getParams['currentUserId']
             ?? null;
 
-        if ($candidate !== null && Validator::validateId($candidate)) {
-            return (int) $candidate;
+        $providedId = null;
+        if ($headerId !== null && Validator::validateId($headerId)) {
+            $providedId = (int)$headerId;
+        } elseif ($candidate !== null && Validator::validateId($candidate)) {
+            $providedId = (int)$candidate;
         }
 
-        return null;
+        if ($providedId !== null && $providedId !== $jwtUserId) {
+            return null;
+        }
+
+        return $jwtUserId;
     }
 
     public function getFriends(Request $request, $parameters)

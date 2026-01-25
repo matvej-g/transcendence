@@ -15,6 +15,8 @@ use src\Validator;
 use src\Services\MessagingNotifier;
 use src\app_ws\RedisPublisher;
 
+use function getCurrentUserId as getJwtUserId;
+
 class MessagingController extends BaseController
 {
     private ConversationModel $conversations;
@@ -39,21 +41,34 @@ class MessagingController extends BaseController
     // Replace this with proper auth/JWT once available.
     private function getCurrentUserId(Request $request): ?int
     {
+        // 1) Get user id from JWT (set by AuthMiddleware via $request->user)
+        $jwtUserId = getJwtUserId($request);
+        if ($jwtUserId === null) {
+            return null;
+        }
+
+        // 2) Optionally cross-check any client-provided id (header or param)
         $server = $request->server;
         $headerId = $server['HTTP_X_USER_ID'] ?? null;
-        if ($headerId !== null && Validator::validateId($headerId)) {
-            return (int) $headerId;
-        }
 
         $candidate = $request->postParams['currentUserId']
             ?? $request->getParams['currentUserId']
             ?? null;
 
-        if ($candidate !== null && Validator::validateId($candidate)) {
-            return (int) $candidate;
+        $providedId = null;
+        if ($headerId !== null && Validator::validateId($headerId)) {
+            $providedId = (int)$headerId;
+        } elseif ($candidate !== null && Validator::validateId($candidate)) {
+            $providedId = (int)$candidate;
         }
 
-        return null;
+        // If client supplied an id and it does not match JWT → treat as spoofing
+        if ($providedId !== null && $providedId !== $jwtUserId) {
+            return null;
+        }
+
+        // All good: trust JWT id
+        return $jwtUserId;
     }
 
     private function mapMessageRowToApi(array $row): ?array
