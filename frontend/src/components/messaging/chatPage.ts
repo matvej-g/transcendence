@@ -66,6 +66,19 @@ function handleChatMessageCreated(ev: any) {
 
 		activeConversation.messages.push(msg);
 		renderMessages(activeConversation, messagesEl, getCurrentUsername());
+		
+		// Update chat list preview without incrementing unread count
+		let idx = conversations.findIndex((c) => String(c.id) === cid);
+		if (idx !== -1) {
+			const summary = conversations[idx];
+			summary.lastMessage = msg as any;
+			if (idx > 0) {
+				conversations.splice(idx, 1);
+				conversations.unshift(summary);
+			}
+			renderChatList(conversations, chatListEl);
+		}
+		return; // Don't continue to increment logic below
 	}
 
 	// 2) Update chat list preview + move convo to top (or create it if missing)
@@ -78,7 +91,7 @@ function handleChatMessageCreated(ev: any) {
 			id: cid,
 			title: "", // title get's filled in when render happens
 			lastMessage: msg,
-			unreadCount: 1,
+			hasUnread: true,
 			participants: [ev.data?.message?.author],
 		};
 
@@ -87,9 +100,16 @@ function handleChatMessageCreated(ev: any) {
 		return;
 	}
 
-	// Existing conversation: update preview, bump to top
+	// Existing conversation: update preview, bump to top, and mark as unread
 	const summary = conversations[idx];
 	summary.lastMessage = msg as any;
+	
+	// Mark as unread if message is from someone else
+	const currentUserId = getCurrentUserId();
+	const messageAuthorId = String(msg.author?.id ?? '');
+	if (messageAuthorId && String(currentUserId) !== messageAuthorId) {
+		summary.hasUnread = true;
+	}
 
 	if (idx > 0) {
 		conversations.splice(idx, 1);
@@ -163,6 +183,13 @@ chatListEl.addEventListener("click", async (e) => {
 	logger.log("FETCHED CONVO", convo);
 	activeConversation = convo;
 	pendingUser = null;
+
+	// Reset unread indicator when opening conversation
+	const summary = conversations.find(c => String(c.id) === convoId);
+	if (summary) {
+		summary.hasUnread = false;
+		renderChatList(conversations, chatListEl);
+	}
 
 	chatHeaderEl.textContent = convo.summary.title; // todo maybe handle null title
 	renderMessages(convo, messagesEl, getCurrentUsername());

@@ -16,7 +16,7 @@ export interface ConversationSummary {
   id: ConversationId;
   title: string;
   lastMessage: Message;
-  unreadCount: number;
+  hasUnread: boolean;
   participants: UserDataPublic[];
 }
 
