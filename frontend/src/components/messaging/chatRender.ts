@@ -1,3 +1,10 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+}
+
 import { Conversation, ConversationSummary, Message} from "./types.js";
 import type { UserId } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
@@ -40,7 +47,7 @@ export function renderChatList(list: ConversationSummary[], container: HTMLEleme
 
 		li.innerHTML = `
 		<div class="flex justify-between items-center">
-			<div class="font-semibold truncate">${displayTitle}</div>
+			<div class="font-semibold truncate">${sanitizeString(displayTitle)}</div>
 			${
 			convo.unreadCount > 0
 				? `<span class="text-xs bg-blue-600 rounded-full px-2">${convo.unreadCount}</span>`
@@ -48,7 +55,7 @@ export function renderChatList(list: ConversationSummary[], container: HTMLEleme
 			}
 		</div>
 		<div class="text-sm text-white/60 truncate">
-			${lastText}
+			${sanitizeString(lastText)}
 		</div>
 		`;
 
@@ -65,14 +72,14 @@ export function prependSearchRow(user: any, mode: "open" | "start", convoId?: st
 	if (mode === "open" && convoId) {
 		li.dataset.id = String(convoId);
 		li.innerHTML = `
-		<div class="font-semibold">${user.username}</div>
+		<div class="font-semibold">${sanitizeString(user.username)}</div>
 		<div class="text-sm text-white/60" data-i18n="chat.open_conversation">${t('chat.open_conversation')}</div>
 		`;
 	} else {
 		li.setAttribute("data-user-id", String(user.id));
 		li.setAttribute("data-username", String(user.username));
 		li.innerHTML = `
-		<div class="font-semibold">${user.username}</div>
+		<div class="font-semibold">${sanitizeString(user.username)}</div>
 		<div class="text-sm text-white/60" data-i18n="chat.start_conversation">${t('chat.start_conversation')}</div>
 		`;
 	}
@@ -114,7 +121,7 @@ export function renderMessages(
 				<div class="${
 					isMine ? "bg-blue-600" : "bg-white/10"
 				} p-3 rounded-lg">
-					${msg.text ?? ""}
+					${sanitizeString(msg.text ?? "")}
 				</div>
 			`;
 		}
@@ -134,7 +141,7 @@ export function renderMessages(
 
 		bubble.innerHTML = `
 			<div class="text-sm text-white/60 mb-1">
-				${isMine ? "you" : authorName}
+				${isMine ? "you" : sanitizeString(authorName)}
 			</div>
 			${contentHtml}
 		`;

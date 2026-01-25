@@ -1,3 +1,10 @@
+// Utility to sanitize strings (defense-in-depth)
+function sanitizeString(str: string): string {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+}
+
 import {
   fetchConversations,
   fetchConversation,

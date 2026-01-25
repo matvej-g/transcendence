@@ -10,6 +10,8 @@ export type ChatDomKey =
   | "start_conversation"
   | "type_a_message"
   | "search_chats"
+  | "invite_to_play"
+  | "view_profile"
 
 export type ChatDomStringsTableT = Record<ChatDomKey, string>;
 
@@ -22,7 +24,9 @@ export const ChatDomStrings: Record<Lang, ChatDomStringsTableT> = {
 	open_conversation: "Open conversation",
 	start_conversation: "Start conversation",
 	type_a_message: "Type a message...",
-	search_chats: "Search chats..."
+	search_chats: "Search chats...",
+	invite_to_play: "Invite to play",
+	view_profile: "View profile"
   },
   ru: {
     select_a_chat: "Выберите чат",
@@ -32,7 +36,9 @@ export const ChatDomStrings: Record<Lang, ChatDomStringsTableT> = {
 	open_conversation: "Открыть беседу",
 	start_conversation: "Начать беседу",
 	type_a_message: "Введите сообщение...",
-	search_chats: "Поиск по чатам..."
+	search_chats: "Поиск по чатам...",
+	invite_to_play: "Пригласить играть",
+	view_profile: "Просмотр профиля"
   },
   de: {
 	select_a_chat: "Chat auswählen",
@@ -42,6 +48,8 @@ export const ChatDomStrings: Record<Lang, ChatDomStringsTableT> = {
 	open_conversation: "Gespräch öffnen",
 	start_conversation: "Gespräch starten",
 	type_a_message: "Nachricht eingeben...",
-	search_chats: "Chats suchen..."
+	search_chats: "Chats suchen...",
+	invite_to_play: "Zum Spielen einladen",
+	view_profile: "Profil anzeigen"
   },
 } as const satisfies Record<Lang, ChatDomStringsTableT>;
