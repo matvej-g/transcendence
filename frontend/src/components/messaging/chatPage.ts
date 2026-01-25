@@ -99,9 +99,9 @@ function handleChatMessageCreated(ev: any) {
 	renderChatList(conversations, chatListEl);
 
 	if (ev.data?.message?.type === "game") {
-		if (ev.data?.message?.text === "accept") {
-			// let inviteCode = ev.data?.message?.participantIds.str.join("-");
-			let inviteCode = "1_1";
+		if (ev.data?.message?.text.startsWith("accept")) {
+			let inviteCode = ev.data?.message?.text.split(".")[1];
+			logger.log("Starting game from accepted invite with code:", inviteCode);
 			window.location.hash = `#game`;
 			gameManager.startInviteGame(inviteCode);
 		}

@@ -278,7 +278,7 @@ window.addEventListener('beforeunload', () => {
     // Use sendBeacon for reliable delivery even as page unloads
     // Note: setUserOffline() uses fetch which may be cancelled, so we use sendBeacon directly
     const blob = new Blob([JSON.stringify({})], { type: 'application/json' });
-    navigator.sendBeacon('/api/user/offline', blob);
+    navigator.sendBeacon('/api/status/offline', blob);
   }
 });
 
