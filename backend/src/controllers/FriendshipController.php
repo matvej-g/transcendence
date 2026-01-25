@@ -28,16 +28,13 @@ class FriendshipController extends BaseController
 		$this->notifier = new MessagingNotifier(new RedisPublisher());
     }
 
-    // Get current authenticated user ID from JWT (requires AuthMiddleware)
     private function getCurrentUserId(Request $request): ?int
     {
-        // 1) Get user id from JWT
         $jwtUserId = getJwtUserId($request);
         if ($jwtUserId === null) {
             return null;
         }
 
-        // 2) Optionally cross-check client-provided id
         $server = $request->server;
         $headerId = $server['HTTP_X_USER_ID'] ?? null;
 

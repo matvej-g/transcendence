@@ -172,25 +172,6 @@ class UserController extends BaseController
         return $this->jsonSuccess($user);
     }
 
-    // public function getUserByEmail(Request $request, $parameters)
-    // {
-    //     $email = $parameters['email'] ?? null;
-    //     if ($email === null || !is_string($email)) {
-    //         return $this->jsonBadRequest("Invalid email");
-    //     }
-
-    //     [$email] = Sanitiser::normaliseStrings([$email]);
-    //     $user = $this->users->getUserByEmail($email);
-    //     if ($user === null) {
-    //         return $this->jsonServerError();
-    //     }
-    //     if (!$user) {
-    //         return $this->jsonNotFound("User not found");
-    //     }
-    //     $user = userToPublic($user);
-    //     return $this->jsonSuccess($user);
-    // }
-
     // remove later
     public function getUsers(Request $request, $parameters)
     {
@@ -545,8 +526,6 @@ class UserController extends BaseController
         return $this->jsonSuccess(['message' => 'Email changed']);
     }
 
-    // needs more validation (username email)
-    // needs old password
     public function updateUser(Request $request, $parameters)
     {
         $id = $request->postParams['id'] ?? null;
