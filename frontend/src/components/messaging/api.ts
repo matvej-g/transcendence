@@ -41,6 +41,7 @@ export async function fetchConversation(id: ConversationId): Promise<Conversatio
 
 // sends a new message in an existing conversation
 export async function sendMessage(message: Message): Promise<Message> {
+
 	const myId = getCurrentUserId();
 	if (!myId) {
 		throw new Error("sendMessage: no current user id in localStorage");
@@ -50,7 +51,7 @@ export async function sendMessage(message: Message): Promise<Message> {
 	if (!conversationId) {
 		throw new Error("sendMessage: message is missing conversationId");
 	}
-
+	console.log("sendMessage called with message:", message);
 	const res = await fetch(
 		`/api/conversations/${encodeURIComponent(String(conversationId))}/messages`,
 		{

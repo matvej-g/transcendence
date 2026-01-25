@@ -181,11 +181,15 @@ export class NetworkManager {
 				this.t_canvas.showCountdown(
 					this.localTournamentState,
 					() => {
-						this.canvas.show();
-						this.t_canvas.hide();
-						this.setupInputHandlers();
+						// wait for countdownFinished signal from Server
 					}, 30
 				);
+				break;
+			case 'countdownFinished':
+				logger.log('Countdown finished:', message.data);
+				this.canvas.show();
+				this.t_canvas.hide();
+				this.setupInputHandlers();
 				break;
 			case 'tournamentWin':
 				logger.log('Tournament winner:', message.data);

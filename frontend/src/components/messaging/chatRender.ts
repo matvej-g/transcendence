@@ -49,8 +49,8 @@ export function renderChatList(list: ConversationSummary[], container: HTMLEleme
 		<div class="flex justify-between items-center">
 			<div class="font-semibold truncate">${sanitizeString(displayTitle)}</div>
 			${
-			convo.unreadCount > 0
-				? `<span class="text-xs bg-blue-600 rounded-full px-2">${convo.unreadCount}</span>`
+			convo.hasUnread
+				? `<span class="w-3 h-3 bg-blue-600 rounded-full"></span>`
 				: ""
 			}
 		</div>
