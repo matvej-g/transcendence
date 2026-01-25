@@ -9,6 +9,7 @@ final class AppServer implements MessageComponentInterface
 {
     /** @var \SplObjectStorage<ConnectionInterface, array{rooms:array<string,bool>}> */
     private \SplObjectStorage $clients;
+	private array $userConn = [];
 
     public function __construct()
     {
@@ -31,19 +32,41 @@ final class AppServer implements MessageComponentInterface
 
         $meta = $this->clients[$from];
 
-        // 1) brittle auth: client tells us which user it is
+        // // 1) brittle auth: client tells us which user it is
+        // if ($t === 'auth') {
+        //     $uid = $d['userId'] ?? null;
+        //     if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) return;
+
+        //     $uid = (int)$uid;
+        //     if ($uid <= 0) return;
+
+        //     $meta['userId'] = $uid;
+        //     $meta['rooms']["user:$uid"] = true;
+        //     $this->clients[$from] = $meta;
+
+        //     // optional ack
+        //     $from->send(json_encode(['type' => 'auth.ok', 'data' => ['userId' => $uid]], JSON_UNESCAPED_UNICODE));
+        //     return;
+        // }
         if ($t === 'auth') {
             $uid = $d['userId'] ?? null;
             if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) return;
-
             $uid = (int)$uid;
             if ($uid <= 0) return;
 
+			// Close previous connection for this user (prevents duplicates)
+			if (isset($this->userConn[$uid]) && $this->userConn[$uid] !== $from) {
+				$old = $this->userConn[$uid];
+				$old->close();
+				// (onClose will detach it)
+			}
+			$this->userConn[$uid] = $from;
+
+			$meta = $this->clients[$from];
             $meta['userId'] = $uid;
             $meta['rooms']["user:$uid"] = true;
             $this->clients[$from] = $meta;
 
-            // optional ack
             $from->send(json_encode(['type' => 'auth.ok', 'data' => ['userId' => $uid]], JSON_UNESCAPED_UNICODE));
             return;
         }
@@ -61,7 +84,14 @@ final class AppServer implements MessageComponentInterface
 
     public function onClose(ConnectionInterface $conn): void
     {
-        if ($this->clients->contains($conn)) $this->clients->detach($conn);
+		if ($this->clients->contains($conn)) {
+			$meta = $this->clients[$conn];
+			$uid = $meta['userId'] ?? null;
+			if (is_int($uid) && isset($this->userConn[$uid]) && $this->userConn[$uid] === $conn) {
+				unset($this->userConn[$uid]);
+			}
+			$this->clients->detach($conn);
+		}
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e): void

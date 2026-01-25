@@ -134,8 +134,8 @@ appWs.on(handleChatMessageCreated);
 
 // todo move this to (include in) central router section
 function onHashChange() { 
-	appWs.connect(); // fail-safe connect/re-connect
-	logger.log("hash changed to", window.location.hash);
+	// appWs.connect(); // fail-safe connect/re-connect
+	// logger.log("hash changed to", window.location.hash);
 	if (window.location.hash === "#chat") {
 		loadConversations();
 	}
@@ -144,8 +144,8 @@ function onHashChange() {
 window.addEventListener("hashchange", onHashChange);
 
 if (window.location.hash === "#chat") {
-	appWs.connect();
- 	loadConversations();
+	// appWs.connect();
+ 	// loadConversations();
 }
 
 async function loadConversations() {

@@ -61,57 +61,54 @@ export class AppWs {
    */
   connect(): void {
 	logger.log("AppWs connecting to", APP_WS_URL);
-	if (
-		this.ws &&
+
+	if (this.ws &&
 		(this.ws.readyState === WebSocket.OPEN ||
 			this.ws.readyState === WebSocket.CONNECTING)) {
 		return;
 	}
 
-	this.ws = new WebSocket(APP_WS_URL);
+	const ws = new WebSocket(APP_WS_URL);
+	this.ws = ws;
 
-		// Fired when the socket is successfully opened
-	this.ws.onopen = () => {
+	ws.onopen = () => {
+		if (this.ws !== ws) return;
+
 		logger.log("AppWs open");
 
-		// register user with ws_app server //todo use jwt // or register through backend
 		const userId = localStorage.getItem("userId");
 		if (userId) {
-			this.send({type: "auth", data: { userId: Number(userId) },});
+		this.send({ type: "auth", data: { userId: Number(userId) } });
 		}
-		// Re-join all conversations after reconnect
+
+		// Re-join: send join message directly (don’t call joinConversation)
 		for (const cid of this.joinedConversations) {
-			this.joinConversation(cid);
+		this.send({ type: "conversation.join", data: { conversationId: cid } });
 		}
 	};
 
-    // Fired for each incoming message from the server
-    this.ws.onmessage = (e: MessageEvent<string>) => {
+	ws.onmessage = (e) => {
+		if (this.ws !== ws) return;
+
 		logger.log("AppWs raw message:", e.data);
       let ev: AppWsEvent;
-      try {
-        ev = JSON.parse(e.data) as AppWsEvent;
-      } catch {
-        // Ignore invalid / non-JSON payloads
-        return;
-      }
+		try { ev = JSON.parse(e.data) as AppWsEvent; } catch { return; }
+
 	  let i = 0;
-      // Dispatch event to all registered handlers
-      for (const h of this.handlers) 
-		{
+		for (const h of this.handlers) {
 			logger.log("AppWs dispatching event to handler", ++i, ev);
 			h(ev);
 		}
     };
 
-    // Fired on low-level socket errors
-    this.ws.onerror = () => {
-      // Intentionally empty:
-      // onclose will handle reconnect logic
-    };
+	ws.onerror = () => {
+		if (this.ws !== ws) return;
+		// Force close so onclose fires and reconnect is centralized
+		try { ws.close(); } catch {}
+	};
 
-    // Fired when the socket closes (server restart, network loss, etc.)
-    this.ws.onclose = () => {
+	ws.onclose = () => {
+		if (this.ws !== ws) return;
 		logger.log("AppWs close");
       this.ws = null;
       this.scheduleReconnect();

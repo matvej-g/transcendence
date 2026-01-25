@@ -172,16 +172,15 @@ class UserController extends BaseController
         return $this->jsonSuccess($user);
     }
 
-    // remove later
-    public function getUsers(Request $request, $parameters)
-    {
-        $allUsers = $this->users->getAllUsers();
-        if ($allUsers === null) {
-            return $this->jsonServerError();
-        }
-        $allUsers = array_map('userToPublic', $allUsers);
-        return $this->jsonSuccess($allUsers);
-    }
+    // public function getUsers(Request $request, $parameters)
+    // {
+    //     $allUsers = $this->users->getAllUsers();
+    //     if ($allUsers === null) {
+    //         return $this->jsonServerError();
+    //     }
+    //     $allUsers = array_map('userToPublic', $allUsers);
+    //     return $this->jsonSuccess($allUsers);
+    // }
 
     public function getUserStats(Request $request, $parameters)
     {
