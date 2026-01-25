@@ -59,7 +59,8 @@ class GameServer implements MessageComponentInterface {
         //callbacks for tournament
         $this->tournament->setCallbacks(
             fn($tID, $p1, $p2, $round) => $this->createTournamentMatch($tID, $p1, $p2, $round),
-            fn($pair, $gameID, $tID) => $this->notifyMatchTournament($pair, $gameID, $tID)
+            fn($pair, $gameID, $tID) => $this->notifyMatchTournament($pair, $gameID, $tID),
+            fn($userID) => $this->getPlayerByUserId($userID)
         );
         echo "GameServer initialized\n";
     }
@@ -698,5 +699,15 @@ class GameServer implements MessageComponentInterface {
                 ]
             ]);
         }
+    }
+
+    public function getPlayerByUserId(string $userID): ?Player {
+        foreach ($this->players as $conn) {
+            $player = $this->players[$conn];
+            if ($player->userID === $userID) {
+                return $player;
+            }
+        }
+        return null;
     }
 }
