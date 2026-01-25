@@ -11,7 +11,7 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
 	}
 	const res = await fetch("/api/conversations", {
 		method: "GET",
-		headers: { Accept: "application/json", "X-User-Id": myId },
+		headers: { Accept: "application/json"},
 	});
 
 	if (!res.ok) {
@@ -29,7 +29,7 @@ export async function fetchConversation(id: ConversationId): Promise<Conversatio
 	}
 	const res = await fetch(`/api/conversations/${encodeURIComponent(String(id))}`, {
 		method: "GET",
-		headers: { Accept: "application/json", "X-User-Id": myId },
+		headers: { Accept: "application/json"},
 	});
 
 	if (!res.ok) {
@@ -58,8 +58,7 @@ export async function sendMessage(message: Message): Promise<Message> {
 		method: "POST",
 		headers: {
 			Accept: "application/json",
-			"Content-Type": "application/json",
-			"X-User-Id": myId,
+			"Content-Type": "application/json"
 		},
 		body: JSON.stringify(message),
 		},
@@ -93,8 +92,7 @@ export async function createConversation(participantIds: string[], message: Mess
     method: "POST",
     headers: {
       Accept: "application/json",
-      "Content-Type": "application/json",
-      "X-User-Id": myId,
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({ participantIds, message }),
   });

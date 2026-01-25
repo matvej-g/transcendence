@@ -11,9 +11,6 @@ export async function checkIfFriends(targetUserId: number): Promise<boolean> {
 
 		const response = await fetch('/api/friends', {
 			method: 'GET',
-			headers: {
-				'X-USER-ID': String(currentUserId)
-			},
 			credentials: 'include',
 		});
 
