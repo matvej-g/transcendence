@@ -98,8 +98,13 @@ export async function createConversation(participantIds: string[], message: Mess
   });
 
   if (!res.ok) {
-	const body = await res.text().catch(() => "");
-    throw new Error(`Failed to create conversation: HTTP ${res.status} ${body}`);
+	// const body = await res.text().catch(() => "");
+    // throw new Error(`Failed to create conversation: HTTP ${res.status} ${body}`);
+	const bodyText = await res.text().catch(() => "");
+    const err: any = new Error(bodyText || `HTTP ${res.status}`);
+    err.status = res.status;
+    err.bodyText = bodyText;
+    throw err;
   }
 
   return (await res.json()) as Message;

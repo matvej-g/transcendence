@@ -21,6 +21,7 @@ import { appWs } from "../../ws/appWs.js";
 import { gameManager } from "../../game_components/gameManager.js";
 import { logger } from "../../utils/logger.js";
 import { loadFriendProfile } from "../friendProfile/friendProfile.js";
+import { t } from "../languages/i18n.js";
 
 const chatListEl = document.getElementById("chat-list")!;
 const chatHeaderEl = document.getElementById("chat-header")!;
@@ -269,36 +270,45 @@ formEl.addEventListener("submit", async (e) => {
 
 	// 1) Existing conversation -> send message
 	if (activeConversation) {
-		const msg = await sendMessage({
-		conversationId: activeConversation.summary.id,
-		type: "text",
-		text: textInput,
-		} as any);
-		renderMessages(activeConversation, messagesEl, getCurrentUsername());
+		try {
+			const msg = await sendMessage({
+			conversationId: activeConversation.summary.id,
+			type: "text",
+			text: textInput,
+			} as any);
+			renderMessages(activeConversation, messagesEl, getCurrentUsername());
+		} catch (err: any) {
+			alert(err?.bodyText || "Can't send message");
+		}
 		inputEl.value = "";
 		return;
 	}
 
 	// 2) No active convo, but we selected a user -> create convo with first message
 	if (pendingUser) {
-		const createdMsg = await createConversation( [pendingUser.id], { type: "text", text: textInput } as any );
-		// Open the newly created conversation
-		const convo = await fetchConversation(createdMsg.conversationId);
-		activeConversation = convo;
-		
-		// Display the other user's username in the header
-		const myId = getCurrentUserId();
-		const otherUser = convo.summary.participants.find(p => String(p.id) !== String(myId));
-		chatHeaderEl.textContent = otherUser?.username || convo.summary.title;
-		
-		// Reload conversation list to include the new conversation
-		await loadConversations();
-		
-		pendingUser = null;
-		renderMessages(convo, messagesEl, getCurrentUsername());
-		inputEl.value = "";
-		return;
+		try {
+			const createdMsg = await createConversation( [pendingUser.id], { type: "text", text: textInput } as any );
+			// Open the newly created conversation
+			const convo = await fetchConversation(createdMsg.conversationId);
+			activeConversation = convo;
+			
+			// Display the other user's username in the header
+			const myId = getCurrentUserId();
+			const otherUser = convo.summary.participants.find(p => String(p.id) !== String(myId));
+			chatHeaderEl.textContent = otherUser?.username || convo.summary.title;
+			
+			// Reload conversation list to include the new conversation
+			await loadConversations();
+			
+			pendingUser = null;
+			renderMessages(convo, messagesEl, getCurrentUsername());
+			inputEl.value = "";
+			return;
+		} catch (err: any) {
+			alert(err?.bodyText || "Can't create conversation");
+		}
 	}
+	return;
 });
 
 // seaerch user
