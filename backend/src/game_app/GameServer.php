@@ -513,6 +513,13 @@ class GameServer implements MessageComponentInterface {
                 if (isset($this->games[$gameID])) {
                     $this->games[$gameID]['countdownFinished'] = true;
                     $this->games[$gameID]['engine'] = new GameEngine($gameID);
+                    $game = $this->games[$gameID];
+                    $message = [
+                        'type' => 'countdownFinished',
+                        'data' => ['message' => 'Game starting!']
+                    ];
+                    $game['player1']->send($message);
+                    $game['player2']->send($message);
                 }
             });
         }
