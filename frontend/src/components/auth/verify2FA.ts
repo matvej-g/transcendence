@@ -2,6 +2,7 @@
 import { apiCall } from '../../utils/api.js';
 import { appWs } from '../../ws/appWs.js';
 import { t } from '../languages/i18n.js';
+import { setAuthToken } from './authUtils.js';
 
 function showMessage(message: string, isError: boolean) {
     const errorEl = document.getElementById('error-message');
@@ -25,6 +26,10 @@ async function verifyCode(code: string) {
     });
 
     if (result.ok && result.data.success) {
+        // Store the new JWT token (with two_factor_verified=true)
+        if (result.data.token) {
+            setAuthToken(result.data.token);
+        }
         showMessage(t('authMsg.verify2faSuccess'), false);
         setTimeout(() => {
             window.location.href = '/index.html?t=' + Date.now() + '#profile';

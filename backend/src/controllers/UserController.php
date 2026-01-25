@@ -691,10 +691,14 @@ class UserController extends BaseController
             return $this->jsonNotFound("User not found");
         }
 
+        // Include token for localStorage sync (needed for WebSocket auth)
+        $token = getJWTFromRequest();
+
         return $this->jsonSuccess([
             'id' => $user['id'],
             'username' => $user['username'],
-            'email' => $user['email']
+            'email' => $user['email'],
+            'token' => $token
         ]);
     }
 }

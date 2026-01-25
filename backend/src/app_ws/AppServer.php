@@ -32,12 +32,25 @@ final class AppServer implements MessageComponentInterface
 
         $meta = $this->clients[$from];
 
+        // 1) JWT authentication
         if ($t === 'auth') {
-            $uid = $d['userId'] ?? null;
-            if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) return;
+            $token = $d['token'] ?? null;
+            if (!is_string($token) || $token === '') {
+                $from->send(json_encode(['type' => 'auth.error', 'data' => ['error' => 'missing_token']], JSON_UNESCAPED_UNICODE));
+                return;
+            }
 
-            $uid = (int)$uid;
-            if ($uid <= 0) return;
+            $payload = verifyJWT($token);
+            if ($payload === null) {
+                $from->send(json_encode(['type' => 'auth.error', 'data' => ['error' => 'invalid_token']], JSON_UNESCAPED_UNICODE));
+                return;
+            }
+
+            $uid = (int)($payload['user_id'] ?? 0);
+            if ($uid <= 0) {
+                $from->send(json_encode(['type' => 'auth.error', 'data' => ['error' => 'invalid_user']], JSON_UNESCAPED_UNICODE));
+                return;
+            }
 
             $meta['userId'] = $uid;
             $meta['rooms']["user:$uid"] = true;

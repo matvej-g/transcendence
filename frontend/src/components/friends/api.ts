@@ -3,8 +3,7 @@ export async function blockUser(blockedId: number, blockerId: number) {
   const res = await fetch('/api/friends/block', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'X-USER-ID': String(blockerId)
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({ blockedId })
     });
@@ -38,7 +37,6 @@ export async function getUserByUserId(userId: string | null) {
 export async function getFriends(userId: number) {
   const res = await fetch('/api/friends', {
     method: 'GET',
-    headers: {'X-USER-ID': String(userId)}
     });
       credentials: 'include'
   if (!res.ok) throw new Error('Failed to fetch friends');
@@ -50,8 +48,7 @@ export async function sendFriendRequest(friendId: number, userId: number) {
   const res = await fetch('/api/friends/request', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'X-USER-ID': String(userId)
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({ friendId })
     });
@@ -77,8 +74,7 @@ export async function updateFriendStatus(friendshipId: string, userId: number, p
   const res = await fetch(`/api/friends/${encodeURIComponent(friendshipId)}`, {
     method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
-      'X-USER-ID': String(userId)
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(payload)
     });
@@ -99,8 +95,7 @@ export async function declineFriendRequest(friendshipId: number, userId: number)
   const res = await fetch('/api/friends/decline', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'X-USER-ID': String(userId)
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({ id: friendshipId })
     });

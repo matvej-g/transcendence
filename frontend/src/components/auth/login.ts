@@ -2,7 +2,7 @@ export type LoginResult =
   | { ok: true; user: { id: string; username: string }; two_factor_required?: boolean }
   | { ok: false; error: string };
 
-import { setCurrentUserId, setUserOnline, setCurrentUsername } from './authUtils.js';
+import { setCurrentUserId, setUserOnline, setCurrentUsername, setAuthToken } from './authUtils.js';
 import { logger } from '../../utils/logger.js';
 
 export async function loginHandle(username: string, password: string): Promise<LoginResult> {
@@ -35,7 +35,12 @@ export async function loginHandle(username: string, password: string): Promise<L
     
     if (userIdToStore) {
       setCurrentUserId(userIdToStore);
-      
+
+      // Store JWT token for WebSocket authentication
+      if (data?.token) {
+        setAuthToken(data.token);
+      }
+
       // Only initialize profile if 2FA is not required or already verified
       if (!twoFactorRequired) {
         // set user online on server
