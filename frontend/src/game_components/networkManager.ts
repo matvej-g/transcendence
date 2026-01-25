@@ -99,7 +99,7 @@ export class NetworkManager {
 				break;
 
 			case 'gameUpdate':
-				logger.log('GameUpdate received:', message.data);
+				// logger.log('GameUpdate received:', message.data);
 				this.localGameState.leftPaddle.y = message.data.leftPaddleY;
 				this.localGameState.rightPaddle.y = message.data.rightPaddleY;
 				this.localGameState.ball.x = message.data.ballX;
