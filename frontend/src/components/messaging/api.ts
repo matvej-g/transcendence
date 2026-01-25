@@ -51,7 +51,7 @@ export async function sendMessage(message: Message): Promise<Message> {
 	if (!conversationId) {
 		throw new Error("sendMessage: message is missing conversationId");
 	}
-	console.log("sendMessage called with message:", message);
+	// console.log("sendMessage called with message:", message);
 	const res = await fetch(
 		`/api/conversations/${encodeURIComponent(String(conversationId))}/messages`,
 		{
