@@ -432,7 +432,15 @@ class UserController extends BaseController
         if (!Validator::validateId($id)) {
             return $this->jsonBadRequest("Invalid id");
         }
-        $deleted = $this->users->deleteUser((int)$id);
+        $id = (int)$id;
+
+        // Enforce self-delete only
+        $currentUserId = getCurrentUserId($request);
+        if ($currentUserId !== $id) {
+            return $this->jsonForbidden("You can only delete your own account");
+        }
+
+        $deleted = $this->users->deleteUser($id);
         if ($deleted === null) {
             return $this->jsonServerError();
         }

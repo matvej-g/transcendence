@@ -109,6 +109,13 @@ access Website with:
 https://localhost:8443/
 ```
 
+### Add Test Users
+Add Test users to database
+View login credentials in backend/tools/seed_users.php
+```
+docker compose exec php-backend php tools/seed_users.php
+```
+
 ## Makefile (local development)
 
 This repository includes a `Makefile` to simplify common Docker Compose tasks during development.
