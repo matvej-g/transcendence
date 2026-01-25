@@ -267,6 +267,10 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   clearCurrentUserId();
   clearCurrentUsername();
   
+  // Reset section loaded flags
+  profileLoaded = false;
+  friendsLoaded = false;
+  
   // Redirect and reload to clear all state (with cache bust)
   window.location.href = '/index.html?t=' + Date.now() + '#auth';
 });
@@ -298,9 +302,12 @@ if (urlParams.has('code') || urlParams.has('error')) {
   // Normal routing - validate localStorage against backend JWT
   (async () => {
     const localUserId = getCurrentUserId();
+    const initialHash = window.location.hash.slice(1);
+    const initialSection = initialHash.split('/')[0] || 'auth';
+    const protectedSections = ['profile', 'friend-profile', 'game', 'friends', 'chat'];
     
-    // If we have a userId in localStorage, verify it matches the backend JWT
-    if (localUserId) {
+    // If trying to access protected section, validate first before showing anything
+    if (localUserId && protectedSections.includes(initialSection)) {
       try {
         const res = await fetch('/api/me', { credentials: 'include' });
         if (res.ok) {
@@ -311,20 +318,25 @@ if (urlParams.has('code') || urlParams.has('error')) {
             setCurrentUsername(userData.username || '');
           }
         } else {
-          // JWT cookie invalid - clear localStorage
+          // JWT cookie invalid - clear localStorage and redirect to auth
           clearCurrentUserId();
           clearCurrentUsername();
+          window.location.hash = '#auth';
+          showSection('auth');
+          return;
         }
       } catch (err) {
         logger.warn('[router] Failed to validate user', err);
+        clearCurrentUserId();
+        clearCurrentUsername();
+        window.location.hash = '#auth';
+        showSection('auth');
+        return;
       }
     }
 
-    // IMPORTANT: Routing logic must happen AFTER validation
-    const initialHash = window.location.hash.slice(1);
+    // Re-check after validation (it might have cleared localStorage)
     const isLoggedIn = getCurrentUserId();
-    const protectedSections = ['profile', 'friend-profile', 'game', 'friends', 'chat'];
-    const initialSection = initialHash.split('/')[0] || 'auth';
 
      // Connect WebSocket if user is logged in
     if (isLoggedIn) {
