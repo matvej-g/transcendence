@@ -47,7 +47,6 @@ $redis = $factory->createLazyClient($redisUrl);
 $redis->subscribe('app-events');
 
 $redis->on('message', function ($channel, $payload) use ($app) {
-    echo "[ws_app] redis message channel={$channel} payload={$payload}\n";
 
     $msg = json_decode((string)$payload, true);
     if (!is_array($msg) || !isset($msg['type'], $msg['data'])) {
