@@ -191,7 +191,10 @@ chatListEl.addEventListener("click", async (e) => {
 		renderChatList(conversations, chatListEl);
 	}
 
-	chatHeaderEl.textContent = convo.summary.title; // todo maybe handle null title
+	// Display the other user's username in the header
+	const myId = getCurrentUserId();
+	const otherUser = convo.summary.participants.find(p => String(p.id) !== String(myId));
+	chatHeaderEl.textContent = otherUser?.username || convo.summary.title;
 	renderMessages(convo, messagesEl, getCurrentUsername());
 });
 
@@ -281,9 +284,16 @@ formEl.addEventListener("submit", async (e) => {
 		// Open the newly created conversation
 		const convo = await fetchConversation(createdMsg.conversationId);
 		activeConversation = convo;
+		
+		// Display the other user's username in the header
+		const myId = getCurrentUserId();
+		const otherUser = convo.summary.participants.find(p => String(p.id) !== String(myId));
+		chatHeaderEl.textContent = otherUser?.username || convo.summary.title;
+		
+		// Reload conversation list to include the new conversation
+		await loadConversations();
+		
 		pendingUser = null;
-
-		chatHeaderEl.textContent = convo.summary.title;
 		renderMessages(convo, messagesEl, getCurrentUsername());
 		inputEl.value = "";
 		return;
