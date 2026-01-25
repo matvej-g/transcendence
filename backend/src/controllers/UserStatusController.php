@@ -6,6 +6,7 @@ use src\Database;
 use src\http\Request;
 use src\Models\UserStatusModel;
 use src\Validator;
+use function getCurrentUserId as getJwtUserId;
 
 class UserStatusController extends BaseController
 {

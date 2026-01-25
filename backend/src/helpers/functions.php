@@ -61,10 +61,6 @@ function stripPersonalData(array $user): array
 		unset($user['two_factor_enabled']);
 	}
 
-	if (array_key_exists('avatar_filename', $user)) {
-		unset($user['avatar_filename']);
-	}
-
 	if (array_key_exists('created_at', $user)) {
 		unset($user['created_at']);
 	}

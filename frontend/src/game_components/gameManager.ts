@@ -106,6 +106,7 @@ class GameManager {
 
     public startInviteGame(inviteCode: string): void {
         logger.log('Starting invite game with code:', inviteCode);
+        this.networkManager.disconnect();
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber() || 1;

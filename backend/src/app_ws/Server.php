@@ -47,54 +47,108 @@ $redis = $factory->createLazyClient($redisUrl);
 
 $redis->subscribe('app-events');
 
-$redis->on('message', function ($channel, $payload) use ($app) {
+// $redis->on('message', function ($channel, $payload) use ($app) {
 
+//     $msg = json_decode((string)$payload, true);
+//     if (!is_array($msg) || !isset($msg['type'], $msg['data'])) {
+//         echo "[ws_app] bad payload (expected {type,data})\n";
+//         return;
+//     }
+
+//     $type = (string)$msg['type'];
+//     $data = is_array($msg['data']) ? $msg['data'] : [];
+
+//     if ($type === '') return;
+
+//     // 1) if event has a conversationId -> broadcast to that conversation room
+//     // $cid = (string)($data['conversationId'] ?? '');
+//     // if ($cid !== '') {
+//     //     $app->broadcastRoom("conversation:$cid", [
+//     //         'type' => $type,
+//     //         'data' => $data,
+//     //     ]);
+//     // }
+
+//     // // 2) if event has recipientUserIds -> broadcast to those user rooms
+//     // $recipients = $data['recipientUserIds'] ?? [];
+//     // if (is_array($recipients)) {
+//     //     foreach ($recipients as $uid) {
+//     //         if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) continue;
+//     //         $uid = (int)$uid;
+//     //         if ($uid <= 0) continue;
+
+//     //         $app->broadcastRoom("user:$uid", [
+//     //             'type' => $type,
+//     //             'data' => $data,
+//     //         ]);
+//     //     }
+//     // }
+// 	$cid = (string)($data['conversationId'] ?? '');
+// 	if ($cid !== '') {
+// 		$app->broadcastRoom("conversation:$cid", [
+// 			'type' => $type,
+// 			'data' => $data,
+// 		]);
+
+// 		// Prevent duplicates: message events already go to the conversation room
+// 		if (str_starts_with($type, 'message.')) {
+// 			return;
+// 		}
+// 		if (str_starts_with($type, 'friend.request.')) {
+// 			$recipients = $data['recipientUserIds'] ?? [];
+// 			if (is_array($recipients)) {
+// 				foreach ($recipients as $uid) {
+// 					if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) continue;
+// 					$uid = (int)$uid;
+// 					if ($uid <= 0) continue;
+
+// 					$app->broadcastRoom("user:$uid", [
+// 						'type' => $type,
+// 						'data' => $data,
+// 					]);
+// 				}
+// 			}
+// 		}
+// 	}
+// });
+
+
+$redis->on('message', function ($channel, $payload) use ($app) {
     $msg = json_decode((string)$payload, true);
-    if (!is_array($msg) || !isset($msg['type'], $msg['data'])) {
-        echo "[ws_app] bad payload (expected {type,data})\n";
-        return;
-    }
+    if (!is_array($msg) || !isset($msg['type'], $msg['data'])) return;
 
     $type = (string)$msg['type'];
     $data = is_array($msg['data']) ? $msg['data'] : [];
-
     if ($type === '') return;
 
-    // 1) if event has a conversationId -> broadcast to that conversation room
-    // $cid = (string)($data['conversationId'] ?? '');
-    // if ($cid !== '') {
-    //     $app->broadcastRoom("conversation:$cid", [
-    //         'type' => $type,
-    //         'data' => $data,
-    //     ]);
-    // }
+    // 1) conversation broadcast (if present)
+    $cid = (string)($data['conversationId'] ?? '');
+    if ($cid !== '') {
+        $app->broadcastRoom("conversation:$cid", [
+            'type' => $type,
+            'data' => $data,
+        ]);
 
-    // // 2) if event has recipientUserIds -> broadcast to those user rooms
-    // $recipients = $data['recipientUserIds'] ?? [];
-    // if (is_array($recipients)) {
-    //     foreach ($recipients as $uid) {
-    //         if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) continue;
-    //         $uid = (int)$uid;
-    //         if ($uid <= 0) continue;
+        // message.* should NOT also go to user rooms
+        if (str_starts_with($type, 'message.')) {
+            return;
+        }
+    }
 
-    //         $app->broadcastRoom("user:$uid", [
-    //             'type' => $type,
-    //             'data' => $data,
-    //         ]);
-    //     }
-    // }
-	$cid = (string)($data['conversationId'] ?? '');
-	if ($cid !== '') {
-		$app->broadcastRoom("conversation:$cid", [
-			'type' => $type,
-			'data' => $data,
-		]);
+    // 2) user broadcast (if present)
+    $recipients = $data['recipientUserIds'] ?? [];
+    if (is_array($recipients)) {
+        foreach ($recipients as $uid) {
+            if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) continue;
+            $uid = (int)$uid;
+            if ($uid <= 0) continue;
 
-		// Prevent duplicates: message events already go to the conversation room
-		if (str_starts_with($type, 'message.')) {
-			return;
-		}
-	}
+            $app->broadcastRoom("user:$uid", [
+                'type' => $type,
+                'data' => $data,
+            ]);
+        }
+    }
 });
 
 // IMPORTANT: use 8082 (game uses 8081)
