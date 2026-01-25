@@ -60,28 +60,40 @@ $redis->on('message', function ($channel, $payload) use ($app) {
     if ($type === '') return;
 
     // 1) if event has a conversationId -> broadcast to that conversation room
-    $cid = (string)($data['conversationId'] ?? '');
-    if ($cid !== '') {
-        $app->broadcastRoom("conversation:$cid", [
-            'type' => $type,
-            'data' => $data,
-        ]);
-    }
+    // $cid = (string)($data['conversationId'] ?? '');
+    // if ($cid !== '') {
+    //     $app->broadcastRoom("conversation:$cid", [
+    //         'type' => $type,
+    //         'data' => $data,
+    //     ]);
+    // }
 
-    // 2) if event has recipientUserIds -> broadcast to those user rooms
-    $recipients = $data['recipientUserIds'] ?? [];
-    if (is_array($recipients)) {
-        foreach ($recipients as $uid) {
-            if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) continue;
-            $uid = (int)$uid;
-            if ($uid <= 0) continue;
+    // // 2) if event has recipientUserIds -> broadcast to those user rooms
+    // $recipients = $data['recipientUserIds'] ?? [];
+    // if (is_array($recipients)) {
+    //     foreach ($recipients as $uid) {
+    //         if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) continue;
+    //         $uid = (int)$uid;
+    //         if ($uid <= 0) continue;
 
-            $app->broadcastRoom("user:$uid", [
-                'type' => $type,
-                'data' => $data,
-            ]);
-        }
-    }
+    //         $app->broadcastRoom("user:$uid", [
+    //             'type' => $type,
+    //             'data' => $data,
+    //         ]);
+    //     }
+    // }
+	$cid = (string)($data['conversationId'] ?? '');
+	if ($cid !== '') {
+		$app->broadcastRoom("conversation:$cid", [
+			'type' => $type,
+			'data' => $data,
+		]);
+
+		// Prevent duplicates: message events already go to the conversation room
+		if (str_starts_with($type, 'message.')) {
+			return;
+		}
+	}
 });
 
 // IMPORTANT: use 8082 (game uses 8081)
