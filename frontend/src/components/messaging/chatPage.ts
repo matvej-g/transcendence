@@ -78,7 +78,6 @@ function handleChatMessageCreated(ev: any) {
 			}
 			renderChatList(conversations, chatListEl);
 		}
-		return; // Don't continue to increment logic below
 	}
 
 	// 2) Update chat list preview + move convo to top (or create it if missing)
@@ -119,6 +118,7 @@ function handleChatMessageCreated(ev: any) {
 	renderChatList(conversations, chatListEl);
 
 	if (ev.data?.message?.type === "game") {
+		console.log("Handling game message:", ev.data?.message?.text);
 		if (ev.data?.message?.text.startsWith("accept")) {
 			let inviteCode = ev.data?.message?.text.split(".")[1];
 			logger.log("Starting game from accepted invite with code:", inviteCode);
