@@ -164,11 +164,6 @@ class MessagingController extends BaseController
         }
         $userId = (int) $userId;
 
-        // $currentUserId = getCurrentUserId($request);
-        // if ($currentUserId !== $userId) {
-        //     return $this->jsonForbidden("You can only access your own user data");
-        // }
-
         $rows = $this->conversations->getConversationsForUser($userId);
         if ($rows === null) {
             return $this->jsonServerError();
@@ -199,11 +194,6 @@ class MessagingController extends BaseController
         }
         
         $conversationId = (int) $id;
-
-        // $currentUserId = getCurrentUserId($request);
-        // if ($currentUserId !== $userId) {
-        //     return $this->jsonForbidden("You can only access your own user data");
-        // }
 
         // Ensure user is a participant
         $participants = $this->conversations->getParticipants($conversationId);
@@ -369,117 +359,117 @@ private function createMapNotifyMessage(
 
 
     // check if conversation between users already exists
-public function createConversation(Request $request, $parameters)
-{
-    try {
-        $userId = $this->ensureCurrentUserId($request);
+    public function createConversation(Request $request, $parameters)
+    {
+        try {
+            $userId = $this->ensureCurrentUserId($request);
 
-        $participantIds = $request->postParams['participantIds'] ?? null;
-        $messageData    = $request->postParams['message'] ?? null;
+            $participantIds = $request->postParams['participantIds'] ?? null;
+            $messageData    = $request->postParams['message'] ?? null;
 
-        if (!Validator::validateIdArray($participantIds ?? [])) {
-            return $this->jsonBadRequest('Invalid participant ids');
-        }
-
-        $uniqueParticipants = array_unique(array_map('intval', $participantIds));
-        if (count($uniqueParticipants) === 1 && $uniqueParticipants[0] === (int)$userId) {
-            return $this->jsonConflict('Cannot start a conversation with yourself');
-        }
-
-        // Ensure current user is part of the conversation
-        $allParticipantIds = array_map('intval', $participantIds);
-        if (!in_array($userId, $allParticipantIds, true)) {
-            $allParticipantIds[] = $userId;
-        }
-
-        // otherUserIds
-        $otherUserIds = [];
-        foreach ($allParticipantIds as $uid) {
-            if ($uid !== $userId) $otherUserIds[] = (int)$uid;
-        }
-
-        $this->assertNotBlockedByAny($otherUserIds, $userId);
-
-        // Parse message using the SAME logic as sendMessage (includes game accept handling)
-        $typeRaw = is_array($messageData) ? ($messageData['type'] ?? null) : null;
-        $textRaw = is_array($messageData) ? ($messageData['text'] ?? null) : null;
-        $msg = $this->parseAndPrepareMessage($typeRaw, $textRaw, $otherUserIds);
-
-        // 1) Create conversation
-        $conversationId = $this->conversations->createConversation(null);
-        if ($conversationId === null) {
-            return $this->jsonServerError('createConversation failed');
-        }
-        $conversationId = (int)$conversationId;
-
-        // 2) Add participants
-        foreach ($allParticipantIds as $pid) {
-            $added = $this->conversations->addParticipant($conversationId, (int)$pid);
-            if ($added === null) {
-                return $this->jsonServerError('addParticipant failed');
+            if (!Validator::validateIdArray($participantIds ?? [])) {
+                return $this->jsonBadRequest('Invalid participant ids');
             }
+
+            $uniqueParticipants = array_unique(array_map('intval', $participantIds));
+            if (count($uniqueParticipants) === 1 && $uniqueParticipants[0] === (int)$userId) {
+                return $this->jsonConflict('Cannot start a conversation with yourself');
+            }
+
+            // Ensure current user is part of the conversation
+            $allParticipantIds = array_map('intval', $participantIds);
+            if (!in_array($userId, $allParticipantIds, true)) {
+                $allParticipantIds[] = $userId;
+            }
+
+            // otherUserIds
+            $otherUserIds = [];
+            foreach ($allParticipantIds as $uid) {
+                if ($uid !== $userId) $otherUserIds[] = (int)$uid;
+            }
+
+            $this->assertNotBlockedByAny($otherUserIds, $userId);
+
+            // Parse message using the SAME logic as sendMessage (includes game accept handling)
+            $typeRaw = is_array($messageData) ? ($messageData['type'] ?? null) : null;
+            $textRaw = is_array($messageData) ? ($messageData['text'] ?? null) : null;
+            $msg = $this->parseAndPrepareMessage($typeRaw, $textRaw, $otherUserIds);
+
+            // 1) Create conversation
+            $conversationId = $this->conversations->createConversation(null);
+            if ($conversationId === null) {
+                return $this->jsonServerError('createConversation failed');
+            }
+            $conversationId = (int)$conversationId;
+
+            // 2) Add participants
+            foreach ($allParticipantIds as $pid) {
+                $added = $this->conversations->addParticipant($conversationId, (int)$pid);
+                if ($added === null) {
+                    return $this->jsonServerError('addParticipant failed');
+                }
+            }
+
+            // 3) Create + map + notify first message
+            $apiMessage = $this->createMapNotifyMessage(
+                $conversationId,
+                $userId,
+                $otherUserIds,
+                $msg['type'],
+                $msg['text']
+            );
+
+            return $this->jsonCreated($apiMessage);
+
+        } catch (\DomainException $e) {
+            return $this->jsonBadRequest($e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            return $this->jsonBadRequest($e->getMessage());
+        } catch (\Throwable $e) {
+            return $this->jsonServerError('Database exception');
         }
-
-        // 3) Create + map + notify first message
-        $apiMessage = $this->createMapNotifyMessage(
-            $conversationId,
-            $userId,
-            $otherUserIds,
-            $msg['type'],
-            $msg['text']
-        );
-
-        return $this->jsonCreated($apiMessage);
-
-    } catch (\DomainException $e) {
-        return $this->jsonBadRequest($e->getMessage());
-    } catch (\InvalidArgumentException $e) {
-        return $this->jsonBadRequest($e->getMessage());
-    } catch (\Throwable $e) {
-        return $this->jsonServerError('Database exception');
     }
-}
 
-public function sendMessage(Request $request, $parameters)
-{
-    try {
-        $userId = $this->ensureCurrentUserId($request);
+    public function sendMessage(Request $request, $parameters)
+    {
+        try {
+            $userId = $this->ensureCurrentUserId($request);
 
-        $id = $parameters['id'] ?? null;
-        if (!Validator::validateId($id)) {
-            return $this->jsonBadRequest('Bad Input');
+            $id = $parameters['id'] ?? null;
+            if (!Validator::validateId($id)) {
+                return $this->jsonBadRequest('Bad Input');
+            }
+            $conversationId = (int)$id;
+
+            [$isParticipant, $otherUserIds] = $this->getParticipantInfoOrFail($conversationId, $userId);
+            if (!$isParticipant) {
+                return $this->jsonUnauthorized('Not a participant of this conversation');
+            }
+
+            $this->assertNotBlockedByAny($otherUserIds, $userId);
+
+            $type = $request->postParams['type'] ?? null;
+            $text = $request->postParams['text'] ?? null;
+            $msg = $this->parseAndPrepareMessage($type, $text, $otherUserIds);
+
+            $apiMessage = $this->createMapNotifyMessage(
+                $conversationId,
+                $userId,
+                $otherUserIds,
+                $msg['type'],
+                $msg['text']
+            );
+
+            return $this->jsonCreated($apiMessage);
+
+        } catch (\DomainException $e) {
+            return $this->jsonBadRequest($e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            return $this->jsonBadRequest($e->getMessage());
+        } catch (\Throwable $e) {
+            return $this->jsonServerError('Database exception');
         }
-        $conversationId = (int)$id;
-
-        [$isParticipant, $otherUserIds] = $this->getParticipantInfoOrFail($conversationId, $userId);
-        if (!$isParticipant) {
-            return $this->jsonUnauthorized('Not a participant of this conversation');
-        }
-
-        $this->assertNotBlockedByAny($otherUserIds, $userId);
-
-        $type = $request->postParams['type'] ?? null;
-        $text = $request->postParams['text'] ?? null;
-        $msg = $this->parseAndPrepareMessage($type, $text, $otherUserIds);
-
-        $apiMessage = $this->createMapNotifyMessage(
-            $conversationId,
-            $userId,
-            $otherUserIds,
-            $msg['type'],
-            $msg['text']
-        );
-
-        return $this->jsonCreated($apiMessage);
-
-    } catch (\DomainException $e) {
-        return $this->jsonBadRequest($e->getMessage());
-    } catch (\InvalidArgumentException $e) {
-        return $this->jsonBadRequest($e->getMessage());
-    } catch (\Throwable $e) {
-        return $this->jsonServerError('Database exception');
     }
-}
 
 
     // public function createConversation(Request $request, $parameters)

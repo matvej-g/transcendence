@@ -81,28 +81,3 @@ $this->router->post('/api/friends/unblock', [FriendshipController::class, 'unblo
 $this->router->get('/api/status/{id}', [UserStatusController::class, 'getStatus'], [Require2FAMiddleware::class]);
 $this->router->patch('/api/status/online', [UserStatusController::class, 'setOnline'], [Require2FAMiddleware::class]);
 $this->router->patch('/api/status/offline', [UserStatusController::class, 'setOffline'], [Require2FAMiddleware::class]);
-
-
-
-//mert
-// ===== MIDDLEWARE USAGE GUIDE FOR TEAMMATES =====
-// 
-// To protect your routes, add [Require2FAMiddleware::class] as third parameter:
-// Example: $this->router->get('/api/users', [UserController::class, 'getUsers'], [Require2FAMiddleware::class]);
-//
-// This checks:
-// - User has valid JWT token
-// - User completed 2FA verification
-//
-// Routes that should be PROTECTED (add middleware):
-// - Any route accessing user data (get users, get user by ID, update user, etc.)
-// - Any route accessing matches/tournaments
-// - Any route modifying data (POST, PATCH, DELETE)
-//
-// Routes that must stay PUBLIC (NO middleware):
-// - /api/user/new (register) 
-// - /api/user/login
-//
-// ⚠️ WARNING: Routes defined above are currently UNPROTECTED!
-// ⚠️ Add [Require2FAMiddleware::class] to routes handling sensitive data.
-// messaging
