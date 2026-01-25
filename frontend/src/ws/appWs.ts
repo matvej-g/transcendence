@@ -76,10 +76,16 @@ export class AppWs {
 
 		logger.log("AppWs open");
 
+<<<<<<< HEAD
+		const userId = localStorage.getItem("userId");
+		if (userId) {
+		this.send({ type: "auth", data: { userId: Number(userId) } });
+=======
 		// register user with ws_app server using JWT
 		const token = localStorage.getItem("authToken");
 		if (token) {
 			this.send({type: "auth", data: { token }});
+>>>>>>> 56a1c14 (added websocket to use id from jwt)
 		}
 
 		// Re-join: send join message directly (don’t call joinConversation)
