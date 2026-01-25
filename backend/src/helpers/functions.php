@@ -39,3 +39,35 @@ function stripEmail(array $user): array
 
 	return $user;
 }
+
+function stripPersonalData(array $user): array
+{
+	$user = userToPublic($user);
+	$user = stripEmail($user);
+	
+	if (array_key_exists('oauth_id', $user)) {
+		unset($user['oauth_id']);
+	}
+
+	if (array_key_exists('two_factor_code', $user)) {
+		unset($user['two_factor_code']);
+	}
+
+	if (array_key_exists('two_factor_expires_at', $user)) {
+		unset($user['two_factor_expires_at']);
+	}
+	
+	if (array_key_exists('two_factor_enabled', $user)) {
+		unset($user['two_factor_enabled']);
+	}
+
+	if (array_key_exists('avatar_filename', $user)) {
+		unset($user['avatar_filename']);
+	}
+
+	if (array_key_exists('created_at', $user)) {
+		unset($user['created_at']);
+	}
+
+	return $user;
+}
