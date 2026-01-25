@@ -235,13 +235,134 @@ class MessagingController extends BaseController
         ]);
     }
 
-    // check if conversation between users already exists
-    public function createConversation(Request $request, $parameters)
-    {
-        $userId = $this->getCurrentUserId($request);
-        if ($userId === null) {
-            return $this->jsonBadRequest('Missing or invalid current user id');
+
+
+private function ensureCurrentUserId(Request $request): int
+{
+    $userId = $this->getCurrentUserId($request);
+    if ($userId === null) {
+        throw new \RuntimeException('Missing or invalid current user id');
+    }
+    return (int)$userId;
+}
+
+/**
+ * Returns array{0: bool $isParticipant, 1: int[] $otherUserIds}
+ */
+private function getParticipantInfoOrFail(int $conversationId, int $userId): array
+{
+    $participants = $this->conversations->getParticipants($conversationId);
+    if ($participants === null) {
+        throw new \RuntimeException('getParticipants failed');
+    }
+
+    $isParticipant = false;
+    $otherUserIds = [];
+
+    foreach ($participants as $p) {
+        $uid = (int)$p['user_id'];
+        if ($uid === $userId) $isParticipant = true;
+        else $otherUserIds[] = $uid;
+    }
+
+    return [$isParticipant, $otherUserIds];
+}
+
+private function assertNotBlockedByAny(array $otherUserIds, int $userId): void
+{
+    foreach ($otherUserIds as $otherId) {
+        $blocked = $this->blocks->isBlocked((int)$otherId, $userId);
+        if ($blocked === null) {
+            throw new \RuntimeException('isBlocked failed');
         }
+        if ($blocked === true) {
+            throw new \DomainException('You are blocked by this user');
+        }
+    }
+}
+
+/**
+ * Normalizes/validates input, and applies game-accept logic.
+ * Returns array{type: string, text: string}
+ */
+private function parseAndPrepareMessage(?string $type, $textRaw, array $otherUserIds): array
+{
+    $text = is_string($textRaw) ? $textRaw : null;
+    if ($text === null || !Validator::validateMessageText($text)) {
+        throw new \InvalidArgumentException('Invalid message text');
+    }
+    $text = Sanitiser::normaliseMessage($text);
+
+    $type = is_string($type) ? $type : '';
+
+
+    // --- "game accept" logic ---
+    if ($type === 'game' && $text === 'accept') {
+        $anyBusy = false;
+
+        foreach ($otherUserIds as $otherId) {
+            $status = $this->userStatus->getStatusByUserId((int)$otherId);
+            if ($status === null) {
+                throw new \RuntimeException('getStatusByUserId failed');
+            }
+            if (!empty($status['busy']) && (int)$status['busy'] === 1) {
+                $anyBusy = true;
+                break;
+            }
+        }
+
+        if ($anyBusy) {
+            $text = 'busy';
+        } else {
+            $sequence = bin2hex(random_bytes(16));
+            $text = $text . "." . $sequence;
+        }
+    }
+
+    return ['type' => $type, 'text' => $text];
+}
+
+/**
+ * Single place that creates message + maps + notifies.
+ */
+private function createMapNotifyMessage(
+    int $conversationId,
+    int $actorUserId,
+    array $recipientsIds,
+    string $type,
+    string $text
+) {
+    $row = $this->messages->createMessage($conversationId, $actorUserId, $type, $text);
+    if ($row === null) {
+        throw new \RuntimeException('createMessage failed');
+    }
+	if ($type === 'game' && $text === 'busy') {
+		// nothing
+	} else { // notify actor as well (usually we want this)
+		array_push($recipientsIds, $actorUserId);
+	}
+
+    $apiMessage = $this->mapMessageRowToApi($row);
+    if ($apiMessage === null) {
+        throw new \RuntimeException('mapMessage failed');
+    }
+
+    $this->notifier->messageCreated(
+        conversationId: $conversationId,
+        apiMessage: $apiMessage,
+	recipientUserIds: $recipientsIds,
+        actorUserId: $actorUserId
+    );
+
+    return $apiMessage;
+}
+
+
+    // check if conversation between users already exists
+public function createConversation(Request $request, $parameters)
+{
+    try {
+        $userId = $this->ensureCurrentUserId($request);
 
         $participantIds = $request->postParams['participantIds'] ?? null;
         $messageData    = $request->postParams['message'] ?? null;
@@ -250,20 +371,10 @@ class MessagingController extends BaseController
             return $this->jsonBadRequest('Invalid participant ids');
         }
 
-        $uniqueParticipants = array_unique(
-            array_map('intval', $participantIds)
-        );
-
+        $uniqueParticipants = array_unique(array_map('intval', $participantIds));
         if (count($uniqueParticipants) === 1 && $uniqueParticipants[0] === (int)$userId) {
             return $this->jsonConflict('Cannot start a conversation with yourself');
         }
-
-		$type = $messageData['type'] ?? null;
-		$text = $messageData['text'] ?? null;
-        if ($text === null || !Validator::validateMessageText($text)) {
-            return $this->jsonBadRequest('Invalid message text');
-        }
-		$text = Sanitiser::normaliseMessage($text);
 
         // Ensure current user is part of the conversation
         $allParticipantIds = array_map('intval', $participantIds);
@@ -271,144 +382,270 @@ class MessagingController extends BaseController
             $allParticipantIds[] = $userId;
         }
 
-		$otherUserIds = [];
+        // otherUserIds
+        $otherUserIds = [];
         foreach ($allParticipantIds as $uid) {
-            if ($uid === $userId) {
-            } else {
-                $otherUserIds[] = $uid;
+            if ($uid !== $userId) $otherUserIds[] = (int)$uid;
+        }
+
+        $this->assertNotBlockedByAny($otherUserIds, $userId);
+
+        // Parse message using the SAME logic as sendMessage (includes game accept handling)
+        $typeRaw = is_array($messageData) ? ($messageData['type'] ?? null) : null;
+        $textRaw = is_array($messageData) ? ($messageData['text'] ?? null) : null;
+        $msg = $this->parseAndPrepareMessage($typeRaw, $textRaw, $otherUserIds);
+
+        // 1) Create conversation
+        $conversationId = $this->conversations->createConversation(null);
+        if ($conversationId === null) {
+            return $this->jsonServerError('createConversation failed');
+        }
+        $conversationId = (int)$conversationId;
+
+        // 2) Add participants
+        foreach ($allParticipantIds as $pid) {
+            $added = $this->conversations->addParticipant($conversationId, (int)$pid);
+            if ($added === null) {
+                return $this->jsonServerError('addParticipant failed');
             }
         }
-		// Basic block check: if any other participant has blocked current user, deny
-		foreach ($otherUserIds as $otherId) {
-			$blocked = $this->blocks->isBlocked($otherId, $userId);
-			if ($blocked === null) {
-				return $this->jsonServerError();
-			}
-			if ($blocked === true) {
-				return $this->jsonBadRequest('You are blocked by this user');
-			}
-		}
 
-        try {
-            // 1) Create conversation (title = null)
-            $conversationId = $this->conversations->createConversation(null);
-            if ($conversationId === null) {
-                return $this->jsonServerError('createConversation failed');
-            }
+        // 3) Create + map + notify first message
+        $apiMessage = $this->createMapNotifyMessage(
+            $conversationId,
+            $userId,
+            $otherUserIds,
+            $msg['type'],
+            $msg['text']
+        );
 
-            // 2) Add participants
-            foreach ($allParticipantIds as $pid) {
-                $added = $this->conversations->addParticipant((int)$conversationId, (int)$pid);
-                if ($added === null) {
-                    return $this->jsonServerError('addParticipant failed');
-                }
-            }
+        return $this->jsonCreated($apiMessage);
 
-            // 3) Create first message
-            $row = $this->messages->createMessage((int)$conversationId, (int)$userId, (string)$type, (string)$text);
-            if ($row === null) {
-                return $this->jsonServerError('createMessage failed');
-            }
-
-            // 4) Map message
-            $apiMessage = $this->mapMessageRowToApi($row);
-            if ($apiMessage === null) {
-                return $this->jsonServerError('mapMessage failed');
-            }
-			$this->notifier->messageCreated((int)$conversationId, $apiMessage, $otherUserIds, (int)$userId); //notify all users
-            return $this->jsonCreated($apiMessage);
-
-        } catch (\Throwable $e) {
-            return $this->jsonServerError('Database exception');
-        }
+    } catch (\DomainException $e) {
+        return $this->jsonBadRequest($e->getMessage());
+    } catch (\InvalidArgumentException $e) {
+        return $this->jsonBadRequest($e->getMessage());
+    } catch (\Throwable $e) {
+        return $this->jsonServerError('Database exception');
     }
+}
 
-    public function sendMessage(Request $request, $parameters)
-    {
-        $userId = $this->getCurrentUserId($request);
-        if ($userId === null) {
-            return $this->jsonBadRequest('Missing or invalid current user id');
-        }
+public function sendMessage(Request $request, $parameters)
+{
+    try {
+        $userId = $this->ensureCurrentUserId($request);
 
         $id = $parameters['id'] ?? null;
         if (!Validator::validateId($id)) {
             return $this->jsonBadRequest('Bad Input');
         }
-        $conversationId = (int) $id;
+        $conversationId = (int)$id;
 
-		$type = $request->postParams['type'] ?? null;
-		$text = $request->postParams['text'] ?? null;
-        if ($text === null || !Validator::validateMessageText($text)) {
-            return $this->jsonBadRequest('Invalid message text');
-        }
-		$text = Sanitiser::normaliseMessage($text);
-
-        // Ensure user is a participant
-        $participants = $this->conversations->getParticipants($conversationId);
-        if ($participants === null) {
-            return $this->jsonServerError();
-        }
-        $isParticipant = false;
-        $otherUserIds = [];
-        foreach ($participants as $p) {
-            $uid = (int) $p['user_id'];
-            if ($uid === $userId) {
-                $isParticipant = true;
-            } else {
-                $otherUserIds[] = $uid;
-            }
-        }
+        [$isParticipant, $otherUserIds] = $this->getParticipantInfoOrFail($conversationId, $userId);
         if (!$isParticipant) {
             return $this->jsonUnauthorized('Not a participant of this conversation');
         }
 
-        // Basic block check: if any other participant has blocked current user, deny
-        foreach ($otherUserIds as $otherId) {
-            $blocked = $this->blocks->isBlocked($otherId, $userId);
-            if ($blocked === null) {
-                return $this->jsonServerError();
-            }
-            if ($blocked === true) {
-                return $this->jsonBadRequest('You are blocked by this user');
-            }
-        }
+        $this->assertNotBlockedByAny($otherUserIds, $userId);
 
-        $anyBusy = false;
-        $sequence = null;
+        $type = $request->postParams['type'] ?? null;
+        $text = $request->postParams['text'] ?? null;
+        $msg = $this->parseAndPrepareMessage($type, $text, $otherUserIds);
 
-        if ($type === 'game' && $text === 'accept') {
-            foreach ($otherUserIds as $otherId) {
-                $status = $this->userStatus->getStatusByUserId($otherId);
-                if ($status === null) {
-                    return $this->jsonServerError();
-                }
-    
-                if (!empty($status['busy']) && (int)$status['busy'] === 1) {
-                    $anyBusy = true;
-                }
-            }
-            if (!$anyBusy) {
-                $sequence = bin2hex(random_bytes(16));
-            }
-        }
-
-
-        $row = $this->messages->createMessage($conversationId, $userId, $type, $text);
-        if ($row === null) {
-            return $this->jsonServerError();
-        }
-
-        $apiMessage = $this->mapMessageRowToApi($row);
-        if ($apiMessage === null) {
-            return $this->jsonServerError();
-        }
-
-        $apiMessage['recipient_busy'] = $anyBusy;
-        $apiMessage['sequence'] = $sequence;
-		$this->notifier->messageCreated(conversationId: $conversationId, apiMessage: $apiMessage, recipientUserIds: $otherUserIds, actorUserId: $userId);
+        $apiMessage = $this->createMapNotifyMessage(
+            $conversationId,
+            $userId,
+            $otherUserIds,
+            $msg['type'],
+            $msg['text']
+        );
 
         return $this->jsonCreated($apiMessage);
+
+    } catch (\DomainException $e) {
+        return $this->jsonBadRequest($e->getMessage());
+    } catch (\InvalidArgumentException $e) {
+        return $this->jsonBadRequest($e->getMessage());
+    } catch (\Throwable $e) {
+        return $this->jsonServerError('Database exception');
     }
+}
+
+
+    // public function createConversation(Request $request, $parameters)
+    // {
+    //     $userId = $this->getCurrentUserId($request);
+    //     if ($userId === null) {
+    //         return $this->jsonBadRequest('Missing or invalid current user id');
+    //     }
+
+    //     $participantIds = $request->postParams['participantIds'] ?? null;
+    //     $messageData    = $request->postParams['message'] ?? null;
+
+    //     if (!Validator::validateIdArray($participantIds ?? [])) {
+    //         return $this->jsonBadRequest('Invalid participant ids');
+    //     }
+
+    //     $uniqueParticipants = array_unique(
+    //         array_map('intval', $participantIds)
+    //     );
+
+    //     if (count($uniqueParticipants) === 1 && $uniqueParticipants[0] === (int)$userId) {
+    //         return $this->jsonConflict('Cannot start a conversation with yourself');
+    //     }
+
+	// 	$type = $messageData['type'] ?? null;
+	// 	$text = $messageData['text'] ?? null;
+    //     if ($text === null || !Validator::validateMessageText($text)) {
+    //         return $this->jsonBadRequest('Invalid message text');
+    //     }
+	// 	$text = Sanitiser::normaliseMessage($text);
+
+    //     // Ensure current user is part of the conversation
+    //     $allParticipantIds = array_map('intval', $participantIds);
+    //     if (!in_array($userId, $allParticipantIds, true)) {
+    //         $allParticipantIds[] = $userId;
+    //     }
+
+	// 	$otherUserIds = [];
+    //     foreach ($allParticipantIds as $uid) {
+    //         if ($uid === $userId) {
+    //         } else {
+    //             $otherUserIds[] = $uid;
+    //         }
+    //     }
+	// 	// Basic block check: if any other participant has blocked current user, deny
+	// 	foreach ($otherUserIds as $otherId) {
+	// 		$blocked = $this->blocks->isBlocked($otherId, $userId);
+	// 		if ($blocked === null) {
+	// 			return $this->jsonServerError();
+	// 		}
+	// 		if ($blocked === true) {
+	// 			return $this->jsonBadRequest('You are blocked by this user');
+	// 		}
+	// 	}
+
+    //     try {
+    //         // 1) Create conversation (title = null)
+    //         $conversationId = $this->conversations->createConversation(null);
+    //         if ($conversationId === null) {
+    //             return $this->jsonServerError('createConversation failed');
+    //         }
+
+    //         // 2) Add participants
+    //         foreach ($allParticipantIds as $pid) {
+    //             $added = $this->conversations->addParticipant((int)$conversationId, (int)$pid);
+    //             if ($added === null) {
+    //                 return $this->jsonServerError('addParticipant failed');
+    //             }
+    //         }
+
+    //         // 3) Create first message
+    //         $row = $this->messages->createMessage((int)$conversationId, (int)$userId, (string)$type, (string)$text);
+    //         if ($row === null) {
+    //             return $this->jsonServerError('createMessage failed');
+    //         }
+
+    //         // 4) Map message
+    //         $apiMessage = $this->mapMessageRowToApi($row);
+    //         if ($apiMessage === null) {
+    //             return $this->jsonServerError('mapMessage failed');
+    //         }
+	// 		$this->notifier->messageCreated((int)$conversationId, $apiMessage, $otherUserIds, (int)$userId); //notify all users
+    //         return $this->jsonCreated($apiMessage);
+
+    //     } catch (\Throwable $e) {
+    //         return $this->jsonServerError('Database exception');
+    //     }
+    // }
+
+    // public function sendMessage(Request $request, $parameters)
+    // {
+    //     $userId = $this->getCurrentUserId($request);
+    //     if ($userId === null) {
+    //         return $this->jsonBadRequest('Missing or invalid current user id');
+    //     }
+
+    //     $id = $parameters['id'] ?? null;
+    //     if (!Validator::validateId($id)) {
+    //         return $this->jsonBadRequest('Bad Input');
+    //     }
+    //     $conversationId = (int) $id;
+
+	// 	$type = $request->postParams['type'] ?? null;
+	// 	$text = $request->postParams['text'] ?? null;
+    //     if ($text === null || !Validator::validateMessageText($text)) {
+    //         return $this->jsonBadRequest('Invalid message text');
+    //     }
+	// 	$text = Sanitiser::normaliseMessage($text);
+
+    //     // Ensure user is a participant
+    //     $participants = $this->conversations->getParticipants($conversationId);
+    //     if ($participants === null) {
+    //         return $this->jsonServerError();
+    //     }
+    //     $isParticipant = false;
+    //     $otherUserIds = [];
+    //     foreach ($participants as $p) {
+    //         $uid = (int) $p['user_id'];
+    //         if ($uid === $userId) {
+    //             $isParticipant = true;
+    //         } else {
+    //             $otherUserIds[] = $uid;
+    //         }
+    //     }
+    //     if (!$isParticipant) {
+    //         return $this->jsonUnauthorized('Not a participant of this conversation');
+    //     }
+
+    //     // Basic block check: if any other participant has blocked current user, deny
+    //     foreach ($otherUserIds as $otherId) {
+    //         $blocked = $this->blocks->isBlocked($otherId, $userId);
+    //         if ($blocked === null) {
+    //             return $this->jsonServerError();
+    //         }
+    //         if ($blocked === true) {
+    //             return $this->jsonBadRequest('You are blocked by this user');
+    //         }
+    //     }
+
+    //     $anyBusy = false;
+    //     $sequence = null;
+
+    //     if ($type === 'game' && $text === 'accept') {
+    //         foreach ($otherUserIds as $otherId) {
+    //             $status = $this->userStatus->getStatusByUserId($otherId);
+    //             if ($status === null) {
+    //                 return $this->jsonServerError();
+    //             }
+    
+    //             if (!empty($status['busy']) && (int)$status['busy'] === 1) {
+    //                 $anyBusy = true;
+    //             }
+    //         }
+    //         if (!$anyBusy) {
+    //             $sequence = bin2hex(random_bytes(16));
+	// 			$text = $text . "." . $sequence;
+    //         } else {
+	// 			$text = 'busy';
+	// 		}
+    //     }
+
+
+    //     $row = $this->messages->createMessage($conversationId, $userId, $type, $text);
+    //     if ($row === null) {
+    //         return $this->jsonServerError();
+    //     }
+
+    //     $apiMessage = $this->mapMessageRowToApi($row);
+    //     if ($apiMessage === null) {
+    //         return $this->jsonServerError();
+    //     }
+
+	// 	$this->notifier->messageCreated(conversationId: $conversationId, apiMessage: $apiMessage, recipientUserIds: $otherUserIds, actorUserId: $userId);
+
+    //     return $this->jsonCreated($apiMessage);
+    // }
 
     public function editMessage(Request $request, $parameters)
     {
