@@ -440,12 +440,24 @@ class GameServer implements MessageComponentInterface {
 
     //helper functions for websocket functions
     private function handleAuthentication(Player $player, array $data): void {
-        $userID = $data['userID'] ?? null;
-        if (!$userID) {
-            $this->sendError($player, 'No userID povided');
+        $token = $data['token'] ?? null;
+        if (!is_string($token) || $token === '') {
+            $this->sendError($player, 'No token provided');
             return;
         }
-        //echo "set user Id to busy: {$userID}\n";
+
+        $payload = verifyJWT($token);
+        if ($payload === null) {
+            $this->sendError($player, 'Invalid token');
+            return;
+        }
+
+        $userID = (int)($payload['user_id'] ?? 0);
+        if ($userID <= 0) {
+            $this->sendError($player, 'Invalid user');
+            return;
+        }
+
         $this->userStatus->setBusyStatus($userID, 1);
         $user = $this->userModel->getUserById($userID);
         if (!$user) {
@@ -455,17 +467,16 @@ class GameServer implements MessageComponentInterface {
         $player->userID = $user['id'];
         $player->username = $user['username'];
         if ($this->isPlayerBusy($player)) {
-            //echo "Player {$player->userID} tried to connect but is already in a game.\n";
             $player->conn->close();
             return;
         }
         $player->send([
             'type' => 'connected',
-                'data' => [
-                    'playerID' => $player->userID,
-                    'username' => $player->username,
-                    'message' => 'Successfully connected!'
-                ]
+            'data' => [
+                'playerID' => $player->userID,
+                'username' => $player->username,
+                'message' => 'Successfully connected!'
+            ]
         ]);
     }
 

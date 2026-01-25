@@ -52,12 +52,11 @@ export class NetworkManager {
 	private onConnected(): void {
 		logger.log('Connected to server!');
 
-		// send authenticate message to server
+		// send authenticate message to server using JWT
+		const token = localStorage.getItem("authToken");
 		this.send({
 			type: 'authenticate',
-			data: {
-				userID: this.userId
-			}
+			data: { token }
 		});
 	}
 

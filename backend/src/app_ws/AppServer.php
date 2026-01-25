@@ -32,27 +32,25 @@ final class AppServer implements MessageComponentInterface
 
         $meta = $this->clients[$from];
 
-        // // 1) brittle auth: client tells us which user it is
-        // if ($t === 'auth') {
-        //     $uid = $d['userId'] ?? null;
-        //     if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) return;
-
-        //     $uid = (int)$uid;
-        //     if ($uid <= 0) return;
-
-        //     $meta['userId'] = $uid;
-        //     $meta['rooms']["user:$uid"] = true;
-        //     $this->clients[$from] = $meta;
-
-        //     // optional ack
-        //     $from->send(json_encode(['type' => 'auth.ok', 'data' => ['userId' => $uid]], JSON_UNESCAPED_UNICODE));
-        //     return;
-        // }
+        // 1) JWT authentication
         if ($t === 'auth') {
-            $uid = $d['userId'] ?? null;
-            if (!is_int($uid) && !(is_string($uid) && ctype_digit($uid))) return;
-            $uid = (int)$uid;
-            if ($uid <= 0) return;
+            $token = $d['token'] ?? null;
+            if (!is_string($token) || $token === '') {
+                $from->send(json_encode(['type' => 'auth.error', 'data' => ['error' => 'missing_token']], JSON_UNESCAPED_UNICODE));
+                return;
+            }
+
+            $payload = verifyJWT($token);
+            if ($payload === null) {
+                $from->send(json_encode(['type' => 'auth.error', 'data' => ['error' => 'invalid_token']], JSON_UNESCAPED_UNICODE));
+                return;
+            }
+
+            $uid = (int)($payload['user_id'] ?? 0);
+            if ($uid <= 0) {
+                $from->send(json_encode(['type' => 'auth.error', 'data' => ['error' => 'invalid_user']], JSON_UNESCAPED_UNICODE));
+                return;
+            }
 
 			// Close previous connection for this user (prevents duplicates)
 			if (isset($this->userConn[$uid]) && $this->userConn[$uid] !== $from) {
