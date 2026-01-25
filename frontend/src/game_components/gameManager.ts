@@ -82,7 +82,7 @@ class GameManager {
         logger.log('Starting remote game...');
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
-        const userId = getCurrentUserIdNumber() || 1; //need change later
+        const userId = getCurrentUserIdNumber();
         logger.log(userId);
 		this.networkManager.connect(
 			this.getWebSocketUrl(),
@@ -95,7 +95,7 @@ class GameManager {
         logger.log('Join Tournament...');
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
-        const userId = getCurrentUserIdNumber() || 1; //need change later
+        const userId = getCurrentUserIdNumber();
         logger.log(userId);
         this.networkManager.connect(
 			this.getWebSocketUrl(),
