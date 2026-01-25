@@ -1,4 +1,4 @@
-import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId, setCurrentUserId, setCurrentUsername, setUserOnline } from '../components/auth/authUtils.js';
+import { clearCurrentUserId, setUserOffline, clearCurrentUsername, getCurrentUserId, setCurrentUserId, setCurrentUsername, setUserOnline, clearAuthToken, setAuthToken } from '../components/auth/authUtils.js';
 import { initFriendsSection} from '../components/friends/friendsContent.js';
 import { initProfile, reloadUsername, reloadAvatar, reloadMatchHistory, reloadStats } from '../components/profile/profile.js';
 import { loadFriendProfile } from '../components/friendProfile/friendProfile.js';
@@ -266,7 +266,8 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   // Clear localStorage
   clearCurrentUserId();
   clearCurrentUsername();
-  
+  clearAuthToken();
+
   // Reset section loaded flags
   profileLoaded = false;
   friendsLoaded = false;
@@ -317,10 +318,15 @@ if (urlParams.has('code') || urlParams.has('error')) {
             setCurrentUserId(userData.id);
             setCurrentUsername(userData.username || '');
           }
+          // Store token for WebSocket auth (needed after OAuth)
+          if (userData.token) {
+            setAuthToken(userData.token);
+          }
         } else {
           // JWT cookie invalid - clear localStorage and redirect to auth
           clearCurrentUserId();
           clearCurrentUsername();
+          clearAuthToken();
           window.location.hash = '#auth';
           showSection('auth');
           return;
@@ -329,6 +335,7 @@ if (urlParams.has('code') || urlParams.has('error')) {
         logger.warn('[router] Failed to validate user', err);
         clearCurrentUserId();
         clearCurrentUsername();
+        clearAuthToken();
         window.location.hash = '#auth';
         showSection('auth');
         return;
