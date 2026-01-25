@@ -58,8 +58,8 @@ async function createFriendItem(friend: FriendRequest) {
 	};
 	const inviteToPlayBtn = document.createElement('button')
 	inviteToPlayBtn.className = 'invite-to-play rounded bg-blue-600 hover:bg-blue-700 px-3';
-	inviteToPlayBtn.dataset.i18n = 'friends.invite_to_play';
-	inviteToPlayBtn.textContent = t('friends.invite_to_play');
+	// inviteToPlayBtn.dataset.i18n = 'friends.invite_to_play';
+	// inviteToPlayBtn.textContent = t('friends.invite_to_play');
 	inviteToPlayBtn.onclick = async () => {
 		// todo: Implement invite to play functionality
 	}
