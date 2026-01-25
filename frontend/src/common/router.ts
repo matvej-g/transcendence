@@ -276,15 +276,15 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
 });
 
 // Handle browser/tab close - set user offline
-window.addEventListener('beforeunload', () => {
-  const userId = getCurrentUserId();
-  if (userId) {
-    // Use sendBeacon for reliable delivery even as page unloads
-    // Note: setUserOffline() uses fetch which may be cancelled, so we use sendBeacon directly
-    const blob = new Blob([JSON.stringify({})], { type: 'application/json' });
-    navigator.sendBeacon('/api/status/offline', blob);
-  }
-});
+// window.addEventListener('beforeunload', () => {
+//   const userId = getCurrentUserId();
+//   if (userId) {
+//     // Use sendBeacon for reliable delivery even as page unloads
+//     // Note: setUserOffline() uses fetch which may be cancelled, so we use sendBeacon directly
+//     const blob = new Blob([JSON.stringify({})], { type: 'application/json' });
+//     navigator.sendBeacon('/api/status/offline', blob);
+//   }
+// });
 
 // Notfound "Go to Home" button (if present)
 document.getElementById('notfoundHomeBtn')?.addEventListener('click', () => {
