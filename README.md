@@ -110,10 +110,14 @@ https://localhost:8443/
 ```
 
 ### Add Test Users
-Add Test users to database
-View login credentials in backend/tools/seed_users.php
+Add Test users to database with
 ```
 docker compose exec php-backend php tools/seed_users.php
+```
+
+View login credentials with
+```
+grep -im 1 "password" backend/tools/seed_users.php
 ```
 
 ## Makefile (local development)

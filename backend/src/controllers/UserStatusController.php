@@ -16,24 +16,32 @@ class UserStatusController extends BaseController
         $this->status = new UserStatusModel($db);
     }
 
-    // Mirrors MessagingController; replace with real auth later.
     private function getCurrentUserId(Request $request): ?int
     {
+        $jwtUserId = getJwtUserId($request);
+        if ($jwtUserId === null) {
+            return null;
+        }
+
         $server = $request->server;
         $headerId = $server['HTTP_X_USER_ID'] ?? null;
-        if ($headerId !== null && Validator::validateId($headerId)) {
-            return (int) $headerId;
-        }
 
         $candidate = $request->postParams['currentUserId']
             ?? $request->getParams['currentUserId']
             ?? null;
 
-        if ($candidate !== null && Validator::validateId($candidate)) {
-            return (int) $candidate;
+        $providedId = null;
+        if ($headerId !== null && Validator::validateId($headerId)) {
+            $providedId = (int)$headerId;
+        } elseif ($candidate !== null && Validator::validateId($candidate)) {
+            $providedId = (int)$candidate;
         }
 
-        return null;
+        if ($providedId !== null && $providedId !== $jwtUserId) {
+            return null;
+        }
+
+        return $jwtUserId;
     }
 
     public function getStatus(Request $request, $parameters)

@@ -38,16 +38,13 @@ class MessagingController extends BaseController
         $this->userStatus    = new UserStatusModel($db);
     }
 
-    // Replace this with proper auth/JWT once available.
     private function getCurrentUserId(Request $request): ?int
     {
-        // 1) Get user id from JWT (set by AuthMiddleware via $request->user)
         $jwtUserId = getJwtUserId($request);
         if ($jwtUserId === null) {
             return null;
         }
 
-        // 2) Optionally cross-check any client-provided id (header or param)
         $server = $request->server;
         $headerId = $server['HTTP_X_USER_ID'] ?? null;
 
@@ -62,12 +59,10 @@ class MessagingController extends BaseController
             $providedId = (int)$candidate;
         }
 
-        // If client supplied an id and it does not match JWT → treat as spoofing
         if ($providedId !== null && $providedId !== $jwtUserId) {
             return null;
         }
 
-        // All good: trust JWT id
         return $jwtUserId;
     }
 
