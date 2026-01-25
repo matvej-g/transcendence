@@ -67,7 +67,7 @@ function handleChatMessageCreated(ev: any) {
 		activeConversation.messages.push(msg);
 		renderMessages(activeConversation, messagesEl, getCurrentUsername());
 		
-		// Update chat list preview without incrementing unread count
+	// 	// Update chat list preview without incrementing unread count // milena
 		let idx = conversations.findIndex((c) => String(c.id) === cid);
 		if (idx !== -1) {
 			const summary = conversations[idx];
@@ -90,6 +90,7 @@ function handleChatMessageCreated(ev: any) {
 			id: cid,
 			title: "", // title get's filled in when render happens
 			lastMessage: msg,
+			// unreadCount: 1,
 			hasUnread: true,
 			participants: [ev.data?.message?.author],
 		};
@@ -103,7 +104,7 @@ function handleChatMessageCreated(ev: any) {
 	const summary = conversations[idx];
 	summary.lastMessage = msg as any;
 	
-	// Mark as unread if message is from someone else
+	// Mark as unread if message is from someone else //milena
 	const currentUserId = getCurrentUserId();
 	const messageAuthorId = String(msg.author?.id ?? '');
 	if (messageAuthorId && String(currentUserId) !== messageAuthorId) {
@@ -184,7 +185,7 @@ chatListEl.addEventListener("click", async (e) => {
 	activeConversation = convo;
 	pendingUser = null;
 
-	// Reset unread indicator when opening conversation
+	// Reset unread indicator when opening conversation //milena
 	const summary = conversations.find(c => String(c.id) === convoId);
 	if (summary) {
 		summary.hasUnread = false;
