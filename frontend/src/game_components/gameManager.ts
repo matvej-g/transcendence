@@ -69,8 +69,11 @@ class GameManager {
         logger.log('Starting local game...');
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
-        const userId = getCurrentUserIdNumber() || 1; //need cahnge later
-        logger.log(userId);
+        const userId = getCurrentUserIdNumber();
+        if (!userId) {
+            window.location.hash = 'profile';
+            return;
+        }
 		this.networkManager.connect(
 			this.getWebSocketUrl(),
 			'local',
@@ -83,7 +86,10 @@ class GameManager {
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber();
-        logger.log(userId);
+        if (!userId) {
+            window.location.hash = 'profile';
+            return;
+        }
 		this.networkManager.connect(
 			this.getWebSocketUrl(),
 			'remote',
@@ -96,7 +102,10 @@ class GameManager {
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
         const userId = getCurrentUserIdNumber();
-        logger.log(userId);
+        if (!userId) {
+            window.location.hash = 'profile';
+            return;
+        }
         this.networkManager.connect(
 			this.getWebSocketUrl(),
 			'joinT',
@@ -109,7 +118,11 @@ class GameManager {
         this.networkManager.disconnect();
         this.gameModeMenu?.classList.add('hidden');
         this.isGameActive = true;
-        const userId = getCurrentUserIdNumber() || 1;
+        const userId = getCurrentUserIdNumber();
+        if (!userId) {
+            window.location.hash = 'profile';
+            return;
+        }
         this.networkManager.connect(
 			this.getWebSocketUrl(),
 			'invite',

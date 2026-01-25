@@ -231,6 +231,7 @@ export class NetworkManager {
 
     private onClose(): void {
         logger.log('Connection closed');
+		window.__profileReload = { stats: true, matchHistory: true };
         this.canvas.hide();
         this.removeInputHandlers();
 		this.localGameState.leftPaddle.score = 0;
