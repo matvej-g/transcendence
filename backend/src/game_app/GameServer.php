@@ -633,9 +633,10 @@ class GameServer implements MessageComponentInterface {
     private function removePlayerFromQueue(Player $player): void {
         if (!isset($player->userID)) return;
 
+        $playerObjectId = spl_object_id($player);
         $this->waitingPlayers = array_filter(
             $this->waitingPlayers,
-            fn($p) => $p->userID !== $player->userID
+            fn($p) => spl_object_id($p) !== $playerObjectId
         );
     }
 
