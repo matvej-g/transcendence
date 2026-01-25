@@ -115,6 +115,7 @@ export class NetworkManager {
 
 			case 'gameOver':
 				logger.log('Winner received:', message.data);
+				this.canvas.cancelCountdown();
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
 				window.__profileReload = { stats: true, matchHistory: true };
@@ -122,6 +123,7 @@ export class NetworkManager {
 
 			case 'opponentDisconnected':
 				logger.log('Opponent disconnected:', message.data);
+				this.canvas.cancelCountdown();
 				this.canvas.drawWinner(message.data.winner);
 				this.removeInputHandlers();
 				window.__profileReload = { stats: true, matchHistory: true };
