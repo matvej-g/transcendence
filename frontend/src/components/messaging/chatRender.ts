@@ -3,7 +3,7 @@ import type { UserId } from "../../common/types.js";
 import { getCurrentUserId, getCurrentUsername } from "../auth/authUtils.js";
 import { t } from "../languages/i18n.js";
 import { sendGameAction } from "./chatPage.js";
-type GameText = "invite" | "accept" | "cancel" | "decline" | "busy";
+type GameText = string//"invite" | "accept" | "cancel" | "decline" | "busy";
 
 const chatListEl = document.getElementById("chat-list")!;
 
@@ -240,7 +240,10 @@ function renderBusyGameMessage(_msg: any, isMine: boolean): string {
 
 export function renderGameMessage(msg: any, isMine: boolean): string {
 	const t = (msg.text ?? "").toLowerCase() as GameText;
-
+	if (t.startsWith("accept")) {
+		return renderAcceptGameMessage(msg, isMine);
+	}
+		
 	switch (t) {
 		case "invite":
 			return renderInviteGameMessage(msg, isMine);
