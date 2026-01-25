@@ -85,7 +85,7 @@ $this->router->post('/api/auth/2fa/disable', [AuthController::class, 'disable2FA
 $this->router->get('/api/auth/2fa/status', [AuthController::class, 'get2FAStatus'], [AuthMiddleware::class]);
 
 // messaging (protected)
-$this->router->get('/api/conversations', [MessagingController::class, 'getConversations'], /* [Require2FAMiddleware::class] */);
+$this->router->get('/api/conversations', [MessagingController::class, 'getConversations'], [Require2FAMiddleware::class]);
 $this->router->get('/api/conversations/{id}', [MessagingController::class, 'getConversation'], [Require2FAMiddleware::class]);
 $this->router->post('/api/conversations', [MessagingController::class, 'createConversation'], [Require2FAMiddleware::class]);
 $this->router->post('/api/conversations/{id}/messages', [MessagingController::class, 'sendMessage'], [Require2FAMiddleware::class]);
