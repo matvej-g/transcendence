@@ -7,9 +7,8 @@ use Ratchet\ConnectionInterface;
 
 final class AppServer implements MessageComponentInterface
 {
-    /** @var \SplObjectStorage<ConnectionInterface, array{rooms:array<string,bool>}> */
+    /** @var \SplObjectStorage<ConnectionInterface, array{rooms:array<string,bool>, userId:int|null}> */
     private \SplObjectStorage $clients;
-	private array $userConn = [];
 
     public function __construct()
     {
@@ -25,7 +24,10 @@ final class AppServer implements MessageComponentInterface
     public function onMessage(ConnectionInterface $from, $msg): void
     {
         $data = json_decode((string)$msg, true);
-        if (!is_array($data) || !isset($data['type'])) return;
+        if (!is_array($data) || !isset($data['type'])) {
+            $from->send(json_encode(['type' => 'error', 'data' => ['error' => 'invalid_message']], JSON_UNESCAPED_UNICODE));
+            return;
+        }
 
         $t = (string)$data['type'];
         $d = is_array($data['data'] ?? null) ? $data['data'] : [];
@@ -64,8 +66,15 @@ final class AppServer implements MessageComponentInterface
         }
 
         if ($t === 'conversation.join') {
+            if ($meta['userId'] === null) {
+                $from->send(json_encode(['type' => 'conversation.error', 'data' => ['error' => 'not_authenticated']], JSON_UNESCAPED_UNICODE));
+                return;
+            }
             $cid = (string)($d['conversationId'] ?? '');
-            if ($cid === '') return;
+            if ($cid === '') {
+                $from->send(json_encode(['type' => 'conversation.error', 'data' => ['error' => 'missing_conversation_id']], JSON_UNESCAPED_UNICODE));
+                return;
+            }
 
             $meta['rooms']["conversation:$cid"] = true;
             $this->clients[$from] = $meta;
@@ -110,17 +119,17 @@ final class AppServer implements MessageComponentInterface
         }
     }
 
-	public function broadcastUserExceptRoom(int $uid, string $excludeRoom, array $event): void
-	{
-		$out = json_encode($event, JSON_UNESCAPED_UNICODE);
+    public function broadcastUserExceptRoom(int $uid, string $excludeRoom, array $event): void
+    {
+        $out = json_encode($event, JSON_UNESCAPED_UNICODE);
 
-		foreach ($this->clients as $client) {
-			$meta = $this->clients[$client];
+        foreach ($this->clients as $client) {
+            $meta = $this->clients[$client];
 
-			if (($meta['userId'] ?? null) !== $uid) continue;
-			if (!empty($meta['rooms'][$excludeRoom])) continue; // already in convo
+            if (($meta['userId'] ?? null) !== $uid) continue;
+            if (!empty($meta['rooms'][$excludeRoom])) continue;
 
-			$client->send($out);
-		}
-	}
+            $client->send($out);
+        }
+    }
 }

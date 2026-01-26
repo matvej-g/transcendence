@@ -86,12 +86,18 @@ class GameServer implements MessageComponentInterface {
     public function onMessage(ConnectionInterface $from, $msg) {
         $player = $this->players[$from];
         $data = json_decode($msg, true);
-        match($data['type'] ?? null) {
+        $type = $data['type'] ?? null;
+        if ($type === null) {
+            $this->sendError($player, 'Missing message type');
+            return;
+        }
+
+        match($type) {
             'authenticate' => $this->handleAuthentication($player, $data['data'] ?? []),
             'join' => $this->handleJoin($player, $data['data'] ?? []),
             'input' => $this->handleInput($player, $data['data'] ?? []),
             'invite' => $this->handleInvite($player, $data['data'] ?? []),
-            default => null
+            default => $this->sendError($player, "Unknown message type: {$type}")
         };
     }
 
@@ -482,13 +488,18 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function handleJoin(Player $player, array $data): void {
+        if (!$player->userID) {
+            $this->sendError($player, 'Not authenticated');
+            return;
+        }
+
         $gameMode = $data['gameMode'] ?? 'remote';
-        
+
         match($gameMode) {
             'local' => $this->startLocalGame($player),
             'remote' => $this->startRemoteGame($player),
             'joinT' => $this->handleJoinTournament($player),
-            default => null
+            default => $this->sendError($player, "Unknown game mode: {$gameMode}")
         };
     }
 
@@ -598,11 +609,12 @@ class GameServer implements MessageComponentInterface {
 
     private function handleInput(Player $player, array $data): void {
         if (!$player->gameID || !isset($this->games[$player->gameID])) {
+            $this->sendError($player, 'Not in a game');
             return;
         }
         $game = $this->games[$player->gameID];
         if (!isset($game['engine'])) {
-            return; // engine not ready yet
+            return; // engine not ready yet (countdown)
         }
         $engine = $game['engine'];
         $action = $data['action'] ?? null;
@@ -610,6 +622,7 @@ class GameServer implements MessageComponentInterface {
         if ($game['mode'] === 'local') {
             $paddle = $data['paddle'] ?? null;
             if (!$paddle) {
+                $this->sendError($player, 'Missing paddle for local mode');
                 return;
             }
         } else {
@@ -630,8 +643,16 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function handleInvite(Player $player, array $data): void {
+        if (!$player->userID) {
+            $this->sendError($player, 'Not authenticated');
+            return;
+        }
+
         $inviteCode = $data['inviteCode'] ?? null;
-        if (!$inviteCode) return;
+        if (!$inviteCode) {
+            $this->sendError($player, 'Missing invite code');
+            return;
+        }
 
         if (isset($this->pendingInvites[$inviteCode])) {
             $opponent = $this->pendingInvites[$inviteCode];
