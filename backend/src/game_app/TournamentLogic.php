@@ -231,12 +231,15 @@ class TournamentLogic {
             }
         }
         if (isset($this->tournamentRoundWinners[$tournamentID])) {
-        foreach ($this->tournamentRoundWinners[$tournamentID] as $idx => $p) {
-            if ($p && $p->userID === $player->userID) {
-                $this->tournamentRoundWinners[$tournamentID][$idx] = null;
+            foreach ($this->tournamentRoundWinners[$tournamentID] as $round => $winners) {
+                if (!is_array($winners)) continue;
+                foreach ($winners as $matchIdx => $p) {
+                    if ($p && $p->userID === $player->userID) {
+                        $this->tournamentRoundWinners[$tournamentID][$round][$matchIdx] = null;
+                    }
+                }
             }
         }
-    }
         // cleanup when all players leave
         if ($this->isTournamentEmpty($tournamentID)) {
             unset($this->tournamentPlayers[$tournamentID]);
