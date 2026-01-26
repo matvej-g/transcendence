@@ -18,8 +18,10 @@ export class NetworkManager {
 	private gameMode: 'local' | 'remote' | 'joinT' | 'invite' | null = null;
 	private userId: number | null = null;
 	private inviteCode: string | null = null;
+	private gameModeMenu: HTMLElement | null;
 
 	constructor(canvas: GameCanvas, t_canvas: TournamentCanvas) {
+		this.gameModeMenu = document.getElementById('gameModeMenu');
 		this.canvas = canvas;
 		this.t_canvas = t_canvas;
 		this.localGameState = {} as GameState;
@@ -128,12 +130,11 @@ export class NetworkManager {
 				window.__profileReload = { stats: true, matchHistory: true };
 				break;
 			case 'alreadyInGame':
-				alert(message.data.message);
-				window.location.hash = 'profile';
-				break;
 			case 'alreadySearching':
 				alert(message.data.message);
-				window.location.hash = 'profile';
+				this.canvas.hide();
+				this.t_canvas.hide();
+				this.gameModeMenu?.classList.remove('hidden');
 				break;
 			case 'tournamentStart':
 				logger.log('Tournament starting:', message.data);
@@ -206,13 +207,7 @@ export class NetworkManager {
 				alert(message.data.message);
 				this.canvas.hide();
 				this.removeInputHandlers();
-				this.localTournamentState = {
-					isRunning: false,
-					winner: null,
-					rounds: [],
-					players: [],
-					currentRound: 0
-				};
+				this.resetlocalTournamentState();
 				this.t_canvas.hide();
 				window.location.hash = 'profile';
 				break;
