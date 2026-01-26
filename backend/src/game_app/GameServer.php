@@ -59,8 +59,7 @@ class GameServer implements MessageComponentInterface {
         //callbacks for tournament
         $this->tournament->setCallbacks(
             fn($tID, $p1, $p2, $round) => $this->createTournamentMatch($tID, $p1, $p2, $round),
-            fn($pair, $gameID, $tID) => $this->notifyMatchTournament($pair, $gameID, $tID),
-            fn($userID) => $this->getPlayerByUserId($userID)
+            fn($pair, $gameID, $tID) => $this->notifyMatchTournament($pair, $gameID, $tID)
         );
         echo "GameServer initialized\n";
     }
@@ -86,18 +85,12 @@ class GameServer implements MessageComponentInterface {
     public function onMessage(ConnectionInterface $from, $msg) {
         $player = $this->players[$from];
         $data = json_decode($msg, true);
-        $type = $data['type'] ?? null;
-        if ($type === null) {
-            $this->sendError($player, 'Missing message type');
-            return;
-        }
-
-        match($type) {
+        match($data['type'] ?? null) {
             'authenticate' => $this->handleAuthentication($player, $data['data'] ?? []),
             'join' => $this->handleJoin($player, $data['data'] ?? []),
             'input' => $this->handleInput($player, $data['data'] ?? []),
             'invite' => $this->handleInvite($player, $data['data'] ?? []),
-            default => $this->sendError($player, "Unknown message type: {$type}")
+            default => null
         };
     }
 
@@ -488,18 +481,13 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function handleJoin(Player $player, array $data): void {
-        if (!$player->userID) {
-            $this->sendError($player, 'Not authenticated');
-            return;
-        }
-
         $gameMode = $data['gameMode'] ?? 'remote';
-
+        
         match($gameMode) {
             'local' => $this->startLocalGame($player),
             'remote' => $this->startRemoteGame($player),
             'joinT' => $this->handleJoinTournament($player),
-            default => $this->sendError($player, "Unknown game mode: {$gameMode}")
+            default => null
         };
     }
 
@@ -609,12 +597,11 @@ class GameServer implements MessageComponentInterface {
 
     private function handleInput(Player $player, array $data): void {
         if (!$player->gameID || !isset($this->games[$player->gameID])) {
-            $this->sendError($player, 'Not in a game');
             return;
         }
         $game = $this->games[$player->gameID];
         if (!isset($game['engine'])) {
-            return; // engine not ready yet (countdown)
+            return; // engine not ready yet
         }
         $engine = $game['engine'];
         $action = $data['action'] ?? null;
@@ -622,7 +609,6 @@ class GameServer implements MessageComponentInterface {
         if ($game['mode'] === 'local') {
             $paddle = $data['paddle'] ?? null;
             if (!$paddle) {
-                $this->sendError($player, 'Missing paddle for local mode');
                 return;
             }
         } else {
@@ -643,16 +629,8 @@ class GameServer implements MessageComponentInterface {
     }
 
     private function handleInvite(Player $player, array $data): void {
-        if (!$player->userID) {
-            $this->sendError($player, 'Not authenticated');
-            return;
-        }
-
         $inviteCode = $data['inviteCode'] ?? null;
-        if (!$inviteCode) {
-            $this->sendError($player, 'Missing invite code');
-            return;
-        }
+        if (!$inviteCode) return;
 
         if (isset($this->pendingInvites[$inviteCode])) {
             $opponent = $this->pendingInvites[$inviteCode];
@@ -731,15 +709,5 @@ class GameServer implements MessageComponentInterface {
                 ]
             ]);
         }
-    }
-
-    public function getPlayerByUserId(string $userID): ?Player {
-        foreach ($this->players as $conn) {
-            $player = $this->players[$conn];
-            if ($player->userID === $userID) {
-                return $player;
-            }
-        }
-        return null;
     }
 }
