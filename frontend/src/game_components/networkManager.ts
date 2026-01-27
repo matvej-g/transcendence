@@ -189,8 +189,8 @@ export class NetworkManager {
 				break;
 			case 'countdownFinished':
 				logger.log('Countdown finished:', message.data);
-				this.canvas.show();
 				this.t_canvas.hide();
+				this.canvas.show();
 				this.setupInputHandlers();
 				break;
 			case 'tournamentWin':

@@ -58,7 +58,7 @@ class GameServer implements MessageComponentInterface {
 
         //callbacks for tournament
         $this->tournament->setCallbacks(
-            fn($tID, $p1, $p2, $round) => $this->createTournamentMatch($tID, $p1, $p2, $round),
+            fn($tID, $p1, $p2, $round, $matchIndex) => $this->createTournamentMatch($tID, $p1, $p2, $round, $matchIndex),
             fn($pair, $gameID, $tID) => $this->notifyMatchTournament($pair, $gameID, $tID)
         );
         echo "GameServer initialized\n";
@@ -132,10 +132,13 @@ class GameServer implements MessageComponentInterface {
         if ($game['mode'] === 'tournament' && isset($game['tournamentId'])) {
             $tournamentID = $game['tournamentId'];
             $round = $game['round'] ?? 1;
-            $winnerPlayer = ($winnerId === $game['player1']->userID) 
+            $matchIndex = $game['matchIndex'] ?? 0;
+            
+            $winnerPlayer = ((string)$winnerId === (string)$game['player1']->userID) 
                 ? $game['player1'] 
                 : $game['player2'];
-            $this->tournament->onMatchEnd($tournamentID, $round, $winnerPlayer);
+            
+            $this->tournament->onMatchEnd($tournamentID, $round, $winnerPlayer, $matchIndex);
             $this->notifyResultTournamentMatch($tournamentID, $round, $game['player1'], $game['player2']);
         }
         $this->cleanupGame($game);
@@ -248,7 +251,7 @@ class GameServer implements MessageComponentInterface {
         echo "Match created: {$player1->userID} vs {$player2->userID} (ID: {$gameID})\n";
     }
 
-    private function initializeGame(string $gameID, Player $player1, ?Player $player2, string $mode, ?int $tournamentId = null, ?int $round = 1): void {
+    private function initializeGame(string $gameID, Player $player1, ?Player $player2, string $mode, ?int $tournamentId = null, ?int $round = 1, ?int $matchIndex = null): void {
         $player1->gameID = $gameID;
         $player1->paddle = $mode === 'local' ? 'both' : 'left';
         
@@ -273,7 +276,8 @@ class GameServer implements MessageComponentInterface {
             'countdownFinished' => false,
             'isLocalGame' => $mode === 'local',
             'tournamentId' => $tournamentId,
-            'round' => $round
+            'round' => $round,
+            'matchIndex' => $matchIndex
         ];
 
         if ($mode !== 'tournament') {
@@ -507,16 +511,15 @@ class GameServer implements MessageComponentInterface {
         }
     }
 
-    private function createTournamentMatch(int $tournamentID, Player $player1, Player $player2, int $round): void {
+    private function createTournamentMatch(int $tournamentID, Player $player1, Player $player2, int $round, int $matchIndex): void {
         $gameID = $this->matchesModel->createMatch($player1->userID, $player2->userID);
 
-        // Speichere Tournament-Match in DB für Historie
         $existingMatches = $this->tournamentMatchesModel->getMatchesForTournament($tournamentID);
         $matchesInRound = array_filter($existingMatches, fn($m) => $m['round'] == $round);
         $matchIndex = count($matchesInRound);
         $this->tournamentMatchesModel->createTournamentMatchWithRound($tournamentID, $gameID, $round, $matchIndex);
 
-        $this->initializeGame($gameID, $player1, $player2, 'tournament', $tournamentID, $round);
+        $this->initializeGame($gameID, $player1, $player2, 'tournament', $tournamentID, $round, $matchIndex);
         $this->notifyMatchTournament([$player1, $player2], $gameID, $tournamentID);
 
         if ($this->loop) {

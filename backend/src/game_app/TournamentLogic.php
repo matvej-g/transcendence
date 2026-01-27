@@ -135,18 +135,38 @@ class TournamentLogic {
 
     public function startRound(int $tournamentID, array $players, int $round): void {
         echo "[Tournament] Starting round {$round} for tournament {$tournamentID}\n";
-        $pairs = self::getNextRoundPairs($players);
-        foreach ($pairs as $pair) {
-            if (count($pair) === 2) {
-                $this->setBracketMatch($tournamentID, $round, $pair[0], $pair[1]);
+        
+        $pairs = [];
+        $playerCount = count($players);
+        for ($i = 0; $i < $playerCount; $i += 2) {
+            $p1 = $players[$i] ?? null;
+            $p2 = ($i + 1 < $playerCount) ? ($players[$i + 1] ?? null) : null;
+            
+            if ($p1 !== null && $p2 !== null) {
+                $pairs[] = [$p1, $p2];
+            } elseif ($p1 !== null) {
+                $pairs[] = [$p1];
+            } elseif ($p2 !== null) {
+                $pairs[] = [$p2];
+            } else {
+                $pairs[] = [];
             }
         }
-        foreach ($pairs as $pair) {
+        
+        // Set all brackets first so all players see bracket names
+        foreach ($pairs as $matchIndex => $pair) {
             if (count($pair) === 2) {
-                ($this->onCreateMatch)($tournamentID, $pair[0], $pair[1], $round);
-            } else {
-                // if a player leaves (dc) opponent wins
-                $this->addRoundWinner($tournamentID, $round, $pair[0]);
+                $this->setBracketMatchAtIndex($tournamentID, $round, $matchIndex, $pair[0], $pair[1]);
+            } elseif (count($pair) === 1) {
+                $this->setBracketDcAtIndex($tournamentID, $round, $matchIndex, $pair[0]);
+            }
+        }
+
+        foreach ($pairs as $matchIndex => $pair) {
+            if (count($pair) === 2) {
+                ($this->onCreateMatch)($tournamentID, $pair[0], $pair[1], $round, $matchIndex);
+            } elseif (count($pair) === 1) {
+                $this->addRoundWinner($tournamentID, $round, $pair[0], $matchIndex);
                 $pair[0]->send([
                     'type' => 'tournamentUpdate',
                     'data' => [
@@ -159,12 +179,35 @@ class TournamentLogic {
         }
     }
 
-    public function onMatchEnd(int $tournamentID, int $round, Player $winner): void {
+    private function setBracketMatchAtIndex(int $tournamentID, int $round, int $matchIndex, Player $player1, Player $player2): void {
+        if (!isset($this->tournamentBrackets[$tournamentID][$round][$matchIndex])) {
+            return;
+        }
+        $this->tournamentBrackets[$tournamentID][$round][$matchIndex] = [
+            'player1' => $player1->username ?? "Player {$player1->userID}",
+            'player2' => $player2->username ?? "Player {$player2->userID}",
+            'winner' => null
+        ];
+    }
+
+    private function setBracketDcAtIndex(int $tournamentID, int $round, int $matchIndex, Player $player): void {
+        if (!isset($this->tournamentBrackets[$tournamentID][$round][$matchIndex])) {
+            return;
+        }
+        $playerName = $player->username ?? "Player {$player->userID}";
+        $this->tournamentBrackets[$tournamentID][$round][$matchIndex] = [
+            'player1' => $playerName,
+            'player2' => '[disconnect]',
+            'winner' => $playerName
+        ];
+    }
+
+    public function onMatchEnd(int $tournamentID, int $round, Player $winner, int $matchIndex): void {
         if ($winner === null) {
             return;
         }
         $this->setBracketWinner($tournamentID, $round, $winner);
-        $this->addRoundWinner($tournamentID, $round, $winner);
+        $this->addRoundWinner($tournamentID, $round, $winner, $matchIndex);
         $winnersCount = count($this->tournamentRoundWinners[$tournamentID][$round] ?? []);
         $expectedWinners = $this->getExpectedWinnersForRound($round);
         echo "[Tournament] Round {$round} winner: {$winner->userID} ({$winnersCount}/{$expectedWinners})\n";
@@ -174,24 +217,21 @@ class TournamentLogic {
         if ($activeGamesInRound > 0) {
             return false;
         }
-        $winners = [];
-        foreach ($this->tournamentRoundWinners[$tournamentID][$round] ?? [] as $winner) {
-            if ($winner !== null) {
-                $winners[] = $winner;
-            }
-        }
-        if (count($winners) === 0) {
+        
+        $winnersArray = $this->tournamentRoundWinners[$tournamentID][$round] ?? [];
+        $actualWinners = array_values(array_filter($winnersArray, fn($w) => $w !== null)); 
+        if (count($actualWinners) === 0) {
             $this->cancelTournament($tournamentID, "All players disconnected");
             return true;
         }
-        if (count($winners) === 1) {
-            $this->onTournamentEnd($tournamentID, $winners[0]);
+        if (count($actualWinners) === 1) {
+            $this->onTournamentEnd($tournamentID, $actualWinners[0]);
             return true;
         }
         $nextRound = $round + 1;
         $this->tournamentCurrentRound[$tournamentID] = $nextRound;
-        $this->tournamentRoundWinners[$tournamentID][$nextRound] = [];
-        $this->startRound($tournamentID, $winners, $nextRound);
+        $this->tournamentRoundWinners[$tournamentID][$nextRound] = [];     
+        $this->startRound($tournamentID, $winnersArray, $nextRound);
         $this->tournamentRoundWinners[$tournamentID][$round] = [];
         return true;
     }
@@ -269,12 +309,15 @@ class TournamentLogic {
     /*
      * Helpers
      */
-    private function addRoundWinner(int $tournamentID, int $round, Player $winner): void {
+    private function addRoundWinner(int $tournamentID, int $round, Player $winner, ?int $matchIndex = null): void {
         if (!isset($this->tournamentRoundWinners[$tournamentID][$round])) {
             $expectedWinners = $this->getExpectedWinnersForRound($round);
             $this->tournamentRoundWinners[$tournamentID][$round] = array_fill(0, $expectedWinners, null);
         }
-        $matchIndex = $this->findMatchIndexForPlayer($tournamentID, $round, $winner);
+        if ($matchIndex === null) {
+            $matchIndex = $this->findMatchIndexForPlayer($tournamentID, $round, $winner);
+        }
+        
         $this->tournamentRoundWinners[$tournamentID][$round][$matchIndex] = $winner;
     }
 
