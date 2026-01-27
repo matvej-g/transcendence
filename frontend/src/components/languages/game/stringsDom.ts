@@ -24,7 +24,7 @@ export const GameDomStrings: Record<Lang, GameDomStringsTableT> = {
     choose_game_mode: "Выбор режима игры",
     play_local: "Играть локально",
     play_vs_player: "Играть против игрока",
-    play_tournament: "Играть турниру",
+    play_tournament: "Играть турнир",
     exit_tournament: "Выйти из турнир",
     exit_game: "Выйти из игры",
   },
