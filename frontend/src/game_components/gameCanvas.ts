@@ -1,5 +1,6 @@
 import { GameState, GameConfig, DEFAULT_GAME_CONFIG } from './gameEntities.js';
 import { logger } from '../utils/logger.js';
+import { t } from '../components/languages/i18n.js';
 
 export class GameCanvas {
     private canvas: HTMLCanvasElement | null;
@@ -132,7 +133,7 @@ export class GameCanvas {
         this.renderingContext.font = 'bold 64px Arial';
         this.renderingContext.textAlign = 'center';
         this.renderingContext.fillText(
-            `${winner.toUpperCase()} WINS!`,
+            `${winner.toUpperCase()} ${t('game.wins')}`,
             this.canvas.width / 2,
             this.canvas.height / 2
         );
@@ -181,7 +182,7 @@ export class GameCanvas {
         this.renderingContext.textBaseline = 'middle';
 
         this.renderingContext.fillText(
-            'Searching for players...',
+			t('game.searching_for_players'),
             this.canvas.width / 2,
             this.canvas.height / 2
         );
