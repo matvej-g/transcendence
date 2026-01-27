@@ -133,7 +133,7 @@ export class GameCanvas {
         this.renderingContext.font = 'bold 64px Arial';
         this.renderingContext.textAlign = 'center';
         this.renderingContext.fillText(
-            `${winner.toUpperCase()} ${t('game.wins')}`,
+            `${t(`game.${winner}`).toUpperCase()} ${t('game.wins')}`,
             this.canvas.width / 2,
             this.canvas.height / 2
         );
