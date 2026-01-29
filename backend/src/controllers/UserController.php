@@ -260,7 +260,7 @@ class UserController extends BaseController
         $token = generateJWT($user['id'], !$is2FAEnabled);
         setJWTCookie($token);
 
-        return $this->jsonSuccess([
+        $response = [
             'success' => true,
             'user' => [
                 'id' => $user['id'],
@@ -269,7 +269,13 @@ class UserController extends BaseController
             ],
             'token' => $token,
             'two_factor_required' => $is2FAEnabled
-        ]);
+        ];
+
+        if ($is2FAEnabled) {
+            $response['two_factor_method'] = $user['two_factor_method'] ?? 'email';
+        }
+
+        return $this->jsonSuccess($response);
     }
 
     public function newUser(Request $request, $parameters)

@@ -55,3 +55,46 @@ function sendTwoFactorEmail($email, $code) {
         return false;
     }
 }
+
+/**
+ * Send a 2FA verification code via SMS.
+ * Currently a placeholder that logs the code — replace the body
+ * with a real SMS API call (e.g. curl to Twilio REST API) when ready.
+ */
+function sendTwoFactorSMS($phoneNumber, $code) {
+	$sid   = getenv('TWILIO_SID');
+	$token = getenv('TWILIO_AUTH_TOKEN');
+	$from  = getenv('TWILIO_PHONE_NUMBER');
+
+	if (!$sid || !$token || !$from) {
+		error_log("SMS 2FA failed: Twilio credentials not configured");
+		return false;
+	}
+
+	$ch = curl_init("https://api.twilio.com/2010-04-01/Accounts/$sid/Messages.json");
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_USERPWD, "$sid:$token");
+	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+		'To'   => $phoneNumber,
+		'From' => $from,
+		'Body' => "Your Transcendence verification code is: $code"
+	]));
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+	$response = curl_exec($ch);
+	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	$error    = curl_error($ch);
+	curl_close($ch);
+
+	if ($error) {
+		error_log("SMS 2FA curl error: $error");
+		return false;
+	}
+
+	if ($httpCode >= 200 && $httpCode < 300) {
+		return true;
+	}
+
+	error_log("SMS 2FA failed (HTTP $httpCode): $response");
+	return false;
+}

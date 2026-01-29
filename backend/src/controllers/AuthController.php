@@ -32,18 +32,30 @@ class AuthController extends BaseController
 
         $userId = (int) $payload['user_id'];
 
-        $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
-
         $user = $this->userModel->getUserById($userId);
         if (!$user) {
             return $this->jsonNotFound('User not found');
         }
 
+        $code = str_pad((string)rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
         $this->userModel->saveTwoFactorCode($userId, $code, $expiresAt);
 
-        sendTwoFactorEmail($user['email'], $code);
+        $method = $this->userModel->getTwoFactorMethod($userId);
 
+        if ($method === 'sms') {
+            $phone = $this->userModel->getPhoneNumber($userId);
+            if (!$phone) {
+                return $this->jsonBadRequest('No phone number set. Please add a phone number first.');
+            }
+            sendTwoFactorSMS($phone, $code);
+            return $this->jsonSuccess([
+                'success' => true,
+                'message' => '2FA code sent to your phone'
+            ]);
+        }
+
+        sendTwoFactorEmail($user['email'], $code);
         return $this->jsonSuccess([
             'success' => true,
             'message' => '2FA code sent to your email'
@@ -139,7 +151,7 @@ class AuthController extends BaseController
     public function get2FAStatus(Request $request, $parameters)
     {
         $userId = getCurrentUserId($request);
-        
+
         if (!$userId) {
             return $this->jsonUnauthorized('Not authenticated');
         }
@@ -149,6 +161,87 @@ class AuthController extends BaseController
         return $this->jsonSuccess([
             'success' => true,
             'two_factor_enabled' => $isEnabled
+        ]);
+    }
+
+    public function setPhoneNumber(Request $request, $parameters)
+    {
+        $userId = getCurrentUserId($request);
+        if (!$userId) {
+            return $this->jsonUnauthorized('Not authenticated');
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $phone = $input['phone_number'] ?? '';
+
+        if (empty($phone)) {
+            return $this->jsonBadRequest('Phone number is required');
+        }
+
+        // Basic E.164 validation: starts with +, followed by 10-15 digits
+        if (!preg_match('/^\+[0-9]{10,15}$/', $phone)) {
+            return $this->jsonBadRequest('Invalid phone number format. Use E.164 format (e.g. +1234567890)');
+        }
+
+        $result = $this->userModel->updatePhoneNumber($userId, $phone);
+        if ($result === null) {
+            return $this->jsonServerError();
+        }
+
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => 'Phone number updated',
+            'phone_number' => $phone
+        ]);
+    }
+
+    public function setTwoFactorMethod(Request $request, $parameters)
+    {
+        $userId = getCurrentUserId($request);
+        if (!$userId) {
+            return $this->jsonUnauthorized('Not authenticated');
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $method = $input['method'] ?? '';
+
+        if (!in_array($method, ['email', 'sms'], true)) {
+            return $this->jsonBadRequest('Invalid method. Must be "email" or "sms"');
+        }
+
+        if ($method === 'sms') {
+            $phone = $this->userModel->getPhoneNumber($userId);
+            if (!$phone) {
+                return $this->jsonBadRequest('You must set a phone number before switching to SMS');
+            }
+        }
+
+        $result = $this->userModel->setTwoFactorMethod($userId, $method);
+        if ($result === null) {
+            return $this->jsonServerError();
+        }
+
+        return $this->jsonSuccess([
+            'success' => true,
+            'message' => "2FA method set to $method",
+            'two_factor_method' => $method
+        ]);
+    }
+
+    public function getTwoFactorMethod(Request $request, $parameters)
+    {
+        $userId = getCurrentUserId($request);
+        if (!$userId) {
+            return $this->jsonUnauthorized('Not authenticated');
+        }
+
+        $method = $this->userModel->getTwoFactorMethod($userId);
+        $phone = $this->userModel->getPhoneNumber($userId);
+
+        return $this->jsonSuccess([
+            'success' => true,
+            'two_factor_method' => $method,
+            'phone_number' => $phone
         ]);
     }
 }

@@ -237,6 +237,63 @@ class UserModel {
 		}
 	}
 
+	// Phone number & 2FA method (mert)
+	public function updatePhoneNumber($userId, $phoneNumber)
+	{
+		try {
+			$this->db->query(
+				"UPDATE users SET phone_number = ? WHERE id = ?",
+				[$phoneNumber, $userId]
+			);
+			return true;
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	public function getPhoneNumber($userId)
+	{
+		try {
+			$user = $this->db->query(
+				"SELECT phone_number FROM users WHERE id = ?",
+				[$userId]
+			)->fetch(PDO::FETCH_ASSOC);
+			return $user ? $user['phone_number'] : null;
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	public function setTwoFactorMethod($userId, $method)
+	{
+		try {
+			$this->db->query(
+				"UPDATE users SET two_factor_method = ? WHERE id = ?",
+				[$method, $userId]
+			);
+			return true;
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	public function getTwoFactorMethod($userId)
+	{
+		try {
+			$user = $this->db->query(
+				"SELECT two_factor_method FROM users WHERE id = ?",
+				[$userId]
+			)->fetch(PDO::FETCH_ASSOC);
+			return $user ? ($user['two_factor_method'] ?? 'email') : 'email';
+		}
+		catch (\PDOException $e) {
+			return 'email';
+		}
+	}
+
 	// OAuth Methods (mert)
 	public function getUserByGoogleId($googleId) {
 		try {
