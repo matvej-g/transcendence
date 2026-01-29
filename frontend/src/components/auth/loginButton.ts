@@ -37,7 +37,18 @@ function wireLoginButton() {
           });
 
           if (twoFAResult.ok && twoFAResult.data.success) {
-            alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to your email!`);
+            const method = res.two_factor_method || 'email';
+            const dest = method === 'sms' ? 'your phone' : 'your email';
+            alert(msg("loginOkPrefix") + `${res.user.username}. 2FA code sent to ${dest}!`);
+
+            // Update verify-2fa description to match the method
+            const descEl = document.querySelector('#verify-2fa-section p[data-i18n="authDom.verify2faDescription"]');
+            if (descEl) {
+              descEl.textContent = method === 'sms'
+                ? 'Enter the 6-digit code sent to your phone'
+                : 'Enter the 6-digit code sent to your email';
+            }
+
             window.location.hash = '#verify-2fa';
           } else {
             alert('Login successful but 2FA failed: ' + (twoFAResult.data.error || 'Unknown error'));
