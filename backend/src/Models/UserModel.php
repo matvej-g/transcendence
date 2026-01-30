@@ -294,6 +294,49 @@ class UserModel {
 		}
 	}
 
+	// TOTP (Google Authenticator) methods (mert)
+	public function saveTotpSecret($userId, $secret)
+	{
+		try {
+			$this->db->query(
+				"UPDATE users SET totp_secret = ? WHERE id = ?",
+				[$secret, $userId]
+			);
+			return true;
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	public function getTotpSecret($userId)
+	{
+		try {
+			$user = $this->db->query(
+				"SELECT totp_secret FROM users WHERE id = ?",
+				[$userId]
+			)->fetch(PDO::FETCH_ASSOC);
+			return $user ? $user['totp_secret'] : null;
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
+	public function clearTotpSecret($userId)
+	{
+		try {
+			$this->db->query(
+				"UPDATE users SET totp_secret = NULL WHERE id = ?",
+				[$userId]
+			);
+			return true;
+		}
+		catch (\PDOException $e) {
+			return null;
+		}
+	}
+
 	// OAuth Methods (mert)
 	public function getUserByGoogleId($googleId) {
 		try {

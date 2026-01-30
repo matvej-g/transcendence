@@ -2,6 +2,7 @@
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use OTPHP\TOTP;
 
 function sendTwoFactorEmail($email, $code) {
 
@@ -97,4 +98,27 @@ function sendTwoFactorSMS($phoneNumber, $code) {
 
 	error_log("SMS 2FA failed (HTTP $httpCode): $response");
 	return false;
+}
+
+/**
+ * Generate a new TOTP secret and return the provisioning URI for QR code generation.
+ */
+function generateTotpSecret($userEmail, $issuer = 'Transcendence') {
+	$totp = TOTP::generate();
+	$totp->setLabel($userEmail);
+	$totp->setIssuer($issuer);
+
+	return [
+		'secret' => $totp->getSecret(),
+		'uri'    => $totp->getProvisioningUri(),
+	];
+}
+
+/**
+ * Verify a TOTP code against a stored secret.
+ * Allows a 1-period window for clock drift.
+ */
+function verifyTotpCode($secret, $code) {
+	$totp = TOTP::createFromSecret($secret);
+	return $totp->verify($code, null, 1);
 }
