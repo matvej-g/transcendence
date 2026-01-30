@@ -63,6 +63,8 @@ $this->router->get('/api/auth/2fa/status', [AuthController::class, 'get2FAStatus
 $this->router->post('/api/auth/2fa/phone', [AuthController::class, 'setPhoneNumber'], [AuthMiddleware::class]);
 $this->router->post('/api/auth/2fa/method', [AuthController::class, 'setTwoFactorMethod'], [AuthMiddleware::class]);
 $this->router->get('/api/auth/2fa/method', [AuthController::class, 'getTwoFactorMethod'], [AuthMiddleware::class]);
+$this->router->post('/api/auth/2fa/totp/setup', [AuthController::class, 'setupTotp'], [AuthMiddleware::class]);
+$this->router->post('/api/auth/2fa/totp/confirm', [AuthController::class, 'confirmTotp'], [AuthMiddleware::class]);
 
 // messaging (protected)
 $this->router->get('/api/conversations', [MessagingController::class, 'getConversations'], [Require2FAMiddleware::class]);
