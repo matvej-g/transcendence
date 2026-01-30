@@ -15,6 +15,8 @@ type AuthDomKey =
   | "verifyBtn"
   | "verify2faTitle"
   | "verify2faDescription"
+  | "verify2faDescriptionSms"
+  | "verify2faDescriptionTotp"
   | "verify2faBtn"
   | "resendCode"
     // | "pretendLoginBtn"; // Removed pretendLoginBtn
@@ -38,6 +40,8 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     verifyBtn: "Verify & Create Account",
     verify2faTitle: "Verify 2FA Code",
     verify2faDescription: "Enter the 6-digit code sent to your email",
+    verify2faDescriptionSms: "Enter the 6-digit code sent to your phone",
+    verify2faDescriptionTotp: "Enter the 6-digit code from your authenticator app",
     verify2faBtn: "Verify",
     resendCode: "Resend Code",
   },
@@ -55,6 +59,8 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
     verifyBtn: "Подтвердить и создать аккаунт",
     verify2faTitle: "Подтверждение 2FA",
     verify2faDescription: "Введите 6-значный код, отправленный на вашу почту",
+    verify2faDescriptionSms: "Введите 6-значный код, отправленный на ваш телефон",
+    verify2faDescriptionTotp: "Введите 6-значный код из приложения-аутентификатора",
     verify2faBtn: "Подтвердить",
     resendCode: "Отправить код повторно",
   },
@@ -72,6 +78,8 @@ export const authDomStrings: Record<Lang, AuthDomStringsTableT> = {
 	verifyBtn: "Bestätigen & Konto erstellen",
 	verify2faTitle: "2FA-Code bestätigen",
 	verify2faDescription: "Geben Sie den 6-stelligen Code ein, der an Ihre E-Mail gesendet wurde",
+	verify2faDescriptionSms: "Geben Sie den 6-stelligen Code ein, der an Ihr Handy gesendet wurde",
+	verify2faDescriptionTotp: "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein",
 	verify2faBtn: "Bestätigen",
 	resendCode: "Code erneut senden",
   },
