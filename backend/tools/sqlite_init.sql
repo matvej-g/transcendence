@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
 	two_factor_enabled INTEGER DEFAULT 0,
 	two_factor_method TEXT DEFAULT 'email',
 	phone_number TEXT DEFAULT NULL,
+	totp_secret TEXT DEFAULT NULL,
     avatar_filename TEXT NOT NULL DEFAULT 'default.jpg',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
