@@ -20,7 +20,12 @@ export type SettingsDomKey =
   | "placeholder_new_username"
   | "placeholder_new_email"
   | "placeholder_old_password"
-  | "placeholder_new_password";
+  | "placeholder_new_password"
+  | "totp_title"
+  | "totp_scan_qr"
+  | "totp_manual_key"
+  | "totp_enter_code"
+  | "totp_confirm";
 
 export type SettingsDomStringsTableT = Record<SettingsDomKey, string>;
 
@@ -45,6 +50,11 @@ export const SettingsDomStrings: Record<Lang, SettingsDomStringsTableT> = {
     placeholder_new_email: "Enter new email",
     placeholder_old_password: "Enter old password",
     placeholder_new_password: "Enter new password",
+    totp_title: "Authenticator App",
+    totp_scan_qr: "Scan this QR code with your Google authenticator app.",
+    totp_manual_key: "Or enter this key manually:",
+    totp_enter_code: "Enter the 6-digit code from your app",
+    totp_confirm: "Confirm",
   },
   ru: {
     edit_username: "Изменить имя пользователя",
@@ -66,6 +76,11 @@ export const SettingsDomStrings: Record<Lang, SettingsDomStringsTableT> = {
     placeholder_new_email: "Введите новую почту",
     placeholder_old_password: "Введите старый пароль",
     placeholder_new_password: "Введите новый пароль",
+    totp_title: "Приложение-аутентификатор",
+    totp_scan_qr: "Отсканируйте QR-код с помощью приложения-аутентификатора.",
+    totp_manual_key: "Или введите этот ключ вручную:",
+    totp_enter_code: "Введите 6-значный код из приложения",
+    totp_confirm: "Подтвердить",
   },
   de: {
 	edit_username: "Benutzernamen bearbeiten",
@@ -87,5 +102,10 @@ export const SettingsDomStrings: Record<Lang, SettingsDomStringsTableT> = {
 	placeholder_new_email: "Neue E-Mail eingeben",
 	placeholder_old_password: "Altes Passwort eingeben",
 	placeholder_new_password: "Neues Passwort eingeben",
+	totp_title: "Authenticator-App",
+	totp_scan_qr: "Scannen Sie den QR-Code mit Ihrer Google Authenticator-App.",
+	totp_manual_key: "Oder geben Sie diesen Schlüssel manuell ein:",
+	totp_enter_code: "Geben Sie den 6-stelligen Code aus Ihrer App ein",
+	totp_confirm: "Bestätigen",
   },
 } as const satisfies Record<Lang, SettingsDomStringsTableT>;
