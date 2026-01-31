@@ -57,19 +57,6 @@ class TournamentLogic {
         }
     }
 
-    private function setBracketMatch(int $tournamentID, int $round, Player $player1, Player $player2): void {
-        if (!isset($this->tournamentBrackets[$tournamentID][$round])) {
-            return;
-        }
-        foreach ($this->tournamentBrackets[$tournamentID][$round] as $idx => &$match) {
-            if ($match['player1'] === null && $match['player2'] === null) {
-                $match['player1'] = $player1->username ?? "Player {$player1->userID}";
-                $match['player2'] = $player2->username ?? "Player {$player2->userID}";
-                return;
-            }
-        }
-    }
-
     private function setBracketWinner(int $tournamentID, int $round, Player $winner): void {
         if (!isset($this->tournamentBrackets[$tournamentID][$round])) {
             return;
@@ -213,29 +200,31 @@ class TournamentLogic {
         echo "[Tournament] Round {$round} winner: {$winner->userID} ({$winnersCount}/{$expectedWinners})\n";
     }
 
-    public function checkRoundComplete(int $tournamentID, int $round, int $activeGamesInRound): bool {
-        if ($activeGamesInRound > 0) {
-            return false;
-        }
-        
-        $winnersArray = $this->tournamentRoundWinners[$tournamentID][$round] ?? [];
-        $actualWinners = array_values(array_filter($winnersArray, fn($w) => $w !== null)); 
-        if (count($actualWinners) === 0) {
-            $this->cancelTournament($tournamentID, "All players disconnected");
-            return true;
-        }
-        if (count($actualWinners) === 1) {
-            $this->onTournamentEnd($tournamentID, $actualWinners[0]);
-            return true;
-        }
-        $nextRound = $round + 1;
-        $this->tournamentCurrentRound[$tournamentID] = $nextRound;
-        $this->tournamentRoundWinners[$tournamentID][$nextRound] = [];     
-        $this->startRound($tournamentID, $winnersArray, $nextRound);
-        $this->tournamentRoundWinners[$tournamentID][$round] = [];
-        return true;
-    }
+public function checkRoundComplete(int $tournamentID, int $round, int $activeGamesInRound): bool {
+	// echo "[tournament] active games in round{$round}: {$activeGamesInRound}\n";
+	if ($activeGamesInRound > 0) {
+		return false;
+	}
 
+	$winnersArray = $this->tournamentRoundWinners[$tournamentID][$round] ?? [];
+	$actualWinners = array_values(array_filter($winnersArray, fn($w) => $w !== null));
+	$winnerNames = array_map(fn($p) => $p->username ?? "Player {$p->userID}", $actualWinners);
+	// echo "[Tournament] Round {$round} actualWinners: [" . implode(', ', $winnerNames) . "]\n";
+	if (count($actualWinners) === 0) {
+		$this->cancelTournament($tournamentID, "All players disconnected");
+		return true;
+	}
+	if (count($actualWinners) === 1) {
+		$this->onTournamentEnd($tournamentID, $actualWinners[0]);
+		return true;
+	}
+	$nextRound = $round + 1;
+	$this->tournamentCurrentRound[$tournamentID] = $nextRound;
+	$this->tournamentRoundWinners[$tournamentID][$nextRound] = [];
+	$this->startRound($tournamentID, $winnersArray, $nextRound);
+	$this->tournamentRoundWinners[$tournamentID][$round] = [];
+	return true;
+	}
     private function onTournamentEnd(int $tournamentID, Player $champion): void {
         echo "[Tournament] Tournament {$tournamentID} finished! Winner: {$champion->userID}\n";
         $this->tournamentModel->endTournament($tournamentID, $champion->userID);
