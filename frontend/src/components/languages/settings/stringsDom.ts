@@ -25,7 +25,10 @@ export type SettingsDomKey =
   | "totp_scan_qr"
   | "totp_manual_key"
   | "totp_enter_code"
-  | "totp_confirm";
+  | "totp_confirm"
+  | "phone_title"
+  | "phone_label"
+  | "phone_placeholder";
 
 export type SettingsDomStringsTableT = Record<SettingsDomKey, string>;
 
@@ -55,6 +58,9 @@ export const SettingsDomStrings: Record<Lang, SettingsDomStringsTableT> = {
     totp_manual_key: "Or enter this key manually:",
     totp_enter_code: "Enter the 6-digit code from your app",
     totp_confirm: "Confirm",
+    phone_title: "Phone Number",
+    phone_label: "Phone Number (E.164 format)",
+    phone_placeholder: "+1234567890",
   },
   ru: {
     edit_username: "Изменить имя пользователя",
@@ -81,6 +87,9 @@ export const SettingsDomStrings: Record<Lang, SettingsDomStringsTableT> = {
     totp_manual_key: "Или введите этот ключ вручную:",
     totp_enter_code: "Введите 6-значный код из приложения",
     totp_confirm: "Подтвердить",
+    phone_title: "Номер телефона",
+    phone_label: "Номер телефона (формат E.164)",
+    phone_placeholder: "+1234567890",
   },
   de: {
 	edit_username: "Benutzernamen bearbeiten",
@@ -107,5 +116,8 @@ export const SettingsDomStrings: Record<Lang, SettingsDomStringsTableT> = {
 	totp_manual_key: "Oder geben Sie diesen Schlüssel manuell ein:",
 	totp_enter_code: "Geben Sie den 6-stelligen Code aus Ihrer App ein",
 	totp_confirm: "Bestätigen",
+	phone_title: "Telefonnummer",
+	phone_label: "Telefonnummer (E.164-Format)",
+	phone_placeholder: "+1234567890",
   },
 } as const satisfies Record<Lang, SettingsDomStringsTableT>;

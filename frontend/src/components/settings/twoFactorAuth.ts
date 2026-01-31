@@ -1,5 +1,6 @@
 import { getCurrentUserId } from '../auth/authUtils.js';
 import { logger } from '../../utils/logger.js';
+import { settingsMsg } from '../languages/settings/stringsMsgsHandlers.js';
 
 const toggleBtn = document.getElementById('dropdown-toggle-2fa');
 const methodSelector = document.getElementById('2fa-method-selector');
@@ -171,7 +172,7 @@ async function startTotpSetup() {
 
     const data = await response.json();
     if (!data.success) {
-      alert(data.error || 'Failed to set up authenticator');
+      alert(data.error || settingsMsg('totpSetupFailed'));
       return;
     }
 
@@ -188,7 +189,7 @@ async function startTotpSetup() {
     openTotpModal();
   } catch (error) {
     console.error('Failed to set up TOTP:', error);
-    alert('Failed to set up authenticator app');
+    alert(settingsMsg('totpSetupAppFailed'));
   }
 }
 
@@ -200,7 +201,7 @@ async function confirmTotpSetup() {
   totpError.textContent = '';
 
   if (!code || code.length !== 6) {
-    totpError.textContent = 'Enter the 6-digit code from your app';
+    totpError.textContent = settingsMsg('totpEnterCode');
     return;
   }
 
@@ -218,11 +219,11 @@ async function confirmTotpSetup() {
       updateMethodUI('totp');
       closeTotpModal();
     } else {
-      totpError.textContent = data.error || 'Invalid code. Please try again.';
+      totpError.textContent = data.error || settingsMsg('totpInvalidCode');
     }
   } catch (error) {
     console.error('Failed to confirm TOTP:', error);
-    totpError.textContent = 'Network error';
+    totpError.textContent = settingsMsg('networkError');
   }
 }
 
@@ -245,12 +246,12 @@ async function savePhoneAndSetSms() {
   phoneError.textContent = '';
 
   if (!phone) {
-    phoneError.textContent = 'Phone number is required';
+    phoneError.textContent = settingsMsg('phoneRequired');
     return;
   }
 
   if (!/^\+[0-9]{10,15}$/.test(phone)) {
-    phoneError.textContent = 'Use E.164 format (e.g. +1234567890)';
+    phoneError.textContent = settingsMsg('phoneE164Format');
     return;
   }
 
@@ -265,7 +266,7 @@ async function savePhoneAndSetSms() {
 
     const phoneData = await phoneRes.json();
     if (!phoneData.success) {
-      phoneError.textContent = phoneData.error || 'Failed to save phone number';
+      phoneError.textContent = phoneData.error || settingsMsg('phoneSaveFailed');
       return;
     }
 
@@ -283,11 +284,11 @@ async function savePhoneAndSetSms() {
       updateMethodUI('sms');
       closePhoneModal();
     } else {
-      phoneError.textContent = methodData.error || 'Failed to switch to SMS';
+      phoneError.textContent = methodData.error || settingsMsg('smsSwitchFailed');
     }
   } catch (error) {
     console.error('Failed to save phone number:', error);
-    phoneError.textContent = 'Network error';
+    phoneError.textContent = settingsMsg('networkError');
   }
 }
 
@@ -307,11 +308,11 @@ async function setEmailMethod() {
       currentMethod = 'email';
       updateMethodUI('email');
     } else {
-      alert(data.error || 'Failed to update 2FA method');
+      alert(data.error || settingsMsg('methodUpdateFailed'));
     }
   } catch (error) {
     console.error('Failed to set 2FA method:', error);
-    alert('Failed to update 2FA method');
+    alert(settingsMsg('methodUpdateFailed'));
   }
 }
 
@@ -337,11 +338,11 @@ async function toggle2FA(enable: boolean) {
       updateToggleUI(data.two_factor_enabled);
     } else {
       console.error('Failed to toggle 2FA:', data.error);
-      alert(`Error: ${data.error}`);
+      alert(`${settingsMsg('toggleErrorPrefix')}${data.error}`);
     }
   } catch (error) {
     console.error('Failed to toggle 2FA:', error);
-    alert('Failed to update 2FA settings');
+    alert(settingsMsg('toggleFailed'));
   }
 }
 
@@ -362,7 +363,7 @@ if (toggleBtn) {
 
   toggleBtn.addEventListener('click', async () => {
     if (isOAuthUser) {
-      alert('Two-factor authentication is not available for Google accounts. Your account is already secured by Google.');
+      alert(settingsMsg('oauthNo2fa'));
       return;
     }
 

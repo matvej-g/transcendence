@@ -6,6 +6,7 @@ import { initAuthMsgI18n } from "./auth/stringsMsgsHandlers.js";
 import { initLandingDomI18n } from "./landing/stringsDomHandlers.js";
 import { initNavbarDomI18n } from "./navbar/stringsDomHandlers.js";
 import { initSettingsDomI18n } from "./settings/stringsDomHandlers.js";
+import { initSettingsMsgI18n } from "./settings/stringsMsgsHandlers.js";
 import { initProfileDomI18n } from "./profile/stringsDomHandlers.js";
 import { initGameDomI18n } from "./game/stringsDomHandlers.js";
 import { initFriendsDomI18n } from "./friends/stringsDomHandlers.js";
@@ -22,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initNavbarDomI18n();  // NAVBAR DOM texts
 
   initSettingsDomI18n(); // SETTINGS PAGE DOM texts
+  initSettingsMsgI18n(); // SETTINGS PAGE TS-only messages
   initProfileDomI18n();  // PROFILE PAGE DOM texts
   initGameDomI18n();     // GAME PAGE DOM texts
   initFriendsDomI18n();  // FRIENDS PAGE DOM texts
