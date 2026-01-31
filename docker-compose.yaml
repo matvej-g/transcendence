@@ -7,8 +7,6 @@ volumes:
     name: database
   avatars:
     name: avatars
-  vendor:
-    name: vendor
 
 services:
   php-backend:
@@ -19,8 +17,6 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     volumes:
-      - ./backend:/var/www/html
-      - vendor:/var/www/html/vendor
       - sqlite_data:/var/www/html/database
       - avatars:/var/www/html/uploads/avatars
     env_file:
@@ -41,8 +37,6 @@ services:
     container_name: frontend
     build: ./frontend
     restart: on-failure
-    volumes:
-      - ./frontend:/var/www/html
     networks:
       - transcendence
     healthcheck:
@@ -60,8 +54,6 @@ services:
     depends_on:
       php-backend:
         condition: service_healthy
-    ports:
-      - "8081:8080"
     volumes:
       - sqlite_data:/var/www/html/database
     networks:
@@ -101,9 +93,8 @@ services:
     restart: on-failure
     ports:
       - "8080:80"   
-      - "8443:443" 
+      - "8443:443"
     volumes:
-      - ./backend/public:/var/www/html/public
       - avatars:/var/www/html/uploads/avatars:ro
     depends_on:
       - php-backend
@@ -131,4 +122,3 @@ services:
       - transcendence
 
     entrypoint: ["/bin/sh", "/etc/cloudflared/entrypoint.sh"]
-
