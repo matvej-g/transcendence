@@ -514,9 +514,9 @@ class GameServer implements MessageComponentInterface {
     private function createTournamentMatch(int $tournamentID, Player $player1, Player $player2, int $round, int $matchIndex): void {
         $gameID = $this->matchesModel->createMatch($player1->userID, $player2->userID);
 
-        $existingMatches = $this->tournamentMatchesModel->getMatchesForTournament($tournamentID);
-        $matchesInRound = array_filter($existingMatches, fn($m) => $m['round'] == $round);
-        $matchIndex = count($matchesInRound);
+        // $existingMatches = $this->tournamentMatchesModel->getMatchesForTournament($tournamentID);
+        // $matchesInRound = array_filter($existingMatches, fn($m) => $m['round'] == $round);
+        // $matchIndex = count($matchesInRound);
         $this->tournamentMatchesModel->createTournamentMatchWithRound($tournamentID, $gameID, $round, $matchIndex);
 
         $this->initializeGame($gameID, $player1, $player2, 'tournament', $tournamentID, $round, $matchIndex);
